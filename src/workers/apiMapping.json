@@ -1,0 +1,15 @@
+{
+    "defaults": {
+        "domain": "CoreTopologie",
+        "exchange": "3.protege"
+    },
+    "requests": [
+        {"domain": "CoreTopologie", "action": "getGetGet"}
+    ],
+    "commands": [
+        {"domain": "CoreTopologie", "action": "putPutPut"}
+    ],
+    "subscriptions": {
+        "instances": {"exchanges": ["3.protege"], "routingKeys": ["evenement.CoreTopologie.instanceEvent"]}
+    }
+}

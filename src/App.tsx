@@ -2,10 +2,7 @@ import React from 'react';
 import { createBrowserRouter, RouterProvider, Link } from "react-router-dom";
 
 import { ErrorPage } from './ErrorBoundary';
-// import InitializeWorkers from './workers/InitializeWorkers';
-
-// import HeaderMenu from './Menu';
-// import Footer from './Footer';
+import InitializeWorkers from './workers/InitializeWorkers';
 
 import './i18n';
 
@@ -15,63 +12,89 @@ import './App.css';
 
 
 const LandingPage = React.lazy(()=>import('./LandingPage'));
+const Instances = React.lazy(()=>import('./instances/Instances'));
+const Domains = React.lazy(()=>import('./domains/Domains'));
+const Users = React.lazy(()=>import('./users/Users'));
+const DecryptKeys = React.lazy(()=>import('./utilities/DecryptKeys'));
+const ApplicationPackages = React.lazy(()=>import('./utilities/ApplicationPackages'));
+const ConsignationFichiers = React.lazy(()=>import('./consignation/ConsignationFichiers'));
+const Installer = React.lazy(()=>import('./installer/Installer'));
 
 const router = createBrowserRouter([
 	{
-	  	path: "/coupdoeil",
+	  	path: "/coupdoeil2",
 	  	element: <LandingPage />,
 		  errorElement: <ErrorPage />
 	},
-	// {
-	// 	path: "/coupdoeil/aichat",
-	// 	element: <AppAiChat />,
-  //       errorElement: <ErrorPage />,
-  //       children: [
-  //           { path: "/apps/aichat", element: <ChatSummaryHistory /> },
-  //           { path: "/apps/aichat/newConversation", element: <AiChatConversation /> },
-  //           { path: "/apps/aichat/conversation/:conversationId", element: <AiChatConversation /> },
-  //       ]
-  // 	},
+	{
+		path: "/coupdoeil2/instances",
+		element: <Instances />,
+        errorElement: <ErrorPage />,
+        children: [
+            // { path: "/apps/aichat", element: <ChatSummaryHistory /> },
+        ]
+  	},
+    {
+		path: "/coupdoeil2/domains",
+		element: <Domains />,
+        errorElement: <ErrorPage />,
+        children: [
+            // { path: "/apps/aichat", element: <ChatSummaryHistory /> },
+        ]
+  	},
+    {
+		path: "/coupdoeil2/users",
+		element: <Users />,
+        errorElement: <ErrorPage />,
+        children: [
+            // { path: "/apps/aichat", element: <ChatSummaryHistory /> },
+        ]
+  	},
+    {
+		path: "/coupdoeil2/decryptKeys",
+		element: <DecryptKeys />,
+        errorElement: <ErrorPage />,
+        children: [
+            // { path: "/apps/aichat", element: <ChatSummaryHistory /> },
+        ]
+  	},
+    {
+		path: "/coupdoeil2/applicationPackages",
+		element: <ApplicationPackages />,
+        errorElement: <ErrorPage />,
+        children: [
+            // { path: "/apps/aichat", element: <ChatSummaryHistory /> },
+        ]
+  	},
+    {
+		path: "/coupdoeil2/consignation",
+		element: <ConsignationFichiers />,
+        errorElement: <ErrorPage />,
+        children: [
+            // { path: "/apps/aichat", element: <ChatSummaryHistory /> },
+        ]
+  	},
+      {
+		path: "/coupdoeil2/install",
+		element: <Installer />,
+        errorElement: <ErrorPage />,
+        children: [
+            // { path: "/apps/aichat", element: <ChatSummaryHistory /> },
+        ]
+  	},
 ]);
 
 function App() {
-
-    // let logoutHandler: MouseEventHandler<MouseEvent> = useCallback(()=>{
-    //     window.location.href = '/auth/deconnecter_usager';
-    // }, []);
 
     return (
         <>
             <div className="App-background text-slate-300">
                 <RouterProvider router={router} />
             </div>
-            {/* <InitializeWorkers /> */}
+            <InitializeWorkers />
         </>
     );
+    
 }
 
 export default App;
-
-// function ApplicationList() {
-//     return (
-//         <div>
-//             <HeaderMenu title='MilleGrilles' />
-
-//             <main className='fixed top-6 bottom-8 overflow-y-auto pt-4 pb-2 pl-2 pr-2 w-full'>
-//                 <section>
-//                     <h1 className='text-xl font-bold'>Application list</h1>
-//                     <nav className='pt-6'>
-//                         <ul>
-//                             <li className='pt-2'><Link className='underline' to='/apps/aichat'>Ai Chat</Link></li>
-//                             <li className='pt-2'><Link className='underline'to='/apps/notepad'>Notepad</Link></li>
-//                             <li className='pt-2'><Link className='underline'to='/apps/senseurspassifs'>SenseursPassifs</Link></li>
-//                             <li className='pt-2'><a href='/millegrilles' className='underline'>Back to portal</a></li>
-//                         </ul>
-//                     </nav>
-//                 </section>
-//             </main>
-            
-//             <Footer />
-//         </div>
-//     )
-// }
