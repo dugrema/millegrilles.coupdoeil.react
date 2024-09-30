@@ -13,8 +13,15 @@ import './App.css';
 
 const LandingPage = React.lazy(()=>import('./LandingPage'));
 const Instances = React.lazy(()=>import('./instances/Instances'));
+
 const Domains = React.lazy(()=>import('./domains/Domains'));
+const DomainBackup = React.lazy(()=>import('./domains/DomainBackup'));
+const DomainList = React.lazy(()=>import('./domains/DomainList'));
+const DomainRestore = React.lazy(()=>import('./domains/DomainRestore'));
+
 const Users = React.lazy(()=>import('./users/Users'));
+const KeyManagement = React.lazy(()=>import('./utilities/KeyManagement'));
+const KeyManagementOptions = React.lazy(()=>import('./utilities/KeyManagementOptions'));
 const DecryptKeys = React.lazy(()=>import('./utilities/DecryptKeys'));
 const ApplicationPackages = React.lazy(()=>import('./utilities/ApplicationPackages'));
 const ConsignationFichiers = React.lazy(()=>import('./consignation/ConsignationFichiers'));
@@ -39,7 +46,9 @@ const router = createBrowserRouter([
 		element: <Domains />,
         errorElement: <ErrorPage />,
         children: [
-            // { path: "/apps/aichat", element: <ChatSummaryHistory /> },
+            { path: "/coupdoeil2/domains", element: <DomainList /> },
+            { path: "/coupdoeil2/domains/backup", element: <DomainBackup /> },
+            { path: "/coupdoeil2/domains/restore", element: <DomainRestore /> },
         ]
   	},
     {
@@ -51,11 +60,12 @@ const router = createBrowserRouter([
         ]
   	},
     {
-		path: "/coupdoeil2/decryptKeys",
-		element: <DecryptKeys />,
+		path: "/coupdoeil2/keys",
+		element: <KeyManagement />,
         errorElement: <ErrorPage />,
         children: [
-            // { path: "/apps/aichat", element: <ChatSummaryHistory /> },
+            { path: "/coupdoeil2/keys", element: <KeyManagementOptions /> },
+            { path: "/coupdoeil2/keys/decrypt", element: <DecryptKeys /> },
         ]
   	},
     {

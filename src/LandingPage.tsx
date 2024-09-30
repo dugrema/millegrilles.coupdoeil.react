@@ -44,9 +44,9 @@ function LandingPage() {
                                 </Link>
                             </li>
                             <li className='pt-2'>
-                                <Link to='/coupdoeil2/decryptKeys' 
+                                <Link to='/coupdoeil2/keys' 
                                     className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                                        Key decryption
+                                        Key management
                                 </Link>
                             </li>
                             <li className='pt-2'>
