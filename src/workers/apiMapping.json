@@ -4,7 +4,8 @@
         "exchange": "3.protege"
     },
     "requests": [
-        {"domain": "CoreTopologie", "action": "listeDomaines"}
+        {"domain": "CoreTopologie", "action": "listeDomaines"},
+        {"domain": "fichiers", "action": "domainesBackupV2", "exchange": "2.prive"}
     ],
     "commands": [
         {"domain": "CoreTopologie", "action": "putPutPut"}

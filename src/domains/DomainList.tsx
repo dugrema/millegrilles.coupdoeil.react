@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import useDomainStore from './domainStore';
 import { useMemo } from 'react';
-import { Domain } from '../workers/connection.worker';
+import { Domain, DomainBackupInformation } from '../workers/connection.worker';
 import { Formatters } from 'millegrilles.reactdeps.typescript';
 
 
@@ -77,7 +77,7 @@ function DomainItem(props: {value: Domain}) {
     )
 }
 
-export function sortDomains(a: Domain | null, b: Domain | null) {
+export function sortDomains(a: Domain | DomainBackupInformation | null, b: Domain | DomainBackupInformation | null) {
     if(a === b) return 0;
     if(!a) return 1;
     if(!b) return -1;

@@ -6,6 +6,7 @@ import { messageStruct } from 'millegrilles.cryptography';
 
 const DOMAINE_CORETOPOLOGIE = 'CoreTopologie';
 const DOMAINE_MAITREDESCLES = 'MaitreDesCles';
+const DOMAINE_FICHIERS = 'fichiers';
 
 // export type SendChatMessageCommand = { 
 //     conversation_id: string,
@@ -42,6 +43,21 @@ export type DomaineEventCallback = SubscriptionMessage & {
     },
 };
 
+export type DomainBackupInformation = MessageResponse & {
+    domaine: string,
+    concatene?: {
+        date: number,
+        version: string,
+    },
+    nombre_transactions?: number,
+    transaction_plus_recente?: number,
+};
+
+export type ResponseGetDomainBackupInformation = MessageResponse & {
+    backups: Array<DomainBackupInformation>,
+};
+
+
 export class AppsConnectionWorker extends ConnectionWorker {
 
     async authenticate(reconnect?: boolean) {
@@ -57,6 +73,12 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async getDomainList() {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'listeDomaines') as Promise<ResponseGetDomainList>;
+    }
+
+    async getDomainBackupInformation(stats: boolean, cles: boolean) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({stats, cles}, DOMAINE_FICHIERS, 'domainesBackupV2', {role: 'fichiers'}) as Promise<ResponseGetDomainBackupInformation>;
+        
     }
 
     async subscribeDomainEvents(cb: SubscriptionCallback): Promise<void> {
