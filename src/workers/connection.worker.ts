@@ -1,7 +1,8 @@
 import '@solana/webcrypto-ed25519-polyfill';
 import { expose } from 'comlink';
-import { ConnectionWorker, MessageResponse, SubscriptionCallback } from 'millegrilles.reactdeps.typescript';
+import { ConnectionWorker, MessageResponse, SubscriptionCallback, SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
 import apiMapping from './apiMapping.json';
+import { messageStruct } from 'millegrilles.cryptography';
 
 const DOMAINE_CORETOPOLOGIE = 'CoreTopologie';
 const DOMAINE_MAITREDESCLES = 'MaitreDesCles';
@@ -20,12 +21,55 @@ const DOMAINE_MAITREDESCLES = 'MaitreDesCles';
 //     nomUsager?: string,
 // };
 
+export type Domain = {
+    domaine: string,
+    instance_id: string | null,
+    creation?: number | null,
+    presence?: number | null,
+    reclame_fuuids?: boolean | null,
+};
+
+export type ResponseGetDomainList = MessageResponse & {
+    resultats: Array<Domain>,
+};
+
+export type DomaineEventCallback = SubscriptionMessage & {
+    message: messageStruct.MilleGrillesMessage & {
+        domaine: string,
+        primaire?: boolean | null,
+        reclame_fuuids?: boolean | null,
+        instance_id?: string | null,
+    },
+};
+
 export class AppsConnectionWorker extends ConnectionWorker {
 
     async authenticate(reconnect?: boolean) {
         if(!this.connection) throw new Error("Connection is not initialized");
         return await this.connection.authenticate(apiMapping, reconnect);
     }
+
+    // Instances
+
+
+    // Domains
+
+    async getDomainList() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'listeDomaines') as Promise<ResponseGetDomainList>;
+    }
+
+    async subscribeDomainEvents(cb: SubscriptionCallback): Promise<void> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return await this.connection.subscribe('domainEvents', cb);
+    }
+
+    async unsubscribeDomainEvents(cb: SubscriptionCallback): Promise<void> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return await this.connection.unsubscribe('domainEvents', cb);
+    }
+
+    // Applications
 
     async getApplicationList(): Promise<MessageResponse> {
         if(!this.connection) throw new Error("Connection is not initialized");
@@ -58,16 +102,6 @@ export class AppsConnectionWorker extends ConnectionWorker {
     //         {cle_ids: keyIds}, DOMAINE_AI_LANGUAGE, 'getConversationKeys', 
     //         {domain: DOMAINE_MAITREDESCLES}
     //     ) as DecryptionKeyResponse;
-    // }
-
-    // async subscribeUserGroupDocument(groupId: string, cb: SubscriptionCallback): Promise<void> {
-    //     if(!this.connection) throw new Error("Connection is not initialized");
-    //     return await this.connection.subscribe('notepadGroupDocumentEvents', cb, {groupe_id: groupId});
-    // }
-
-    // async unsubscribeUserGroupDocument(groupId: string, cb: SubscriptionCallback): Promise<void> {
-    //     if(!this.connection) throw new Error("Connection is not initialized");
-    //     return await this.connection.unsubscribe('notepadGroupDocumentEvents', cb, {groupe_id: groupId});
     // }
 
 }

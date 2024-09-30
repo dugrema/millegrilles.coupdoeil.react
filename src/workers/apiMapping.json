@@ -4,12 +4,12 @@
         "exchange": "3.protege"
     },
     "requests": [
-        {"domain": "CoreTopologie", "action": "getGetGet"}
+        {"domain": "CoreTopologie", "action": "listeDomaines"}
     ],
     "commands": [
         {"domain": "CoreTopologie", "action": "putPutPut"}
     ],
     "subscriptions": {
-        "instances": {"exchanges": ["3.protege"], "routingKeys": ["evenement.CoreTopologie.instanceEvent"]}
+        "domainEvents": {"exchanges": ["3.protege"], "routingKeys": ["evenement.*.presenceDomaine"]}
     }
 }
