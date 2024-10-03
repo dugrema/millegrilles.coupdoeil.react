@@ -9,28 +9,6 @@ import { sortDomains } from './DomainList';
 
 function DomainBackup() {
 
-    let workers = useWorkers();
-    let ready = useConnectionStore(state=>state.connectionAuthenticated);
-
-    let [domainBackupList, setDomainBackupList] = useState([] as DomainBackupInformation[]);
-
-    useEffect(()=>{
-        if(!ready) return;
-        if(!workers) throw new Error("Workers non initialized");
-
-        workers.connection.getDomainBackupInformation(true, false)
-            .then(response=>{
-                console.debug("getDomainBackupInformation response", response);
-                if(response.ok) {
-                    setDomainBackupList(response.backups);
-                } else {
-                    console.error("Error message from server: ", response.err);
-                }
-            })
-            .catch(err=>console.error("getDomainBackupInformation Error", err));
-
-    }, [ready, workers, setDomainBackupList]);
-
     return (
         <>
             <Link to='/coupdoeil2/domains'
@@ -74,7 +52,7 @@ function DomainBackup() {
             <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>Backup list for each domain</h2>
                 <p className='pb-4'>This is taken from the file server. It acts as a backup server for the domain databases.</p>
-                <DomainBackupList value={domainBackupList} />
+                <DomainBackupList />
             </section>
         </>
     );
@@ -82,12 +60,32 @@ function DomainBackup() {
 
 export default DomainBackup;
 
-function DomainBackupList(props: {value: DomainBackupInformation[]}) {
-    let { value } = props;
+export function DomainBackupList() {
+    let workers = useWorkers();
+    let ready = useConnectionStore(state=>state.connectionAuthenticated);
+
+    let [domainBackupList, setDomainBackupList] = useState([] as DomainBackupInformation[]);
+
+    useEffect(()=>{
+        if(!ready) return;
+        if(!workers) throw new Error("Workers non initialized");
+
+        workers.connection.getDomainBackupInformation(true, false)
+            .then(response=>{
+                console.debug("getDomainBackupInformation response", response);
+                if(response.ok) {
+                    setDomainBackupList(response.backups);
+                } else {
+                    console.error("Error message from server: ", response.err);
+                }
+            })
+            .catch(err=>console.error("getDomainBackupInformation Error", err));
+
+    }, [ready, workers, setDomainBackupList]);
 
     let listElems = useMemo(()=>{
 
-        let listCopy = [...value];
+        let listCopy = [...domainBackupList];
         listCopy.sort(sortDomains);
 
         return listCopy.map(item=>{
@@ -101,7 +99,7 @@ function DomainBackupList(props: {value: DomainBackupInformation[]}) {
                 </React.Fragment>
             )
         });
-    }, [value]);
+    }, [domainBackupList]);
 
     return (
         <div className='grid grid-cols-5'>

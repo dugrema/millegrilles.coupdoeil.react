@@ -1,4 +1,8 @@
 import { Link } from 'react-router-dom';
+import MasterKeyLoader, { MasterKey } from '../utilities/MasterKeyLoader';
+import { useCallback, useState } from 'react';
+import { DomainBackupList } from './DomainBackup';
+import UploadButton from '../components/UploadButton';
 
 
 function DomainRestore() {
@@ -14,31 +18,23 @@ function DomainRestore() {
 
             <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>Backup files</h2>
-                <p>The following domains are already available from a consignation file server.</p>
-                <p>Upload additional files.</p>
+                <BackupFileSection />
             </section>
 
-            <section>
+            <section className='pt-6'>
                 <h2 className='text-lg font-bold pt-4 pb-2'>Initial domains</h2>
 
-                <p>
+                <p className='pb-6'>
                     The first two domains to restore on a MilleGrilles system are CorePki and Maitre des cles. 
                     CorePki provides the security certificates required to restore transactions and Maitre des cles provides
                     the backup decryption keys for other domains.
                 </p>
 
-                <p>You can upload the backup files in the Backup files section above.</p>
-
-                <p>Provide the master key to decrypt the Initial Domains backup files since the Maitre des cles is not available yet.</p>
-
-                <p>Rebuild the CorePki and Maitre des cles domains in the database.</p>
+                <InitialDomainsSection />
             </section>
 
             <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>Restore the rest of the system</h2>
-                
-                <p>You can upload missing backup files in the Backup files section above.</p>
-
                 <p>Launch system rebuild.</p>
             </section>
         </>
@@ -46,3 +42,47 @@ function DomainRestore() {
 }
 
 export default DomainRestore;
+
+function BackupFileSection() {
+
+    let uploadHandler = useCallback((files: FileList | null)=>{
+        console.warn("File uploaded (TODO): %O", files);
+    }, []);
+
+    return (
+        <>
+            <p className='pb-2'>The following domains are already available from a consignation file server.</p>
+            
+            <DomainBackupList />
+
+            <p className="pt-4">You can upload additional files for domains to restore here.</p>
+            <UploadButton id="uploadId" onChange={uploadHandler} 
+                className="btn pl-7 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
+                    <p>Upload</p>
+            </UploadButton>
+        </>
+    );
+}
+
+function InitialDomainsSection() {
+ 
+    let [masterKey, setMasterKey] = useState(null as MasterKey | null);
+    let masterKeyChangeHandler = useCallback((key: MasterKey | null)=>setMasterKey(key), [setMasterKey]);
+
+    return (
+        <>
+            <p className='pb-2'>
+                1. Provide the master key to decrypt the Initial Domains backup files since the Maitre des cles is not available yet.
+            </p>
+            <MasterKeyLoader onChange={masterKeyChangeHandler} />
+
+            <p className='pb-2'>2. Rebuild the CorePki and Maitre des cles domains in the database.</p>
+
+            <button className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>Rebuild CorePki</button>
+            <button className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>Rebuild Maitre des cles</button>
+
+            <p className='pb-2 pt-6'>3. Decrypt all keys in Maitre des cles to make them available to other services.</p>
+            <button className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>Decrypt keys</button>
+        </>        
+    )
+}
