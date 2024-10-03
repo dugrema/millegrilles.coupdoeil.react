@@ -6,11 +6,13 @@
     "requests": [
         {"domain": "CorePki", "action": "infoCertificat", "exchange": "1.public"},
         {"domain": "CoreTopologie", "action": "listeDomaines"},
-        {"domain": "fichiers", "action": "domainesBackupV2", "exchange": "2.prive"}
+        {"domain": "fichiers", "action": "domainesBackupV2", "exchange": "2.prive"},
+        {"domain": "MaitreDesCles", "action": "compterClesNonDechiffrables"},
+        {"domain": "MaitreDesCles", "action": "clesNonDechiffrablesV2"}
     ],
     "commands": [
-        {"domain": "MaitreDesCles", "action": "regenerer"},
-        {"domain": "CorePki", "action": "regenerer"}
+        {"domain": "*", "action": "regenerer"},
+        {"domain": "MaitreDesCles", "action": "rechiffrerBatch"}
     ],
     "subscriptions": {
         "domainEvents": {"exchanges": ["3.protege"], "routingKeys": ["evenement.*.presenceDomaine"]}

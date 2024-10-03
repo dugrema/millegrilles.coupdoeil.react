@@ -2,7 +2,7 @@ import '@solana/webcrypto-ed25519-polyfill';
 import { expose } from 'comlink';
 
 import { encryption, encryptionMgs4, multiencoding, keymaster, x25519, certificates } from 'millegrilles.cryptography';
-import { deflate, inflate } from 'pako';
+import { deflate, inflate, gzip, ungzip } from 'pako';
 
 export type EncryptionOptions = {
     base64?: boolean,
@@ -101,8 +101,10 @@ export class AppsEncryptionWorker {
         let compression = null as null | string;
         if(cleartextArray.length > 200) {
             // Compress with zlib (deflate)
-            compression = 'deflate';
-            cleartextArray = deflate(cleartextArray);
+            // compression = 'deflate';
+            // cleartextArray = deflate(cleartextArray);
+            compression = 'gz';
+            cleartextArray = gzip(cleartextArray);
         }
 
         let cipher = null;

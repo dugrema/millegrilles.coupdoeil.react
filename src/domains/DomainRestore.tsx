@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import MasterKeyLoader, { MasterKey } from '../utilities/MasterKeyLoader';
-import { MouseEvent, useCallback, useEffect, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { DomainBackupList } from './DomainBackup';
 import UploadButton from '../components/UploadButton';
 import useWorkers, { AppWorkers } from '../workers/workers';
@@ -72,6 +72,7 @@ function InitialDomainsSection() {
 
     let [masterKey, setMasterKey] = useState(null as Uint8Array | null);
     let masterKeyChangeHandler = useCallback((key: Uint8Array | null)=>setMasterKey(key), [setMasterKey]);
+    let [keyProgress, setKeyProgress] = useState(null as KeyProgress | null);
 
     let restoreDomaineCallback = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
         if(!workers) throw new Error("workers not initialized");
@@ -80,6 +81,13 @@ function InitialDomainsSection() {
         restoreInitialDomain(workers, domain, masterKey)
             .catch(err=>console.error("Error restoring domain %s: %O", domain, err));
     }, [workers, masterKey]);
+
+    let decryptKeysHandler = useCallback(() => {
+        if(!workers) throw new Error("workers not initialized");
+        if(!masterKey) throw new Error("Master key not loaded");
+        decryptNonDecryptableKeys(workers, masterKey, setKeyProgress)
+            .catch(err=>console.error("Error decrypting KeyMaster keys: ", err));
+    }, [workers, masterKey, setKeyProgress]);
 
     useEffect(()=>{
         if(!masterKey) return;
@@ -112,10 +120,11 @@ function InitialDomainsSection() {
             </button>
 
             <p className='pb-2 pt-6'>3. Decrypt all keys in Maitre des cles to make them available to other services.</p>
-            <button disabled={!masterKey}
+            <button onClick={decryptKeysHandler} disabled={!masterKey}
                 className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
                     Decrypt keys
             </button>
+            <MaitreDesClesProgress value={keyProgress} />
         </>        
     );
 
@@ -178,4 +187,86 @@ async function loadDomainBackupKeys(workers: AppWorkers, domain: string, masterK
     }
 
     return decryptedKeys;
+}
+
+type KeyProgress = {
+    total: number,
+    current: number,
+    done: boolean,
+}
+
+function MaitreDesClesProgress(props: {value: KeyProgress | null}) {
+    let { value } = props;
+
+    let currentPct = useMemo(()=>{
+        if(!value) return null;
+        let { current, total, done } = value;
+        if(done) return 100;
+        return Math.floor(current / total * 100.0);
+    }, [value]);
+
+    if(!value) return <></>;
+
+    return (
+        <p>Maitre des cles progress: {currentPct}%</p>
+    )
+}
+
+async function decryptNonDecryptableKeys(workers: AppWorkers, masterKey: Uint8Array, progressCallback: (e: KeyProgress)=>void) {
+    let countResponse = await workers.connection.getNonDecryptableKeyCount();
+
+    // @ts-ignore
+    const keyCount = countResponse.compte;
+
+    let keyCounter = 0;
+    let serverIdx = 0;
+    let batchCount = 0;
+    progressCallback({total: keyCount, current: keyCounter, done: false});
+    while(keyCounter < keyCount) {
+        let response = await workers.connection.getNonDecryptableKeyBatch(serverIdx, 100);
+        let keys = response.cles;
+        if(!keys) throw new Error("out of sync, no keys received");
+        if(!response.idx) throw new Error("out of sync, no server idx counter received");
+
+        if(keys.length === 0) {
+            // Out of sync but done
+            break;
+        }
+
+        keyCounter += keys.length;
+        serverIdx = response.idx;
+
+        // Keep all information indexed by keyId for later reconciliation
+        let keyDict = {} as {[key: string]: any};
+
+        // Structure keys as string: DomaineSignature
+        let keySignatureDict = {} as {[key: string]: keymaster.DomainSignature};
+        for(let key of keys) {
+            let keyId = key.cle_id;
+            keySignatureDict[keyId] = key.signature;
+            keyDict[keyId] = key;
+        }
+
+        // Decrypt keys
+        let decryptedKeys = await workers.encryption.decryptCaKeysToBase64Nopad(masterKey, keySignatureDict);
+
+        // Insert all key information with each decrypted key
+        for await (let keyId of Object.keys(decryptedKeys)) {
+            let decryptedKey = decryptedKeys[keyId];
+            let keyInfo = keyDict[keyId];
+            keyInfo.cle_secrete = decryptedKey;
+        }
+
+        // Encrypted command content
+        let commandToEncrypt = {cles: keyDict};
+        let reEncryptedKeys = await workers.encryption.encryptMessageMgs4ToBase64(commandToEncrypt, ['MaitreDesCles']);
+
+        let nowait = batchCount % 10 !== 0;  // Sync every n batch. Avoids overloading the Q.
+        await workers.connection.sendEncryptedKeyBatch(reEncryptedKeys, nowait);
+        batchCount++;
+
+        progressCallback({total: keyCount, current: keyCounter, done: false});
+    };
+
+    progressCallback({total: keyCount, current: keyCounter, done: true});
 }

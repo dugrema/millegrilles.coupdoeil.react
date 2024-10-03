@@ -2,7 +2,7 @@ import '@solana/webcrypto-ed25519-polyfill';
 import { expose } from 'comlink';
 import { ConnectionWorker, MessageResponse, SubscriptionCallback, SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
 import apiMapping from './apiMapping.json';
-import { messageStruct, keymaster } from 'millegrilles.cryptography';
+import { messageStruct, keymaster, encryption } from 'millegrilles.cryptography';
 
 const DOMAINE_CORETOPOLOGIE = 'CoreTopologie';
 const DOMAINE_COREPKI = 'CorePki';
@@ -59,6 +59,10 @@ export type ResponseGetDomainBackupInformation = MessageResponse & {
     backups: Array<DomainBackupInformation>,
 };
 
+export type ResponseGetNonDecryptableKeyBatch = MessageResponse & {
+    cles?: Array<{cle_id: string, signature: keymaster.DomainSignature}>,
+    idx?: number,
+};
 
 export class AppsConnectionWorker extends ConnectionWorker {
 
@@ -90,6 +94,21 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async getCertificateCorePki() {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendRequest({fingerprint: 'DUMMY'}, DOMAINE_COREPKI, 'infoCertificat');
+    }
+
+    async getNonDecryptableKeyCount() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({}, DOMAINE_MAITREDESCLES, 'compterClesNonDechiffrables');
+    }
+
+    async getNonDecryptableKeyBatch(skip: number, limit: number) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({skip, limite: limit}, DOMAINE_MAITREDESCLES, 'clesNonDechiffrablesV2') as ResponseGetNonDecryptableKeyBatch;
+    }
+
+    async sendEncryptedKeyBatch(keyBatch: encryption.EncryptedData, nowait: boolean) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({cles: keyBatch}, DOMAINE_MAITREDESCLES, 'rechiffrerBatch', {nowait});
     }
 
     async subscribeDomainEvents(cb: SubscriptionCallback): Promise<void> {
