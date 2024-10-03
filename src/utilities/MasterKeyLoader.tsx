@@ -1,29 +1,80 @@
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, Dispatch, useCallback, useEffect, useState } from "react";
 import UploadButton from "../components/UploadButton";
+import { forgePrivateKey } from 'millegrilles.cryptography';
+
+type MasterKeyProps = {
+    // children?: React.ReactElement,
+    onChange: (key: Uint8Array | null) => void,
+}
 
 function MasterKeyLoader(props: MasterKeyProps) {
 
-    let [password, setPassword] = useState('');
-    let [encryptedKey, setEncryptedKey] = useState('');
-    let [invalid, setInvalid] = useState(false);
+    let { onChange } = props;
 
-    let uploadHandler = useCallback((e: FileList | null)=>{
-        console.debug("Upload ", e);
-    }, []);
+    let [loaded, setLoaded] = useState(false);
 
-    useEffect(()=>{
-        if(password && encryptedKey) {
-            console.debug("Try to decrypt the key");
+    let onChangeCallback = useCallback((key: Uint8Array | null)=>{
+        setLoaded(!!key);
+        onChange(key);
+    }, [onChange, setLoaded]);
 
-            setInvalid(false);
-        }
-    }, [password, encryptedKey, setInvalid]);
+    if(loaded) {
+        return <KeyLoaded onChange={onChangeCallback} />;
+    }
 
     return (
         <div className="grid grid-cols-2">
-            <input type="text" placeholder="Master key password, ex: p7Pxu+wrscBTlavrodLZRUAPbqHQge9+KAGuJedhOwU"/>
+            <LoadKey onChange={onChangeCallback} />
+        </div>
+    );
+}
+
+export default MasterKeyLoader;
+
+type LoadKeyProps = {
+    onChange: (key: Uint8Array | null) => void,
+}
+
+function LoadKey(props: LoadKeyProps) {
+
+    let { onChange } = props;
+
+    let [password, setPassword] = useState('');
+    let passwordOnChange = useCallback((e: ChangeEvent<HTMLInputElement>)=>setPassword(e.currentTarget.value), [setPassword]);
+    let [encryptedKey, setEncryptedKey] = useState(null as MasterKeyFile | null);
+    let [invalid, setInvalid] = useState(false);
+
+    let uploadHandler = useCallback((files: FileList | null)=>{
+        if(files) {
+            parseFile(files)
+                .then(setEncryptedKey)
+                .catch(err=>console.error("Error loading encrypted key file", err));
+        } else {
+            setEncryptedKey(null);
+        }
+    }, [setEncryptedKey]);
+
+    useEffect(()=>{
+        if(password && encryptedKey) {
+            try {
+                let decryptedKey = forgePrivateKey.loadEd25519PrivateKey(encryptedKey.racine.cleChiffree, {password, pemout: true});
+                setInvalid(false);
+                setPassword('');
+                setEncryptedKey(null);
+                onChange(decryptedKey.privateKeyBytes);
+            } catch(err) {
+                console.error("Error decrypting key: ", err);
+                setInvalid(true);
+            }
+        }
+    }, [password, encryptedKey, setInvalid, onChange, setEncryptedKey, setPassword]);
+
+    return (
+        <>
+            <input type="text" value={password} onChange={passwordOnChange} placeholder="Master key password, ex: p7Pxu+wrscBTlavrodLZRUAPbqHQge9+KAGuJedhOwU"
+                className="text-black" />
             <div>
-                <UploadButton id="uploadId" onChange={uploadHandler} 
+                <UploadButton id="masterKeyUploadId" onChange={uploadHandler} 
                     className="btn pl-7 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
                         <p>Upload</p>
                 </UploadButton>
@@ -31,22 +82,68 @@ function MasterKeyLoader(props: MasterKeyProps) {
             <div className="min-h-7">
                 {invalid?
                     <p className='text-red-600'>The key file and password do not match.</p>
-                    :<></>
-                }
+                :<></>}
             </div>
-        </div>
+        </>
     )
 }
 
-export default MasterKeyLoader;
+function KeyLoaded(props: LoadKeyProps) {
 
-type MasterKeyProps = {
-    // children?: React.ReactElement,
-    onChange: (key: MasterKey | null) => void,
+    let { onChange } = props;
+
+    let forgetKeyHandler = useCallback(()=>onChange(null), [onChange]);
+
+    return (
+        <div className='pb-4'>
+            <p className='text-green-400 font-bold'>The master key is ready.</p>
+            <button onClick={forgetKeyHandler}
+                className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                    Forget key
+            </button>
+        </div>
+    )
 }
 
 export type MasterKey = {
     secret: Uint8Array,
     encryptedKey?: string | null,
     password?: string | null,
+}
+
+type MasterKeyFile = {
+    idmg: string,
+    racine: {
+        certificat: string,
+        cleChiffree: string,
+    }
+}
+
+async function parseFile(acceptedFiles: FileList): Promise<MasterKeyFile> {
+    if(acceptedFiles.length !== 1) {
+        throw new Error("Expecting a single uploaded file");
+    }
+
+    let file = acceptedFiles[0];
+    if( file.type !== 'application/json' ) {
+        throw new Error("Expecting a json file");
+    }
+
+    let reader = new FileReader();
+
+    let fichierCharge = await new Promise((resolve, reject)=>{
+        reader.onload = () => {
+            let result = reader.result;
+            if(!result) throw new Error("No content read");
+            if(typeof(result) === 'string') throw new Error("Expecting Uint8Array instead of string");
+            let resultString = new TextDecoder().decode(result);
+            resolve(resultString);
+        };
+        reader.onerror = err => {
+            reject(err);
+        };
+        reader.readAsArrayBuffer(file);
+    }) as string;
+
+    return JSON.parse(fichierCharge);
 }

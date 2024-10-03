@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import MasterKeyLoader, { MasterKey } from '../utilities/MasterKeyLoader';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { DomainBackupList } from './DomainBackup';
 import UploadButton from '../components/UploadButton';
 
@@ -56,7 +56,7 @@ function BackupFileSection() {
             <DomainBackupList />
 
             <p className="pt-4">You can upload additional files for domains to restore here.</p>
-            <UploadButton id="uploadId" onChange={uploadHandler} 
+            <UploadButton id="backupUpload" onChange={uploadHandler} 
                 className="btn pl-7 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
                     <p>Upload</p>
             </UploadButton>
@@ -66,8 +66,20 @@ function BackupFileSection() {
 
 function InitialDomainsSection() {
  
-    let [masterKey, setMasterKey] = useState(null as MasterKey | null);
-    let masterKeyChangeHandler = useCallback((key: MasterKey | null)=>setMasterKey(key), [setMasterKey]);
+    let [masterKey, setMasterKey] = useState(null as Uint8Array | null);
+    let masterKeyChangeHandler = useCallback((key: Uint8Array | null)=>setMasterKey(key), [setMasterKey]);
+
+    useEffect(()=>{
+        if(!masterKey) return;
+        return () => {
+            if(masterKey) {
+                // Override the key array with 0s then release.
+                let array = new Uint8Array(masterKey.length);
+                masterKey.set(array);
+            }
+            setMasterKey(null)
+        };
+    }, [masterKey, setMasterKey]);
 
     return (
         <>
@@ -78,11 +90,21 @@ function InitialDomainsSection() {
 
             <p className='pb-2'>2. Rebuild the CorePki and Maitre des cles domains in the database.</p>
 
-            <button className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>Rebuild CorePki</button>
-            <button className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>Rebuild Maitre des cles</button>
+            <button disabled={!masterKey}
+                className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                    Rebuild CorePki
+            </button>
+            <button disabled={!masterKey}
+                className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                    Rebuild Maitre des cles
+            </button>
 
             <p className='pb-2 pt-6'>3. Decrypt all keys in Maitre des cles to make them available to other services.</p>
-            <button className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>Decrypt keys</button>
+            <button disabled={!masterKey}
+                className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                    Decrypt keys
+            </button>
         </>        
-    )
+    );
+
 }
