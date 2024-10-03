@@ -2,9 +2,10 @@ import '@solana/webcrypto-ed25519-polyfill';
 import { expose } from 'comlink';
 import { ConnectionWorker, MessageResponse, SubscriptionCallback, SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
 import apiMapping from './apiMapping.json';
-import { messageStruct } from 'millegrilles.cryptography';
+import { messageStruct, keymaster } from 'millegrilles.cryptography';
 
 const DOMAINE_CORETOPOLOGIE = 'CoreTopologie';
+const DOMAINE_COREPKI = 'CorePki';
 const DOMAINE_MAITREDESCLES = 'MaitreDesCles';
 const DOMAINE_FICHIERS = 'fichiers';
 
@@ -51,6 +52,7 @@ export type DomainBackupInformation = MessageResponse & {
     },
     nombre_transactions?: number,
     transaction_plus_recente?: number,
+    cles?: {[key: string]: keymaster.DomainSignature}
 };
 
 export type ResponseGetDomainBackupInformation = MessageResponse & {
@@ -75,10 +77,19 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'listeDomaines') as Promise<ResponseGetDomainList>;
     }
 
-    async getDomainBackupInformation(stats: boolean, cles: boolean) {
+    async getDomainBackupInformation(stats: boolean, cles: boolean, domains?: string[]) {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendRequest({stats, cles}, DOMAINE_FICHIERS, 'domainesBackupV2', {role: 'fichiers'}) as Promise<ResponseGetDomainBackupInformation>;
-        
+        return this.connection.sendRequest({stats, cles, domaines: domains}, DOMAINE_FICHIERS, 'domainesBackupV2', {role: 'fichiers'}) as Promise<ResponseGetDomainBackupInformation>;
+    }
+
+    async rebuildDomain(domain: string, keys: keymaster.EncryptionBase64Result) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({cles_chiffrees: keys}, domain, 'regenerer') as Promise<ResponseGetDomainBackupInformation>;
+    }
+
+    async getCertificateCorePki() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({fingerprint: 'DUMMY'}, DOMAINE_COREPKI, 'infoCertificat');
     }
 
     async subscribeDomainEvents(cb: SubscriptionCallback): Promise<void> {

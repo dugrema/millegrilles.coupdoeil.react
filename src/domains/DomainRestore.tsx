@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import MasterKeyLoader, { MasterKey } from '../utilities/MasterKeyLoader';
-import { useCallback, useEffect, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { DomainBackupList } from './DomainBackup';
 import UploadButton from '../components/UploadButton';
+import useWorkers, { AppWorkers } from '../workers/workers';
+import { certificates, keymaster, multiencoding, x25519 } from 'millegrilles.cryptography';
 
 
 function DomainRestore() {
@@ -66,8 +68,18 @@ function BackupFileSection() {
 
 function InitialDomainsSection() {
  
+    let workers = useWorkers();
+
     let [masterKey, setMasterKey] = useState(null as Uint8Array | null);
     let masterKeyChangeHandler = useCallback((key: Uint8Array | null)=>setMasterKey(key), [setMasterKey]);
+
+    let restoreDomaineCallback = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
+        if(!workers) throw new Error("workers not initialized");
+        if(!masterKey) throw new Error("Master key not loaded");
+        let domain = e.currentTarget.value;
+        restoreInitialDomain(workers, domain, masterKey)
+            .catch(err=>console.error("Error restoring domain %s: %O", domain, err));
+    }, [workers, masterKey]);
 
     useEffect(()=>{
         if(!masterKey) return;
@@ -90,11 +102,11 @@ function InitialDomainsSection() {
 
             <p className='pb-2'>2. Rebuild the CorePki and Maitre des cles domains in the database.</p>
 
-            <button disabled={!masterKey}
+            <button value='CorePki' onClick={restoreDomaineCallback} disabled={!masterKey}
                 className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
                     Rebuild CorePki
             </button>
-            <button disabled={!masterKey}
+            <button value='MaitreDesCles' onClick={restoreDomaineCallback} disabled={!masterKey}
                 className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
                     Rebuild Maitre des cles
             </button>
@@ -107,4 +119,63 @@ function InitialDomainsSection() {
         </>        
     );
 
+}
+
+async function restoreInitialDomain(workers: AppWorkers, domain: string, masterKey: Uint8Array) {
+    let decryptedKeys = await loadDomainBackupKeys(workers, domain, masterKey);
+    let contentToEncrypt = { cles: decryptedKeys };
+    console.debug("Decrypted rebuild command ", contentToEncrypt);
+
+    // Encrypt the command for the domain
+    let encryptedKeys = null as keymaster.EncryptionBase64Result | null;
+    if(domain === 'MaitreDesCles') {
+        // Use the currently loaded keymaster certificate to encrypt the keys.
+        encryptedKeys = await workers.encryption.encryptMessageMgs4ToBase64(contentToEncrypt, [domain]);
+    } else if(domain === 'CorePki') {
+        // Make dummy request for a certificat, this returns the CorePki certificate in the response
+        let response = await workers.connection.getCertificateCorePki()
+        console.debug("Response corePki ", response);
+        // @ts-ignore
+        let certificate: certificates.CertificateWrapper = response.content['__certificate'];
+        Object.setPrototypeOf(certificate, certificates.CertificateWrapper.prototype);
+        console.debug("CorePki certificate ", certificate);
+        let corePkiFingerprint = certificate.getPublicKey();
+        console.debug("Fingerprin: ", corePkiFingerprint);
+        let publicKey = multiencoding.decodeHex(corePkiFingerprint);
+        encryptedKeys = await workers.encryption.encryptMessageMgs4ToBase64(contentToEncrypt, [domain]);
+        // Re-encrypt the key for the CorePki certificate
+        let secretKey = encryptedKeys.cleSecrete;
+        let cles = encryptedKeys.cle?.cles;
+        if(!cles || !secretKey) throw new Error("Secret key not provided by cipher");
+        let keyForCorePki = await x25519.encryptEd25519(secretKey, publicKey);
+        cles[corePkiFingerprint] = keyForCorePki;
+    } else {
+        throw new Error('Unsupported domain, use standard method to restore');
+    }
+
+    if(!encryptedKeys) throw new Error("Keys not encrypted");
+    // Remove unused values
+    delete encryptedKeys.cleSecrete;
+    delete encryptedKeys.digest;
+    let rebuildCommand = {
+        cles: encryptedKeys,
+    }
+
+    console.debug("Rebuild command ", rebuildCommand);
+    let result = await workers.connection.rebuildDomain(domain, encryptedKeys);
+    console.debug("Rebuild command result: ", result);
+}
+
+async function loadDomainBackupKeys(workers: AppWorkers, domain: string, masterKey: Uint8Array) {
+    let response = await workers.connection.getDomainBackupInformation(true, true, [domain]);
+
+    let decryptedKeys = {} as {[key: string]: string};
+    for await (let backup of response.backups) {
+        if(backup.domaine !== domain) continue;  // Wrong domain
+        if(!backup.cles) continue;  // No keys
+        let domainKeys = await workers.encryption.decryptCaKeysToBase64Nopad(masterKey, backup.cles, domain);
+        decryptedKeys = {...decryptedKeys, ...domainKeys};
+    }
+
+    return decryptedKeys;
 }

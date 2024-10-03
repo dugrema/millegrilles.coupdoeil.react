@@ -8,27 +8,27 @@ export type EncryptionOptions = {
     base64?: boolean,
 }
 
-export type EncryptionResult = {
-    format: string, 
-    nonce: Uint8Array, 
-    ciphertext: Uint8Array, 
-    digest?: Uint8Array,
-    cle?: {signature: keymaster.DomainSignature}
-    cle_id?: string,
-    cleSecrete?: Uint8Array,
-    compression?: string,
-};
+// export type EncryptionResult = {
+//     format: string, 
+//     nonce: Uint8Array, 
+//     ciphertext: Uint8Array, 
+//     digest?: Uint8Array,
+//     cle?: {signature: keymaster.DomainSignature}
+//     cle_id?: string,
+//     cleSecrete?: Uint8Array,
+//     compression?: string,
+// };
 
-export type EncryptionBase64Result = {
-    format: string, 
-    nonce: string, 
-    ciphertext_base64: string, 
-    digest?: string,
-    cle?: {signature: keymaster.DomainSignature}
-    cle_id?: string,
-    cleSecrete?: Uint8Array,
-    compression?: string,
-};
+// export type EncryptionBase64Result = {
+//     format: string, 
+//     nonce: string, 
+//     ciphertext_base64: string, 
+//     digest?: string,
+//     cle?: {signature: keymaster.DomainSignature}
+//     cle_id?: string,
+//     cleSecrete?: Uint8Array,
+//     compression?: string,
+// };
 
 export type GeneratedSecretKeyResult = { keyInfo: any, secret: Uint8Array, signature: keymaster.DomainSignature, cle_id: string };
 
@@ -83,7 +83,7 @@ export class AppsEncryptionWorker {
         this.encryptionKeys = validWrappers;
     }
 
-    async encryptMessageMgs4(cleartext: Object | string | Uint8Array, key?: string | Uint8Array): Promise<EncryptionResult> {
+    async encryptMessageMgs4(cleartext: Object | string | Uint8Array, domains: string[], key?: string | Uint8Array): Promise<keymaster.EncryptionResult> {
         if(typeof(key) === 'string') {
             key = multiencoding.decodeBase64Nopad(key);
         }
@@ -120,7 +120,7 @@ export class AppsEncryptionWorker {
             let secret = await x25519.secretFromEd25519(this.millegrillePublicKey);
             cipher = await encryptionMgs4.getMgs4CipherWithSecret(secret.secret);
             
-            let keySignature = new keymaster.DomainSignature(['Documents'], 1, secret.peer);
+            let keySignature = new keymaster.DomainSignature(domains, 1, secret.peer);
             await keySignature.sign(cipher.key);
 
             let cles = await this.encryptSecretKey(secret.secret)
@@ -140,7 +140,7 @@ export class AppsEncryptionWorker {
         if(out2) buffers.push(out2);
         let ciphertext = encryption.concatBuffers(buffers);
 
-        let info: EncryptionResult = {format: 'mgs4', nonce: cipher.header, ciphertext, digest: cipher.digest} as EncryptionResult;
+        let info: keymaster.EncryptionResult = {format: 'mgs4', nonce: cipher.header, ciphertext, digest: cipher.digest} as keymaster.EncryptionResult;
         if(compression) info.compression = compression;
         if(newKey && keyId) {
             info.cle_id = keyId;
@@ -151,10 +151,10 @@ export class AppsEncryptionWorker {
         return info;
     }
 
-    async encryptMessageMgs4ToBase64(cleartext: Object | string | Uint8Array, key?: string | Uint8Array): Promise<EncryptionBase64Result> {
-        let info = await this.encryptMessageMgs4(cleartext, key);
+    async encryptMessageMgs4ToBase64(cleartext: Object | string | Uint8Array, domains: string[], key?: string | Uint8Array): Promise<keymaster.EncryptionBase64Result> {
+        let info = await this.encryptMessageMgs4(cleartext, domains, key);
 
-        let infoBase64: EncryptionBase64Result = {
+        let infoBase64: keymaster.EncryptionBase64Result = {
             format: info.format, 
             nonce: multiencoding.encodeBase64(info.nonce), 
             ciphertext_base64: multiencoding.encodeBase64(info.ciphertext),
@@ -215,6 +215,45 @@ export class AppsEncryptionWorker {
         }
 
         return completeBuffer;
+    }
+
+    async decryptCaKeysToBase64Nopad(masterKey: Uint8Array, keys: {[key: string]: keymaster.DomainSignature}, domain?: string): Promise<{[key: string]: string}> {
+        let decryptedKeys = {} as {[key: string]: string};
+
+        let cleIds = Object.keys(keys);
+        for(let cleId of cleIds) {
+            let key = keys[cleId];
+
+            if(domain && !key.domaines.includes(domain)) {
+                console.warn("decryptKeys Domain signature does not match %s, skip", domain);
+                continue;
+            }
+
+            // Decrypt the key
+            let caEncryptedKey = key.ca;
+            if(!caEncryptedKey) {
+                console.warn("No CA key for %s, skip", cleId);
+                continue;
+            }
+
+            let secretKey = await keymaster.decryptKey(caEncryptedKey, masterKey);
+            if(domain) {
+                try {
+                    // Assign object prototype to check key validity
+                    Object.setPrototypeOf(key, keymaster.DomainSignature.prototype);
+                    await key.verify(secretKey);
+                } catch(err) {
+                    console.warn("Key signature for %s invalid, skip: %O", cleId, err);
+                    continue;
+                }
+            }
+
+            // The key is good and matches the signature. We can use it.
+            let secretKeyString = multiencoding.encodeBase64Nopad(secretKey);
+            decryptedKeys[cleId] = secretKeyString;
+        }        
+
+        return decryptedKeys;
     }
 
 }

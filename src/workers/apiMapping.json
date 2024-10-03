@@ -4,11 +4,13 @@
         "exchange": "3.protege"
     },
     "requests": [
+        {"domain": "CorePki", "action": "infoCertificat", "exchange": "1.public"},
         {"domain": "CoreTopologie", "action": "listeDomaines"},
         {"domain": "fichiers", "action": "domainesBackupV2", "exchange": "2.prive"}
     ],
     "commands": [
-        {"domain": "CoreTopologie", "action": "putPutPut"}
+        {"domain": "MaitreDesCles", "action": "regenerer"},
+        {"domain": "CorePki", "action": "regenerer"}
     ],
     "subscriptions": {
         "domainEvents": {"exchanges": ["3.protege"], "routingKeys": ["evenement.*.presenceDomaine"]}
