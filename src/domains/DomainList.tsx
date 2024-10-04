@@ -1,11 +1,21 @@
 import { Link } from 'react-router-dom';
-import useDomainStore from './domainStore';
-import { useMemo } from 'react';
-import { Domain, DomainBackupInformation } from '../workers/connection.worker';
+import useDomainStore, { DomainStore } from './domainStore';
+import { MouseEvent, useCallback, useMemo } from 'react';
+import { DomainBackupInformation } from '../workers/connection.worker';
 import { Formatters } from 'millegrilles.reactdeps.typescript';
+import useWorkers from '../workers/workers';
+import useConnectionStore from '../connectionStore';
 
 
 function DomainList() {
+
+    let workers = useWorkers();
+    let rebuildHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
+        if(!workers) throw new Error("workers not initialized");
+        let domain = e.currentTarget.value;
+        workers.connection.rebuildDomain(domain)
+            .catch(err=>console.error("Error rebuilding domain %s: %O", domain, err));
+    }, [workers]);
 
     return (
         <>
@@ -25,11 +35,16 @@ function DomainList() {
                         Backup
                 </Link>
 
+                <button
+                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                        Rebuild all
+                </button>
+
             </section>
 
             <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>Domain list</h2>
-                <DomainListSection />
+                <DomainListSection rebuild={rebuildHandler} />
             </section>
         </>
     );
@@ -37,8 +52,14 @@ function DomainList() {
 
 export default DomainList;
 
-function DomainListSection() {
+type DomainListSectionProps = {
+    rebuild: (e: MouseEvent<HTMLButtonElement>) => void,
+}
+
+export function DomainListSection(props: DomainListSectionProps) {
     
+    let { rebuild } = props;
+
     let domains = useDomainStore(state=>state.domains);
 
     let sortedDomainElems = useMemo(()=>{
@@ -46,40 +67,81 @@ function DomainListSection() {
         // Sort
         let domainCopy = [...domains];
         domainCopy.sort(sortDomains);
-        return domainCopy.map(item=><DomainItem key={item.domaine} value={item} />)
-    }, [domains]);
+        return domainCopy.map(item=><DomainItem key={item.domaine} value={item} rebuild={rebuild} />)
+    }, [domains, rebuild]);
 
     return (
-        <div className='grid grid-cols-2 lg:grid-cols-4'>
-            <p className='font-bold pb-2'>Domain</p>
+        <div className='grid grid-cols-2 lg:grid-cols-6'>
+            <p className='col-span-2  font-bold pb-2'>Domain</p>
             <p className='font-bold pb-2'>Last presence</p>
             <p className='font-bold pb-2'>Instance id</p>
             <p className='font-bold pb-2'>Status</p>
+            <p className='font-bold pb-2'>Actions</p>
             {sortedDomainElems}
         </div>
     );
 
 }
 
-function DomainItem(props: {value: Domain}) {
+type DomainItemProps = {
+    value: DomainStore,
+    rebuild: (e: MouseEvent<HTMLButtonElement>) => void,
+}
 
-    let { value } = props;
+function DomainItem(props: DomainItemProps) {
+
+    let { value, rebuild } = props;
+
+    let ready = useConnectionStore(state=>state.connectionAuthenticated);
 
     return (
         <>
-            <p>{value.domaine}</p>
+            <p className='col-span-2 '>{value.domaine}</p>
             <Formatters.FormatterDate value={value.presence?value.presence:undefined} />
-            <p className='pb-2'>{value.instance_id}</p>
-            <p className='pb-2'>
-                {value.reclame_fuuids===true?'Reclame fuuids':''}
-            </p>
+            <p>{value.instance_id}</p>
+            <p className='pb-2'><DomainStatus value={value} /></p>
+            <div className='pb-2'>
+                <button value={value.domaine} onClick={rebuild} disabled={!ready || !!value.rebuilding}
+                    className='varbtn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                        Rebuild
+                </button>
+            </div>
         </>
     )
 }
 
-export function sortDomains(a: Domain | DomainBackupInformation | null, b: Domain | DomainBackupInformation | null) {
+export function sortDomains(a: DomainStore | DomainBackupInformation | null, b: DomainStore | DomainBackupInformation | null) {
     if(a === b) return 0;
     if(!a) return 1;
     if(!b) return -1;
     return a.domaine.localeCompare(b.domaine);
+}
+
+function DomainStatus(props: {value: DomainStore}) {
+    let { value } = props;
+
+    let rebuildPct = useMemo(()=>{
+        if(value.rebuilding) {
+            let { rebuildPosition, rebuildTotalTransactions } = value;
+            if(typeof(rebuildPosition) === 'number' && typeof(rebuildTotalTransactions) === 'number') {
+                return Math.floor(rebuildPosition / rebuildTotalTransactions * 100.0);
+            }
+            return 0;
+        }
+        return 100;
+    }, [value]) as number;
+
+    if(value.rebuildDone) {
+        return <span>Rebuild complete</span>;
+    }
+
+    if(value.rebuilding) {
+        return <span>Rebuilding ({rebuildPct})%</span>;
+    }
+
+    if(value.reclame_fuuids) {
+        return <span>Reclame fuuids</span>;
+    }
+
+    return <span></span>;
 }

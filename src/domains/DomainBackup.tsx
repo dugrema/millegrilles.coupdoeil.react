@@ -37,11 +37,6 @@ function DomainBackup() {
                         Download all
                 </button>
 
-                <button
-                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                        Rebuild all
-                </button>
-
                 <Link to='/coupdoeil2/domains/restore'
                     className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
                         Restore system
@@ -104,7 +99,7 @@ export function DomainBackupList() {
     return (
         <div className='grid grid-cols-5'>
             <p className='font-bold pb-2'>Domain</p>
-            <p className='font-bold pb-2'>Backup created</p>
+            <p className='font-bold pb-2'>Last complete</p>
             <p className='font-bold pb-2'>Last transaction date</p>
             <p className='font-bold pb-2'>Transaction count</p>
             <p className='font-bold pb-2'>Version id</p>

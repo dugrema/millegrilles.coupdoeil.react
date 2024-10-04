@@ -86,7 +86,7 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendRequest({stats, cles, domaines: domains}, DOMAINE_FICHIERS, 'domainesBackupV2', {role: 'fichiers'}) as Promise<ResponseGetDomainBackupInformation>;
     }
 
-    async rebuildDomain(domain: string, keys: keymaster.EncryptionBase64Result) {
+    async rebuildDomain(domain: string, keys?: keymaster.EncryptionBase64Result) {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendCommand({cles_chiffrees: keys}, domain, 'regenerer') as Promise<ResponseGetDomainBackupInformation>;
     }

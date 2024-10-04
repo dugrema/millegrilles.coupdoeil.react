@@ -4,11 +4,12 @@ import { proxy } from 'comlink';
 
 import HeaderMenu from '../Menu';
 import Footer from '../Footer';
-import useDomainStore from './domainStore';
-import useWorkers from '../workers/workers';
+import useDomainStore, { DomainStore } from './domainStore';
+import useWorkers, { AppWorkers } from '../workers/workers';
 import useConnectionStore from '../connectionStore';
 import { SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
 import { Domain, DomaineEventCallback } from '../workers/connection.worker';
+import { messageStruct } from 'millegrilles.cryptography';
 
 
 function Domains() {
@@ -21,20 +22,8 @@ function Domains() {
 
     let domainEventsCb = useMemo(()=>{
         if(!workers) return null;
-        return proxy((event: SubscriptionMessage)=>{
-            let eventDomains = event as DomaineEventCallback;
-            let action = event.routingKey.split('.').pop();
-            if(action === 'presenceDomaine') {
-                let message = eventDomains.message;
-                // @ts-ignore
-                let presence = message.content['__original'].estampille;
-                let presenceUpdate = { domaine: message.domaine, presence } as Domain;
-                 if(typeof(message.reclame_fuuids) === 'boolean') presenceUpdate.reclame_fuuids = message.reclame_fuuids;
-                 if(message.instance_id) presenceUpdate.instance_id = message.instance_id;
-                 updateDomain(presenceUpdate);
-            }
-        })
-    }, [workers]);
+        return proxy((event: SubscriptionMessage)=>processEvent(workers, event, updateDomain))
+    }, [workers, updateDomain]);
 
     useEffect(()=>{
         if(!ready || !domainEventsCb) return;
@@ -78,3 +67,54 @@ function Domains() {
 }
 
 export default Domains;
+
+async function processEvent(workers: AppWorkers | null, event: SubscriptionMessage, updateDomain: (update: Domain)=>void) {
+    let eventDomains = event as DomaineEventCallback;
+    let action = event.routingKey.split('.').pop();
+    if(action === 'presenceDomaine') {
+        processEventPresenceDomaine(eventDomains, updateDomain);
+    } else if(action === 'regeneration') {
+        processEventRebuildDomain(eventDomains, updateDomain);
+    }
+}
+
+function processEventPresenceDomaine(eventDomains: DomaineEventCallback, updateDomain: (update: Domain)=>void) {
+    let message = eventDomains.message;
+    // @ts-ignore
+    let presence = message.content['__original'].estampille;
+    let presenceUpdate = { domaine: message.domaine, presence } as Domain;
+    if(typeof(message.reclame_fuuids) === 'boolean') presenceUpdate.reclame_fuuids = message.reclame_fuuids;
+    if(message.instance_id) presenceUpdate.instance_id = message.instance_id;
+    updateDomain(presenceUpdate);
+}
+
+type RebuildMessage = messageStruct.MilleGrillesMessage & {
+    domaine: string,
+    event: string,
+    position?: number,
+    stats_backup?: {
+        nombre_transactions: number,
+    },
+    termine?: boolean,
+}
+
+function processEventRebuildDomain(eventDomains: DomaineEventCallback, updateDomain: (update: Domain)=>void) {
+    let message = eventDomains.message as RebuildMessage;
+
+    let rebuildEvent = message.event;
+    if(!rebuildEvent) return;  // Nothing to do
+
+    let statusUpdate = {domaine: message.domaine, rebuilding: message.termine === false, rebuildDone: false} as DomainStore;
+    let done = message.termine === true;
+    if(done) statusUpdate.rebuildDone = true;
+
+    let position = message.position;
+    let transactionCount = message?.stats_backup?.nombre_transactions;
+    if(typeof(position) === 'number' && typeof(transactionCount) === 'number') {
+        // Update count
+        statusUpdate.rebuildPosition = position;
+        statusUpdate.rebuildTotalTransactions = transactionCount;
+    }
+
+    updateDomain(statusUpdate);
+}

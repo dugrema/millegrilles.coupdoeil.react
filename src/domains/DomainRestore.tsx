@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
-import MasterKeyLoader, { MasterKey } from '../utilities/MasterKeyLoader';
+import MasterKeyLoader from '../utilities/MasterKeyLoader';
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { DomainBackupList } from './DomainBackup';
 import UploadButton from '../components/UploadButton';
 import useWorkers, { AppWorkers } from '../workers/workers';
 import { certificates, keymaster, multiencoding, x25519 } from 'millegrilles.cryptography';
+import { DomainListSection } from './DomainList';
+import useConnectionStore from '../connectionStore';
 
 
 function DomainRestore() {
@@ -37,7 +39,7 @@ function DomainRestore() {
 
             <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>Restore the rest of the system</h2>
-                <p>Launch system rebuild.</p>
+                <DomainListRegeneration />
             </section>
         </>
     );
@@ -166,13 +168,8 @@ async function restoreInitialDomain(workers: AppWorkers, domain: string, masterK
     // Remove unused values
     delete encryptedKeys.cleSecrete;
     delete encryptedKeys.digest;
-    let rebuildCommand = {
-        cles: encryptedKeys,
-    }
 
-    console.debug("Rebuild command ", rebuildCommand);
-    let result = await workers.connection.rebuildDomain(domain, encryptedKeys);
-    console.debug("Rebuild command result: ", result);
+    await workers.connection.rebuildDomain(domain, encryptedKeys);
 }
 
 async function loadDomainBackupKeys(workers: AppWorkers, domain: string, masterKey: Uint8Array) {
@@ -269,4 +266,22 @@ async function decryptNonDecryptableKeys(workers: AppWorkers, masterKey: Uint8Ar
     };
 
     progressCallback({total: keyCount, current: keyCounter, done: true});
+}
+
+function DomainListRegeneration() {
+
+    let workers = useWorkers();
+    let ready = useConnectionStore(state=>state.connectionAuthenticated);
+    
+    let rebuildHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
+        if(!ready) throw new Error("not authenticated");
+        if(!workers) throw new Error("workers not initialized");
+        let domain = e.currentTarget.value;
+        workers.connection.rebuildDomain(domain)
+            .catch(err=>console.error("Error rebuilding domain %s: %O", domain, err));
+    }, [workers, ready]);
+
+    return (
+        <DomainListSection rebuild={rebuildHandler} />
+    )
 }

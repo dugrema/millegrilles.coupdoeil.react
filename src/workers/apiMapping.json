@@ -15,6 +15,6 @@
         {"domain": "MaitreDesCles", "action": "rechiffrerBatch"}
     ],
     "subscriptions": {
-        "domainEvents": {"exchanges": ["3.protege"], "routingKeys": ["evenement.*.presenceDomaine"]}
+        "domainEvents": {"exchanges": ["3.protege"], "routingKeys": ["evenement.*.presenceDomaine", "evenement.*.regeneration"]}
     }
 }

@@ -2,10 +2,17 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { Domain } from '../workers/connection.worker';
 
+export type DomainStore = Domain & {
+    rebuilding?: boolean,
+    rebuildDone?: boolean,
+    rebuildPosition?: number,
+    rebuildTotalTransactions?: number,
+};
+
 interface DomainStoreState {
-    domains: Array<Domain> | null,
-    setDomains: (domains: Array<Domain>) => void,
-    updateDomain: (domain: Domain) => void,
+    domains: Array<DomainStore> | null,
+    setDomains: (domains: Array<DomainStore>) => void,
+    updateDomain: (domain: DomainStore) => void,
     clear: () => void,
 };
 
