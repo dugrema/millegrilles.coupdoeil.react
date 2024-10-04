@@ -4,7 +4,7 @@
         "exchange": "3.protege"
     },
     "requests": [
-        {"domain": "CorePki", "action": "infoCertificat", "exchange": "1.public"},
+        {"domain": "*", "action": "ping"},
         {"domain": "CoreTopologie", "action": "listeDomaines"},
         {"domain": "fichiers", "action": "domainesBackupV2", "exchange": "2.prive"},
         {"domain": "MaitreDesCles", "action": "compterClesNonDechiffrables"},
@@ -12,6 +12,7 @@
     ],
     "commands": [
         {"domain": "*", "action": "regenerer"},
+        {"domain": "*", "action": "declencherBackup"},
         {"domain": "MaitreDesCles", "action": "rechiffrerBatch"}
     ],
     "subscriptions": {

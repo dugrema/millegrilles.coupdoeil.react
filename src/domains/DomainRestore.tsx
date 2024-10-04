@@ -11,6 +11,9 @@ import useConnectionStore from '../connectionStore';
 
 function DomainRestore() {
 
+    let [masterKey, setMasterKey] = useState(null as Uint8Array | null);
+    let masterKeyChangeHandler = useCallback((key: Uint8Array | null)=>setMasterKey(key), [setMasterKey]);
+
     return (
         <>
             <Link to='/coupdoeil2/domains/backup'
@@ -34,12 +37,12 @@ function DomainRestore() {
                     the backup decryption keys for other domains.
                 </p>
 
-                <InitialDomainsSection />
+                <InitialDomainsSection masterKey={masterKey} masterKeyOnChange={masterKeyChangeHandler} />
             </section>
 
             <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>Restore the rest of the system</h2>
-                <DomainListRegeneration />
+                <DomainListRegeneration masterKey={masterKey} />
             </section>
         </>
     );
@@ -68,12 +71,12 @@ function BackupFileSection() {
     );
 }
 
-function InitialDomainsSection() {
+function InitialDomainsSection(props: {masterKey: Uint8Array | null, masterKeyOnChange: (e: Uint8Array | null)=>void}) {
  
+    let { masterKey, masterKeyOnChange } = props;
+
     let workers = useWorkers();
 
-    let [masterKey, setMasterKey] = useState(null as Uint8Array | null);
-    let masterKeyChangeHandler = useCallback((key: Uint8Array | null)=>setMasterKey(key), [setMasterKey]);
     let [keyProgress, setKeyProgress] = useState(null as KeyProgress | null);
 
     let restoreDomaineCallback = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
@@ -99,16 +102,16 @@ function InitialDomainsSection() {
                 let array = new Uint8Array(masterKey.length);
                 masterKey.set(array);
             }
-            setMasterKey(null)
+            masterKeyOnChange(null)
         };
-    }, [masterKey, setMasterKey]);
+    }, [masterKey, masterKeyOnChange]);
 
     return (
         <>
             <p className='pb-2'>
                 1. Provide the master key to decrypt the Initial Domains backup files since the Maitre des cles is not available yet.
             </p>
-            <MasterKeyLoader onChange={masterKeyChangeHandler} />
+            <MasterKeyLoader onChange={masterKeyOnChange} />
 
             <p className='pb-2'>2. Rebuild the CorePki and Maitre des cles domains in the database.</p>
 
@@ -142,16 +145,16 @@ async function restoreInitialDomain(workers: AppWorkers, domain: string, masterK
     if(domain === 'MaitreDesCles') {
         // Use the currently loaded keymaster certificate to encrypt the keys.
         encryptedKeys = await workers.encryption.encryptMessageMgs4ToBase64(contentToEncrypt, [domain]);
-    } else if(domain === 'CorePki') {
+    } else {
         // Make dummy request for a certificat, this returns the CorePki certificate in the response
-        let response = await workers.connection.getCertificateCorePki()
-        console.debug("Response corePki ", response);
+        let response = await workers.connection.pingDomain(domain)
+        console.debug("Ping response ", response);
         // @ts-ignore
         let certificate: certificates.CertificateWrapper = response.content['__certificate'];
         Object.setPrototypeOf(certificate, certificates.CertificateWrapper.prototype);
-        console.debug("CorePki certificate ", certificate);
+        console.debug("Domain certificate ", certificate);
         let corePkiFingerprint = certificate.getPublicKey();
-        console.debug("Fingerprin: ", corePkiFingerprint);
+        console.debug("Fingerprint: ", corePkiFingerprint);
         let publicKey = multiencoding.decodeHex(corePkiFingerprint);
         encryptedKeys = await workers.encryption.encryptMessageMgs4ToBase64(contentToEncrypt, [domain]);
         // Re-encrypt the key for the CorePki certificate
@@ -160,8 +163,6 @@ async function restoreInitialDomain(workers: AppWorkers, domain: string, masterK
         if(!cles || !secretKey) throw new Error("Secret key not provided by cipher");
         let keyForCorePki = await x25519.encryptEd25519(secretKey, publicKey);
         cles[corePkiFingerprint] = keyForCorePki;
-    } else {
-        throw new Error('Unsupported domain, use standard method to restore');
     }
 
     if(!encryptedKeys) throw new Error("Keys not encrypted");
@@ -268,7 +269,9 @@ async function decryptNonDecryptableKeys(workers: AppWorkers, masterKey: Uint8Ar
     progressCallback({total: keyCount, current: keyCounter, done: true});
 }
 
-function DomainListRegeneration() {
+function DomainListRegeneration(props: {masterKey: Uint8Array | null}) {
+
+    let { masterKey } = props;
 
     let workers = useWorkers();
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
@@ -277,9 +280,15 @@ function DomainListRegeneration() {
         if(!ready) throw new Error("not authenticated");
         if(!workers) throw new Error("workers not initialized");
         let domain = e.currentTarget.value;
-        workers.connection.rebuildDomain(domain)
-            .catch(err=>console.error("Error rebuilding domain %s: %O", domain, err));
-    }, [workers, ready]);
+
+        if(masterKey) {
+            restoreInitialDomain(workers, domain, masterKey)
+                .catch(err=>console.error("Error restoring domain %s: %O", domain, err));
+        } else {
+            workers.connection.rebuildDomain(domain)
+                .catch(err=>console.error("Error rebuilding domain %s: %O", domain, err));
+        }
+    }, [workers, ready, masterKey]);
 
     return (
         <DomainListSection rebuild={rebuildHandler} />

@@ -10,12 +10,28 @@ import useConnectionStore from '../connectionStore';
 function DomainList() {
 
     let workers = useWorkers();
+    let ready = useConnectionStore(state=>state.connectionAuthenticated);
+
     let rebuildHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
-        if(!workers) throw new Error("workers not initialized");
+        if(!ready || !workers) throw new Error("workers not initialized");
         let domain = e.currentTarget.value;
         workers.connection.rebuildDomain(domain)
             .catch(err=>console.error("Error rebuilding domain %s: %O", domain, err));
-    }, [workers]);
+    }, [workers, ready]);
+
+    let domainBackupHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
+        if(!ready || !workers) throw new Error("workers not initialized");
+        let domain = e.currentTarget.value;
+        workers.connection.backupDomain(domain)
+            .then(response=>{
+                if(response.ok !== true) {
+                    console.error("Backup start error: ", response.err);
+                } else {
+                    console.info("Backup on %s started", domain);
+                }
+            })
+            .catch(err=>console.error("Error backing up domain %s: %O", domain, err));
+    }, [workers, ready]);
 
     return (
         <>
@@ -44,7 +60,7 @@ function DomainList() {
 
             <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>Domain list</h2>
-                <DomainListSection rebuild={rebuildHandler} />
+                <DomainListSection rebuild={rebuildHandler} backup={domainBackupHandler} />
             </section>
         </>
     );
@@ -53,12 +69,13 @@ function DomainList() {
 export default DomainList;
 
 type DomainListSectionProps = {
-    rebuild: (e: MouseEvent<HTMLButtonElement>) => void,
+    rebuild?: (e: MouseEvent<HTMLButtonElement>) => void,
+    backup?: (e: MouseEvent<HTMLButtonElement>) => void,
 }
 
 export function DomainListSection(props: DomainListSectionProps) {
     
-    let { rebuild } = props;
+    let { rebuild, backup } = props;
 
     let domains = useDomainStore(state=>state.domains);
 
@@ -67,7 +84,7 @@ export function DomainListSection(props: DomainListSectionProps) {
         // Sort
         let domainCopy = [...domains];
         domainCopy.sort(sortDomains);
-        return domainCopy.map(item=><DomainItem key={item.domaine} value={item} rebuild={rebuild} />)
+        return domainCopy.map(item=><DomainItem key={item.domaine} value={item} rebuild={rebuild} backup={backup} />)
     }, [domains, rebuild]);
 
     return (
@@ -85,12 +102,13 @@ export function DomainListSection(props: DomainListSectionProps) {
 
 type DomainItemProps = {
     value: DomainStore,
-    rebuild: (e: MouseEvent<HTMLButtonElement>) => void,
+    rebuild?: (e: MouseEvent<HTMLButtonElement>) => void,
+    backup?: (e: MouseEvent<HTMLButtonElement>) => void,
 }
 
 function DomainItem(props: DomainItemProps) {
 
-    let { value, rebuild } = props;
+    let { value, rebuild, backup } = props;
 
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
 
@@ -101,10 +119,18 @@ function DomainItem(props: DomainItemProps) {
             <p>{value.instance_id}</p>
             <p className='pb-2'><DomainStatus value={value} /></p>
             <div className='pb-2'>
-                <button value={value.domaine} onClick={rebuild} disabled={!ready || !!value.rebuilding}
-                    className='varbtn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                        Rebuild
-                </button>
+                {backup?
+                    <button value={value.domaine} onClick={backup} disabled={!ready}
+                        className='varbtn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                            Backup
+                    </button>
+                :<></>}
+                {rebuild?
+                    <button value={value.domaine} onClick={rebuild} disabled={!ready || !!value.rebuilding}
+                        className='varbtn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                            Rebuild
+                    </button>
+                :<></>}
             </div>
         </>
     )

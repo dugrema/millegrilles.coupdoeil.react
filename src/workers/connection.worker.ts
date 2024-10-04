@@ -91,9 +91,14 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendCommand({cles_chiffrees: keys}, domain, 'regenerer') as Promise<ResponseGetDomainBackupInformation>;
     }
 
-    async getCertificateCorePki() {
+    async pingDomain(domain: string) {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendRequest({fingerprint: 'DUMMY'}, DOMAINE_COREPKI, 'infoCertificat');
+        return this.connection.sendRequest({}, domain, 'ping', {domain});
+    }
+
+    async backupDomain(domain: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({complet: true}, domain, 'declencherBackup', {domain});
     }
 
     async getNonDecryptableKeyCount() {
