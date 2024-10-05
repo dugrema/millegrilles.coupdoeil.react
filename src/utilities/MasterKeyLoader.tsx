@@ -4,8 +4,13 @@ import { forgePrivateKey } from 'millegrilles.cryptography';
 
 type MasterKeyProps = {
     // children?: React.ReactElement,
-    onChange: (key: Uint8Array | null) => void,
+    onChange: (key: MasterKeyInformation | null) => void,
     disabled?: boolean,
+}
+
+export type MasterKeyInformation = {
+    key: Uint8Array,
+    file: MasterKeyFile,
 }
 
 function MasterKeyLoader(props: MasterKeyProps) {
@@ -14,7 +19,7 @@ function MasterKeyLoader(props: MasterKeyProps) {
 
     let [loaded, setLoaded] = useState(false);
 
-    let onChangeCallback = useCallback((key: Uint8Array | null)=>{
+    let onChangeCallback = useCallback((key: MasterKeyInformation | null)=>{
         setLoaded(!!key);
         onChange(key);
     }, [onChange, setLoaded]);
@@ -33,7 +38,7 @@ function MasterKeyLoader(props: MasterKeyProps) {
 export default MasterKeyLoader;
 
 type LoadKeyProps = {
-    onChange: (key: Uint8Array | null) => void,
+    onChange: (key: MasterKeyInformation | null) => void,
     disabled?: boolean,
 }
 
@@ -63,7 +68,8 @@ function LoadKey(props: LoadKeyProps) {
                 setInvalid(false);
                 setPassword('');
                 setEncryptedKey(null);
-                onChange(decryptedKey.privateKeyBytes);
+                let decryptedKeyBytes = decryptedKey.privateKeyBytes;
+                onChange({file: encryptedKey, key: decryptedKeyBytes});
             } catch(err) {
                 console.error("Error decrypting key: ", err);
                 setInvalid(true);
@@ -113,7 +119,7 @@ export type MasterKey = {
     password?: string | null,
 }
 
-type MasterKeyFile = {
+export type MasterKeyFile = {
     idmg: string,
     racine: {
         certificat: string,

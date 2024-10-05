@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import MasterKeyLoader from '../utilities/MasterKeyLoader';
+import MasterKeyLoader, { MasterKeyInformation } from '../utilities/MasterKeyLoader';
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { DomainBackupList } from './DomainBackup';
 import UploadButton from '../components/UploadButton';
@@ -11,8 +11,7 @@ import useConnectionStore from '../connectionStore';
 
 function DomainRestore() {
 
-    let [masterKey, setMasterKey] = useState(null as Uint8Array | null);
-    let masterKeyChangeHandler = useCallback((key: Uint8Array | null)=>setMasterKey(key), [setMasterKey]);
+    let [masterKey, setMasterKey] = useState(null as MasterKeyInformation | null);
 
     return (
         <>
@@ -37,7 +36,7 @@ function DomainRestore() {
                     the backup decryption keys for other domains.
                 </p>
 
-                <InitialDomainsSection masterKey={masterKey} masterKeyOnChange={masterKeyChangeHandler} />
+                <InitialDomainsSection masterKey={masterKey} masterKeyOnChange={setMasterKey} />
             </section>
 
             <section>
@@ -71,7 +70,7 @@ function BackupFileSection() {
     );
 }
 
-function InitialDomainsSection(props: {masterKey: Uint8Array | null, masterKeyOnChange: (e: Uint8Array | null)=>void}) {
+function InitialDomainsSection(props: {masterKey: MasterKeyInformation | null, masterKeyOnChange: (e: MasterKeyInformation | null)=>void}) {
  
     let { masterKey, masterKeyOnChange } = props;
 
@@ -83,14 +82,14 @@ function InitialDomainsSection(props: {masterKey: Uint8Array | null, masterKeyOn
         if(!workers) throw new Error("workers not initialized");
         if(!masterKey) throw new Error("Master key not loaded");
         let domain = e.currentTarget.value;
-        restoreInitialDomain(workers, domain, masterKey)
+        restoreInitialDomain(workers, domain, masterKey.key)
             .catch(err=>console.error("Error restoring domain %s: %O", domain, err));
     }, [workers, masterKey]);
 
     let decryptKeysHandler = useCallback(() => {
         if(!workers) throw new Error("workers not initialized");
         if(!masterKey) throw new Error("Master key not loaded");
-        decryptNonDecryptableKeys(workers, masterKey, setKeyProgress)
+        decryptNonDecryptableKeys(workers, masterKey.key, setKeyProgress)
             .catch(err=>console.error("Error decrypting KeyMaster keys: ", err));
     }, [workers, masterKey, setKeyProgress]);
 
@@ -99,8 +98,8 @@ function InitialDomainsSection(props: {masterKey: Uint8Array | null, masterKeyOn
         return () => {
             if(masterKey) {
                 // Override the key array with 0s then release.
-                let array = new Uint8Array(masterKey.length);
-                masterKey.set(array);
+                let array = new Uint8Array(masterKey.key.length);
+                masterKey.key.set(array);
             }
             masterKeyOnChange(null)
         };
@@ -269,7 +268,7 @@ async function decryptNonDecryptableKeys(workers: AppWorkers, masterKey: Uint8Ar
     progressCallback({total: keyCount, current: keyCounter, done: true});
 }
 
-function DomainListRegeneration(props: {masterKey: Uint8Array | null}) {
+function DomainListRegeneration(props: {masterKey: MasterKeyInformation | null}) {
 
     let { masterKey } = props;
 
@@ -282,7 +281,7 @@ function DomainListRegeneration(props: {masterKey: Uint8Array | null}) {
         let domain = e.currentTarget.value;
 
         if(masterKey) {
-            restoreInitialDomain(workers, domain, masterKey)
+            restoreInitialDomain(workers, domain, masterKey.key)
                 .catch(err=>console.error("Error restoring domain %s: %O", domain, err));
         } else {
             workers.connection.rebuildDomain(domain)
