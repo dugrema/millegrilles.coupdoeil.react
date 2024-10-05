@@ -12,6 +12,8 @@ import { userStoreIdb, CommonTypes } from 'millegrilles.reactdeps.typescript';
  * Initializes the Web Workers and a few other elements to connect to the back-end.
  */
 function InitializeWorkers() {
+    let installationMode = useConnectionStore(state=>state.installationMode);
+    let setInstallationMode = useConnectionStore(state=>state.setInstallationMode);
     let workersReady = useConnectionStore((state) => state.workersReady);
     let workersRetry = useConnectionStore((state) => state.workersRetry);
     let incrementWorkersRetry = useConnectionStore(
@@ -51,6 +53,26 @@ function InitializeWorkers() {
     // Load the workers with a useMemo that returns a Promise. Allows throwing the promise
     // and catching it with the <React.Suspense> element in index.tsx.
     let workerLoadingPromise = useMemo(() => {
+        if(installationMode === true) {
+            return;  // Done, the workers can't be setup until the initial setup is completed
+        } else if(installationMode === null) {
+            // Determine if this is a new instance in installation mode
+            return fetch('/installation/api/info')
+                .then(async response => {
+                    console.debug("Status: ", response);
+                    let content = await response.json() as ServerInstallationStatus;
+                    if(!content.idmg) {
+                        setInstallationMode(true);  // This is a new instance
+                    } else if(content.ca) {
+                        setInstallationMode(false);  // The system initial setup is done
+                    }
+                })
+                .catch(err=>{
+                    console.error("Error fetching instance status", err);
+                    throw new Error("Unable to load status");
+                });
+        }
+
         // Avoid loop, only load workers once.
         if (!workersRetry.retry || workersReady || !connectionCallback) return;
         incrementWorkersRetry();
@@ -102,12 +124,12 @@ function InitializeWorkers() {
                 return promise;
             });
         }, [
-            workersReady,
+            installationMode, setInstallationMode,
+            workersReady, setWorkersReady,
             workersRetry,
             setFiche,
             incrementWorkersRetry,
             setWorkersRetryReady,
-            setWorkersReady,
             setUserSessionActive,
             setUsername,
             connectionCallback,
@@ -239,4 +261,12 @@ async function authenticateConnectionWorker(workers: AppWorkers, username: strin
     if(!await workers.connection.authenticate(reconnect)) throw new Error('Authentication failed (api mapping)');
 
     return { authenticated: true };
+}
+
+type ServerInstallationStatus = {
+    instance_id: string,
+    securite?: string,
+    idmg?: string,
+    ca?: string,
+    certificat?: Array<string>,
 }

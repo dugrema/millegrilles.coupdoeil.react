@@ -26,6 +26,8 @@ const DecryptKeys = React.lazy(()=>import('./utilities/DecryptKeys'));
 const ApplicationPackages = React.lazy(()=>import('./utilities/ApplicationPackages'));
 const ConsignationFichiers = React.lazy(()=>import('./consignation/ConsignationFichiers'));
 const Installer = React.lazy(()=>import('./installer/Installer'));
+const InstallSelect = React.lazy(()=>import('./installer/InstallSelect'));
+const Install3Protege = React.lazy(()=>import('./installer/Install3Protege'));
 
 const router = createBrowserRouter([
 	{
@@ -89,7 +91,8 @@ const router = createBrowserRouter([
 		element: <Installer />,
         errorElement: <ErrorPage />,
         children: [
-            // { path: "/apps/aichat", element: <ChatSummaryHistory /> },
+            { path: "/coupdoeil2/install", element: <InstallSelect /> },
+            { path: "/coupdoeil2/install/3protege", element: <Install3Protege /> },
         ]
   	},
 ]);

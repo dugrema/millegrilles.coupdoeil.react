@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 interface ConnectionStoreState {
+    installationMode: boolean | null,
     idmg: string,
     ca: string,
     chiffrage: Array<Array<string>> | null,
@@ -16,6 +17,7 @@ interface ConnectionStoreState {
     certificateRemoteVersions?: {version: number, date: number},
     certificateRenewable: boolean,
     connectionInsecure: boolean,
+    setInstallationMode: (installationMode: boolean) => void,
     setFiche: (idmg: string, ca: string, chiffrage: Array<Array<string>>) => void,
     setUserSessionActive: (userSessionActive: boolean) => void,
     setUsername: (newUsername: string) => void,
@@ -34,6 +36,7 @@ interface ConnectionStoreState {
 const useConnectionStore = create<ConnectionStoreState>()(
     devtools(
         (set) => ({
+            installationMode: null,
             idmg: '',
             ca: '',
             chiffrage: null,
@@ -48,6 +51,7 @@ const useConnectionStore = create<ConnectionStoreState>()(
             certificateRemoteVersions: undefined,
             certificateRenewable: false,
             connectionInsecure: false,
+            setInstallationMode: installationMode => set(()=>({installationMode})),
             setFiche: (idmg, ca, chiffrage) => set(() => ({ idmg, ca, chiffrage })),
             setUsername: (username) => set(() => ({ username })),
             setUserSessionActive: (userSessionActive) => set(() => ({ userSessionActive })),

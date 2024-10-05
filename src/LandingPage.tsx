@@ -1,10 +1,19 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import HeaderMenu from './Menu';
 import Footer from './Footer';
+import useConnectionStore from "./connectionStore";
+import { useEffect } from "react";
 
 
 function LandingPage() {
+
+    let navigate = useNavigate();
+    let installationMode = useConnectionStore(state=>state.installationMode);
+
+    useEffect(()=>{
+        navigate('/coupdoeil2/install');  // Redirect to the installation screen
+    }, [installationMode])
 
     return (
         <div>
@@ -21,49 +30,7 @@ function LandingPage() {
                     </Link>
                 </section>
 
-                <section>
-                    <h2 className='text-lg font-bold pt-4'>System management</h2>
-                    <nav>
-                        <ul>
-                            <li className='pt-2'>
-                                <Link to='/coupdoeil2/instances' 
-                                    className='btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900'>
-                                        Instances
-                                </Link>
-                            </li>
-                            <li className='pt-2'>
-                                <Link to='/coupdoeil2/domains' 
-                                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                                        Domains
-                                </Link>
-                            </li>
-                            <li className='pt-2'>
-                                <Link to='/coupdoeil2/users' 
-                                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                                        Users
-                                </Link>
-                            </li>
-                            <li className='pt-2'>
-                                <Link to='/coupdoeil2/keys' 
-                                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                                        Key management
-                                </Link>
-                            </li>
-                            <li className='pt-2'>
-                                <Link to='/coupdoeil2/applicationPackages' 
-                                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                                        Applications
-                                </Link>
-                            </li>
-                            <li className='pt-2'>
-                                <Link to='/coupdoeil2/consignation' 
-                                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                                        File servers
-                                </Link>
-                            </li>
-                        </ul>
-                    </nav>
-                </section>
+                <SystemManagement />
             </main>
             
             <Footer />
@@ -72,3 +39,52 @@ function LandingPage() {
 }
 
 export default LandingPage;
+
+function SystemManagement() {
+    
+    return (
+        <section>
+            <h2 className='text-lg font-bold pt-4'>System management</h2>
+            <nav>
+                <ul>
+                    <li className='pt-2'>
+                        <Link to='/coupdoeil2/instances' 
+                            className='btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900'>
+                                Instances
+                        </Link>
+                    </li>
+                    <li className='pt-2'>
+                        <Link to='/coupdoeil2/domains' 
+                            className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                                Domains
+                        </Link>
+                    </li>
+                    <li className='pt-2'>
+                        <Link to='/coupdoeil2/users' 
+                            className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                                Users
+                        </Link>
+                    </li>
+                    <li className='pt-2'>
+                        <Link to='/coupdoeil2/keys' 
+                            className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                                Key management
+                        </Link>
+                    </li>
+                    <li className='pt-2'>
+                        <Link to='/coupdoeil2/applicationPackages' 
+                            className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                                Applications
+                        </Link>
+                    </li>
+                    <li className='pt-2'>
+                        <Link to='/coupdoeil2/consignation' 
+                            className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                                File servers
+                        </Link>
+                    </li>
+                </ul>
+            </nav>        
+        </section>
+    )
+}
