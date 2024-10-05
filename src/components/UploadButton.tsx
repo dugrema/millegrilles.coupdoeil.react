@@ -5,11 +5,12 @@ type UploadButtonProps = {
     onChange: (file: FileList | null) => void,
     children: React.ReactElement,
     className?: string | null,
+    disabled?: boolean,
 }
 
 function UploadButton(props: UploadButtonProps) {
 
-    let { onChange, className } = props;
+    let { onChange, className, disabled } = props;
 
     let onChangeCallback = useCallback((e: ChangeEvent<HTMLInputElement>)=>{
         onChange(e.currentTarget.files);
@@ -34,8 +35,8 @@ function UploadButton(props: UploadButtonProps) {
                     d="M20.293 19.707a1 1 0 0 0 1.414-1.414l-5-5a1 1 0 0 0-1.414 0l-5 5a1 1 0 0 0 1.414 1.414L15 16.414V29a1 1 0 0 0 2 0V16.414z"
                     data-original="#000000" />
             </svg>
-                {props.children}
-            <input type="file" id={props.id} className="hidden" onChange={onChangeCallback} />
+            {props.children}
+            <input type="file" id={props.id} className="hidden" onChange={onChangeCallback} disabled={disabled} />
         </label>
     )
 

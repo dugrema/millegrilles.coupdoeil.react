@@ -5,11 +5,12 @@ import { forgePrivateKey } from 'millegrilles.cryptography';
 type MasterKeyProps = {
     // children?: React.ReactElement,
     onChange: (key: Uint8Array | null) => void,
+    disabled?: boolean,
 }
 
 function MasterKeyLoader(props: MasterKeyProps) {
 
-    let { onChange } = props;
+    let { onChange, disabled } = props;
 
     let [loaded, setLoaded] = useState(false);
 
@@ -24,7 +25,7 @@ function MasterKeyLoader(props: MasterKeyProps) {
 
     return (
         <div className="grid grid-cols-2">
-            <LoadKey onChange={onChangeCallback} />
+            <LoadKey onChange={onChangeCallback} disabled={disabled} />
         </div>
     );
 }
@@ -33,11 +34,12 @@ export default MasterKeyLoader;
 
 type LoadKeyProps = {
     onChange: (key: Uint8Array | null) => void,
+    disabled?: boolean,
 }
 
 function LoadKey(props: LoadKeyProps) {
 
-    let { onChange } = props;
+    let { onChange, disabled } = props;
 
     let [password, setPassword] = useState('');
     let passwordOnChange = useCallback((e: ChangeEvent<HTMLInputElement>)=>setPassword(e.currentTarget.value), [setPassword]);
@@ -74,8 +76,8 @@ function LoadKey(props: LoadKeyProps) {
             <input type="text" value={password} onChange={passwordOnChange} placeholder="Master key password, ex: p7Pxu+wrscBTlavrodLZRUAPbqHQge9+KAGuJedhOwU"
                 className="text-black" />
             <div>
-                <UploadButton id="masterKeyUploadId" onChange={uploadHandler} 
-                    className="btn pl-7 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
+                <UploadButton id="masterKeyUploadId" onChange={uploadHandler} disabled={disabled}
+                    className="btn pl-7 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500">
                         <p>Upload</p>
                 </UploadButton>
             </div>
@@ -98,7 +100,7 @@ function KeyLoaded(props: LoadKeyProps) {
         <div className='pb-4'>
             <p className='text-green-400 font-bold'>The master key is ready.</p>
             <button onClick={forgetKeyHandler}
-                className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500'>
                     Forget key
             </button>
         </div>
