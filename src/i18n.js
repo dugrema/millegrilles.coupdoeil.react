@@ -29,7 +29,7 @@ i18n
         // debug: true,
 
         backend: {
-        loadPath: '/coupdoeil/locales/{{lng}}/{{ns}}.json',
+            loadPath: '/coupdoeil2/locales/{{lng}}/{{ns}}.json',
         },
 
         interpolation: {
