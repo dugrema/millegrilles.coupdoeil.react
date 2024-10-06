@@ -64,6 +64,45 @@ export type ResponseGetNonDecryptableKeyBatch = MessageResponse & {
     idx?: number,
 };
 
+export type ServerInstance = {
+    instance_id: string,
+    applications_configurees: ApplicationConfiguree[],
+    date_presence: number,
+    containers: any,
+    disk: any,
+    domaine?: string,
+    domaines?: string[],
+    fqdn_detecte?: string,
+    hostname: string,
+    info?: any,
+    ip_detectee?: string,
+    load_average: number[],
+    securite?: string,
+    services?: any,
+    system_battery?: any,
+    system_fans?: any,
+    system_temperature?: any,
+    webapps?: InstanceWebApp[],
+}
+
+type ApplicationConfiguree = {
+    nom: string,
+    version: string
+};
+
+type InstanceWebApp = {
+    name: string,
+    labels?: {[lang: string]: {description: string, name: string}},
+    securite?: string,
+    url?: string,
+}
+
+export type InstanceEventCallback = SubscriptionMessage & {
+    message: messageStruct.MilleGrillesMessage & {
+        instance_id: string,
+    },
+};
+
 export class AppsConnectionWorker extends ConnectionWorker {
 
     async authenticate(reconnect?: boolean) {
@@ -73,6 +112,20 @@ export class AppsConnectionWorker extends ConnectionWorker {
 
     // Instances
 
+    async getInstanceList() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'listeNoeuds') as MessageResponse & {resultats?: ServerInstance[]};
+    }
+
+    async subscribeInstanceEvents(cb: SubscriptionCallback): Promise<void> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return await this.connection.subscribe('instanceEvents', cb);
+    }
+
+    async unsubscribeInstanceEvents(cb: SubscriptionCallback): Promise<void> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return await this.connection.unsubscribe('instanceEvents', cb);
+    }
 
     // Domains
 

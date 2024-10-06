@@ -12,7 +12,13 @@ import './App.css';
 
 
 const LandingPage = React.lazy(()=>import('./LandingPage'));
+
 const Instances = React.lazy(()=>import('./instances/Instances'));
+const InstanceList = React.lazy(()=>import('./instances/InstanceList'));
+const InstanceDetail = React.lazy(()=>import('./instances/InstanceDetail'));
+const InstanceApplications = React.lazy(()=>import('./instances/InstanceApplications'));
+const InstanceInformation = React.lazy(()=>import('./instances/InstanceInformation'));
+const InstanceConfigure = React.lazy(()=>import('./instances/InstanceConfigure'));
 
 const Domains = React.lazy(()=>import('./domains/Domains'));
 const DomainBackup = React.lazy(()=>import('./domains/DomainBackup'));
@@ -40,7 +46,16 @@ const router = createBrowserRouter([
 		element: <Instances />,
         errorElement: <ErrorPage />,
         children: [
-            // { path: "/apps/aichat", element: <ChatSummaryHistory /> },
+            { path: "/coupdoeil2/instances", element: <InstanceList /> },
+            { 
+                path: "/coupdoeil2/instances/:instanceId", 
+                element: <InstanceDetail />,
+                children: [
+                    { path: "/coupdoeil2/instances/:instanceId", element: <InstanceApplications /> },
+                    { path: "/coupdoeil2/instances/:instanceId/info", element: <InstanceInformation /> },
+                    { path: "/coupdoeil2/instances/:instanceId/configure", element: <InstanceConfigure /> }
+                ]
+            },
         ]
   	},
     {

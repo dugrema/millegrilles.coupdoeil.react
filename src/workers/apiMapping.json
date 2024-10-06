@@ -6,6 +6,7 @@
     "requests": [
         {"domain": "*", "action": "ping"},
         {"domain": "CoreTopologie", "action": "listeDomaines"},
+        {"domain": "CoreTopologie", "action": "listeNoeuds"},
         {"domain": "fichiers", "action": "domainesBackupV2", "exchange": "2.prive"},
         {"domain": "MaitreDesCles", "action": "compterClesNonDechiffrables"},
         {"domain": "MaitreDesCles", "action": "clesNonDechiffrablesV2"}
@@ -16,6 +17,7 @@
         {"domain": "MaitreDesCles", "action": "rechiffrerBatch"}
     ],
     "subscriptions": {
-        "domainEvents": {"exchanges": ["3.protege"], "routingKeys": ["evenement.*.presenceDomaine", "evenement.*.regeneration"]}
+        "domainEvents": {"exchanges": ["3.protege"], "routingKeys": ["evenement.*.presenceDomaine", "evenement.*.regeneration"]},
+        "instanceEvents": {"exchanges": ["1.public", "2.prive", "3.protege"], "routingKeys": ["evenement.instance.presence"]}
     }
 }
