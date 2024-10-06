@@ -61,6 +61,7 @@ function InitializeWorkers() {
                 .then(async response => {
                     console.debug("Status: ", response);
                     let content = await response.json() as ServerInstallationStatus;
+                    console.debug("Response content ", content);
                     if(!content.idmg) {
                         setInstallationMode(true);  // This is a new instance
                     } else if(content.ca) {
@@ -68,8 +69,14 @@ function InitializeWorkers() {
                     }
                 })
                 .catch(err=>{
-                    console.error("Error fetching instance status", err);
-                    throw new Error("Unable to load status");
+                    console.error("Error fetching instance status, retry in 5 seconds", err);
+                    let promise = new Promise((resolve: any) => {
+                        setTimeout(() => {
+                            setWorkersRetryReady();
+                            resolve();
+                        }, 5_000);
+                    });
+                    return promise;
                 });
         }
 

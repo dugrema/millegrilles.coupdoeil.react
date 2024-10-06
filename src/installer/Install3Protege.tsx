@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 import MasterKeyLoader, { MasterKeyFile, MasterKeyInformation } from "../utilities/MasterKeyLoader";
 import { certificates, forgePrivateKey, multiencoding, random } from "millegrilles.cryptography";
@@ -202,12 +203,52 @@ type InstallInstanceProps = {
 function InstallInstance(props: InstallInstanceProps) {
     let { masterKey } = props;
 
+    let [running, setRunning] = useState(false);
+    let runSetupHandler = useCallback(()=>{
+        runSetup(masterKey)
+            .then(()=>{
+                console.debug("Initial setup done.")
+            })
+            .catch(err=>console.error("Error during initial setup: ", err))
+            .finally(()=>{
+                setRunning(false);
+            });
+    }, [masterKey, setRunning]);
+
     return (
         <section>
             <h2 className='text-lg font-bold pt-2'>Setup instance</h2>
-            <p className='pt-4'>The system Id for the key is: {masterKey.file.idmg}</p>
+            <p className='pt-4 pb-2'>The system Id for the key is: {masterKey.file.idmg}</p>
 
-                        
+            <button onClick={runSetupHandler} disabled={running}
+                className="btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900">
+                    Start
+            </button>
         </section>
     )
+}
+
+async function runSetup(masterKey: MasterKeyInformation) {
+    await generateIntermediateCertificate(masterKey);
+}
+
+async function generateIntermediateCertificate(masterKey: MasterKeyInformation) {
+    // Get the CSR
+    let response = await axios({method: 'GET', url: '/installation/api/csr'});
+    let csrValue = response.data;
+    if(typeof(csrValue) !== 'string') throw new Error("Wrong CSR response type, must be text");
+    
+    // Generate new signing certificate
+    let intermediateCertificate = await forgePrivateKey.generateIntermediateCertificate(
+        csrValue, masterKey.file.racine.certificat, masterKey.key);
+
+    // Send setup instructions
+    let params = {
+        idmg: masterKey.file.idmg,
+        certificatMillegrille: masterKey.file.racine.certificat,
+        certificatIntermediaire: intermediateCertificate,
+        securite: '3.protege',
+    };
+    console.debug("Installation parameters: ", params);
+    await axios.post('/installation/api/installer', params);  // Throws error on failure
 }

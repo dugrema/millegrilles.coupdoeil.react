@@ -12,7 +12,9 @@ function LandingPage() {
     let installationMode = useConnectionStore(state=>state.installationMode);
 
     useEffect(()=>{
-        navigate('/coupdoeil2/install');  // Redirect to the installation screen
+        if(installationMode === true) {
+            navigate('/coupdoeil2/install');  // Redirect to the installation screen
+        }
     }, [installationMode])
 
     return (
