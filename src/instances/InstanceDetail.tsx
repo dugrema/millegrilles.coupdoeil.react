@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Link, Outlet, useLocation, useParams } from "react-router-dom";
 import useInstanceStore from "./instanceStore";
 import { ServerInstance } from "../workers/connection.worker";
+import { Formatters } from "millegrilles.reactdeps.typescript";
 
 function InstanceDetail() {
 
@@ -21,6 +22,11 @@ function InstanceDetail() {
             </Link>
             <h1 className='text-xl font-bold pt-4'>Server instance {instance?.hostname}</h1>
 
+            <section className='grid grid-cols-2 pt-2 pb-4'>
+                <p>Last presence</p>
+                <Formatters.FormatterDate value={instance?.date_presence} />
+            </section>
+
             <nav>
                 <Link to={`/coupdoeil2/instances/${instanceId}`}
                     className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
@@ -36,7 +42,7 @@ function InstanceDetail() {
                 </Link>
             </nav>
 
-            <Outlet />
+            <Outlet context={{instance}} />
         </>
     )
 }

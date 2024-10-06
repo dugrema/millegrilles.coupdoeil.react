@@ -85,12 +85,12 @@ export type ServerInstance = {
     webapps?: InstanceWebApp[],
 }
 
-type ApplicationConfiguree = {
+export type ApplicationConfiguree = {
     nom: string,
     version: string
 };
 
-type InstanceWebApp = {
+export type InstanceWebApp = {
     name: string,
     labels?: {[lang: string]: {description: string, name: string}},
     securite?: string,
