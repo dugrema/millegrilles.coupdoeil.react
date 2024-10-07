@@ -227,6 +227,20 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendCommand(command, DOMAINE_INSTANCE, 'supprimerApplication', {partition: instanceId, exchange, noverif: true});        
     }
 
+    async startApplication(name: string, instanceId: string, exchange: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        if(exchange === '4.secure') exchange = '3.protege';  // Downgrade, the secure server is listening on 3.protege
+        let command = { nom_application: name, instance_id: instanceId };
+        return this.connection.sendCommand(command, DOMAINE_INSTANCE, 'demarrerApplication', {partition: instanceId, exchange, noverif: true});        
+    }
+
+    async stopApplication(name: string, instanceId: string, exchange: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        if(exchange === '4.secure') exchange = '3.protege';  // Downgrade, the secure server is listening on 3.protege
+        let command = { nom_application: name, instance_id: instanceId };
+        return this.connection.sendCommand(command, DOMAINE_INSTANCE, 'arreterApplication', {partition: instanceId, exchange, noverif: true});        
+    }
+
     // // AI Chat application
     // async sendChatMessage(
     //     command: SendChatMessageCommand, 

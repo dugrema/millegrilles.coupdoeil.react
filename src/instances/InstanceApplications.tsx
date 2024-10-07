@@ -1,8 +1,9 @@
 import { Link, useOutletContext, useParams } from "react-router-dom";
 import { ApplicationConfiguree, ServerInstance } from "../workers/connection.worker";
-import React, { MouseEvent, useCallback, useMemo } from "react";
+import React, { ChangeEvent, MouseEvent, useCallback, useMemo, useState } from "react";
 import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
+import { ToggleSwitch } from "flowbite-react";
 
 function InstanceApplications() {
 
@@ -23,6 +24,20 @@ function InstanceApplications() {
             .catch(err=>console.error("Error removing application: ", err));
     }, [workers, ready, instance]);
 
+    let toggleApplication = useCallback((name: string, running: boolean)=>{
+        if(!workers || !ready) throw new Error("workers not initialized");
+        let security = instance.securite;
+        if(!security) throw new Error("No security level on instance");
+        console.debug("Toggle application %s to running?%s", name, running);
+        let action = workers.connection.startApplication;
+        if(!running) { action = workers.connection.stopApplication; }
+        action(name, instance.instance_id, security)
+            .then(response=>{
+                console.debug("Toggle application response: ", response);
+            })
+            .catch(err=>console.error("Error toggling application ", err));
+    }, [workers, ready, instance]);
+
     let applications = useMemo(()=>{
         let services = prepareApps(instance);
         return services.map(item=>{
@@ -30,7 +45,14 @@ function InstanceApplications() {
                 <React.Fragment key={item.name}>
                     <p className='col-span-3'>{item.name}</p>
                     <p className='col-span-2'>{item.version}</p>
-                    <div className='col-span-7'>
+                    <div>
+                        {item.docker?
+                            <ToggleSwitch checked={item.docker?.running || false} onChange={(checked)=>toggleApplication(item.name, checked)} />
+                        :
+                            <>Nginx</>
+                        }
+                    </div>
+                    <div className='col-span-6'>
                         <button onClick={removeHandler} disabled={!ready} value={item.name}
                             className="varbtn w-20 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
                                 Remove
@@ -40,7 +62,7 @@ function InstanceApplications() {
                 </React.Fragment>
             )
         })
-    }, [instance]);
+    }, [workers, instance]);
 
     return (
         <section>
@@ -62,7 +84,8 @@ function InstanceApplications() {
             <div className='grid grid-cols-12'>
                 <p className='font-bold pt-4 pb-2 col-span-3'>Name</p>
                 <p className='font-bold pt-4 pb-2 col-span-2'>Version</p>
-                <p className='font-bold pt-4 pb-2 col-span-7'>Actions</p>
+                <p className='font-bold pt-4 pb-2 col-span-1'>Status</p>
+                <p className='font-bold pt-4 pb-2 col-span-6'>Actions</p>
 
                 {applications}
             </div>
@@ -87,7 +110,6 @@ type InstanceApp = {
 export function prepareApps(instance: ServerInstance): InstanceApp[] {
     let applications = instance.applications_configurees;
     let webapps = instance.webapps || [];
-    console.debug("Applications %O, webapps: %O", applications, webapps);
 
     let apps = {} as {[name: string]: InstanceApp};
 
@@ -127,6 +149,8 @@ export function prepareApps(instance: ServerInstance): InstanceApp[] {
     servicesCopy.sort((a: InstanceApp, b: InstanceApp)=>{
         return a.name.localeCompare(b.name)
     })
+
+    console.debug("Services : ", servicesCopy);
 
     return servicesCopy;
 }

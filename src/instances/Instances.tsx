@@ -36,7 +36,6 @@ function Instances() {
         // Load domains
         workers.connection.getInstanceList()
             .then(response=>{
-                console.debug("Instances list", response);
                 if(response.resultats) setInstances(response.resultats)
             })
             .catch(err=>console.error("Error loading domain list", err));
