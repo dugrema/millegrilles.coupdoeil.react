@@ -211,7 +211,6 @@ export class AppsConnectionWorker extends ConnectionWorker {
     }
 
     async installApplication(name: string, instanceId: string, exchange: string, applicationPackage: any) {
-        // { 'nom_application': nomApplication, configuration, instance_id: instanceId, exchange }
         if(!this.connection) throw new Error("Connection is not initialized");
         let command = {
             nom_application: name,
@@ -219,6 +218,13 @@ export class AppsConnectionWorker extends ConnectionWorker {
             instance_id: instanceId,
         };
         return this.connection.sendCommand(command, DOMAINE_INSTANCE, 'installerApplication', {partition: instanceId, exchange, noverif: true});
+    }
+
+    async removeApplication(name: string, instanceId: string, exchange: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        if(exchange === '4.secure') exchange = '3.protege';  // Downgrade, the secure server is listening on 3.protege
+        let command = { nom_application: name, instance_id: instanceId };
+        return this.connection.sendCommand(command, DOMAINE_INSTANCE, 'supprimerApplication', {partition: instanceId, exchange, noverif: true});        
     }
 
     // // AI Chat application

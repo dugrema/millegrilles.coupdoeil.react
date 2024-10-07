@@ -17,7 +17,8 @@
         {"domain": "*", "action": "regenerer"},
         {"domain": "*", "action": "declencherBackup"},
         {"domain": "MaitreDesCles", "action": "rechiffrerBatch"},
-        {"domain": "instance", "action": "installerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]}
+        {"domain": "instance", "action": "installerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},
+        {"domain": "instance", "action": "supprimerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]}
     ],
     "subscriptions": {
         "domainEvents": {"exchanges": ["3.protege"], "routingKeys": ["evenement.*.presenceDomaine", "evenement.*.regeneration"]},

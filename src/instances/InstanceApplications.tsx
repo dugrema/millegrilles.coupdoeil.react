@@ -1,11 +1,27 @@
 import { Link, useOutletContext, useParams } from "react-router-dom";
 import { ApplicationConfiguree, ServerInstance } from "../workers/connection.worker";
-import React, { useMemo } from "react";
+import React, { MouseEvent, useCallback, useMemo } from "react";
+import useConnectionStore from "../connectionStore";
+import useWorkers from "../workers/workers";
 
 function InstanceApplications() {
 
     let { instanceId } = useParams();
     let { instance } = useOutletContext() as {instance: ServerInstance};
+    let workers = useWorkers();
+    let ready = useConnectionStore(state=>state.connectionAuthenticated);
+
+    let removeHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
+        if(!workers || !ready) throw new Error("Workers not initialized");
+        let value = e.currentTarget.value;
+        let securite = instance.securite;
+        if(!securite) throw new Error("Instance without security level information");
+        workers.connection.removeApplication(value, instance.instance_id, securite)
+            .then(response=>{
+                console.debug("Application removed response: ", response);
+            })
+            .catch(err=>console.error("Error removing application: ", err));
+    }, [workers, ready, instance]);
 
     let applications = useMemo(()=>{
         let services = prepareApps(instance);
@@ -15,7 +31,7 @@ function InstanceApplications() {
                     <p className='col-span-3'>{item.name}</p>
                     <p className='col-span-2'>{item.version}</p>
                     <div className='col-span-7'>
-                        <button
+                        <button onClick={removeHandler} disabled={!ready} value={item.name}
                             className="varbtn w-20 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
                                 Remove
                         </button>
@@ -92,8 +108,18 @@ export function prepareApps(instance: ServerInstance): InstanceApp[] {
 
     if(instance.applications_configurees) {
         for(let app of instance.applications_configurees) {
-            let existing = apps[app.nom] || {};
+            let existing = apps[app.nom] || {name: app.nom};
             apps[app.nom] = {...existing, version: app.version};
+        }
+    }
+
+    if(instance.webapps) {
+        for(let app of instance.webapps) {
+            let name = app.name;
+            if(name) {
+                let existing = apps[name] || {name};
+                apps[name] = existing;
+            }
         }
     }
 
