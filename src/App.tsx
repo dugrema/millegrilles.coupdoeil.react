@@ -27,6 +27,9 @@ const DomainList = React.lazy(()=>import('./domains/DomainList'));
 const DomainRestore = React.lazy(()=>import('./domains/DomainRestore'));
 
 const Users = React.lazy(()=>import('./users/Users'));
+const UserList = React.lazy(()=>import('./users/UserList'));
+const UserDetail = React.lazy(()=>import('./users/UserDetail'));
+
 const KeyManagement = React.lazy(()=>import('./utilities/KeyManagement'));
 const KeyManagementOptions = React.lazy(()=>import('./utilities/KeyManagementOptions'));
 const DecryptKeys = React.lazy(()=>import('./utilities/DecryptKeys'));
@@ -75,7 +78,8 @@ const router = createBrowserRouter([
 		element: <Users />,
         errorElement: <ErrorPage />,
         children: [
-            // { path: "/apps/aichat", element: <ChatSummaryHistory /> },
+            { path: "/coupdoeil2/users", element: <UserList /> },
+            { path: "/coupdoeil2/users/:userId", element: <UserDetail /> },
         ]
   	},
     {

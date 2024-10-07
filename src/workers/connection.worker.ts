@@ -5,25 +5,11 @@ import apiMapping from './apiMapping.json';
 import { messageStruct, keymaster, encryption } from 'millegrilles.cryptography';
 
 const DOMAINE_CORETOPOLOGIE = 'CoreTopologie';
-const DOMAINE_COREPKI = 'CorePki';
 const DOMAINE_CORECATALOGUES = 'CoreCatalogues';
 const DOMAINE_MAITREDESCLES = 'MaitreDesCles';
 const DOMAINE_FICHIERS = 'fichiers';
 const DOMAINE_INSTANCE = 'instance';
-
-// export type SendChatMessageCommand = { 
-//     conversation_id: string,
-//     model: string, 
-//     role: string, 
-//     encrypted_content: EncryptionBase64Result,
-//     new?: boolean,
-// };
-
-// export type ActivationCodeResponse = MessageResponse & {
-//     code?: number | string,
-//     csr?: string,
-//     nomUsager?: string,
-// };
+const DOMAINE_COREMAITREDESCOMPTES = 'CoreMaitreDesComptes';
 
 export type Domain = {
     domaine: string,
@@ -116,6 +102,32 @@ export type ApplicationPackage = {
 };
 
 export type GetCurrentApplicationPackagesResponse = MessageResponse & { resultats?: ApplicationPackage[] };
+
+export type UserListItem = {
+    userId: string,
+    nomUsager: string,
+    delegation_globale?: string | null,
+    compte_prive?: boolean | null,
+}
+
+export type ResponseGetUserList = MessageResponse & {
+    usagers: Array<UserListItem>,
+};
+
+export type UserEventCallback = SubscriptionMessage & {
+    message: messageStruct.MilleGrillesMessage & {
+        user_id: string,
+    },
+};
+
+export type UserCookie = {date_creation: number, expiration: number, hostname: string};
+export type Passkey = {cred_id: string, date_creation: number, dernier_auth: number, hostname: string};
+export type UserDetail = {
+    user_id: string,
+    activations?: any,
+    cookies?: UserCookie[],
+    passkeys?: Passkey[],
+}
 
 export class AppsConnectionWorker extends ConnectionWorker {
 
@@ -246,33 +258,27 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendCommand({}, DOMAINE_INSTANCE, 'transmettreCatalogues', {noverif: true});
     }
 
-    // // AI Chat application
-    // async sendChatMessage(
-    //     command: SendChatMessageCommand, 
-    //     history: EncryptionBase64Result | null,
-    //     signature: keymaster.DomainSignature,
-    //     keys: {[key: string]: string},
-    //     streamCallback: (e: MessageResponse)=>Promise<void>, 
-    //     messageCallback: (e: messageStruct.MilleGrillesMessage)=>Promise<void>
-    // ): Promise<boolean> {
-    //     if(!this.connection) throw new Error("Connection is not initialized");
-    //     let signedMessage = await this.connection.createRoutedMessage(
-    //         messageStruct.MessageKind.Command,
-    //         command, 
-    //         {domaine: DOMAINE_OLLAMA_RELAI, action: 'chat'},
-    //     );
-    //     signedMessage.attachements = {history, signature, keys};
-    //     await messageCallback(signedMessage);
-    //     return await this.connection.emitCallbackResponses(signedMessage, streamCallback, {domain: DOMAINE_OLLAMA_RELAI});
-    // }
+    // Users
 
-    // async getConversationKeys(keyIds: string[]) {
-    //     if(!this.connection) throw new Error("Connection is not initialized");
-    //     return await this.connection.sendRequest(
-    //         {cle_ids: keyIds}, DOMAINE_AI_LANGUAGE, 'getConversationKeys', 
-    //         {domain: DOMAINE_MAITREDESCLES}
-    //     ) as DecryptionKeyResponse;
-    // }
+    async getUserList() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({}, DOMAINE_COREMAITREDESCOMPTES, 'getListeUsagers') as Promise<ResponseGetUserList>;
+    }
+    
+    async getUserPasskeys(userId: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({userId}, DOMAINE_COREMAITREDESCOMPTES, 'getPasskeysUsager') as Promise<MessageResponse & UserDetail>;
+    }
+
+    async subscribeUserEvents(cb: SubscriptionCallback): Promise<void> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return await this.connection.subscribe('userEvents', cb);
+    }
+
+    async unsubscribeUserEvents(cb: SubscriptionCallback): Promise<void> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return await this.connection.unsubscribe('userEvents', cb);
+    }
 
 }
 
