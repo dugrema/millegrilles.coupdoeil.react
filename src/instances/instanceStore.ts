@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { ServerInstance } from '../workers/connection.worker';
+import { ApplicationPackage, ServerInstance } from '../workers/connection.worker';
 
 export type ServerInstanceStore = ServerInstance & {
     
@@ -8,15 +8,25 @@ export type ServerInstanceStore = ServerInstance & {
 
 interface ServerInstanceStoreState {
     instances: Array<ServerInstanceStore> | null,
+    applicationCurrentPackages: Array<ApplicationPackage> | null,
+    installingApps: string[],
+    errorInstallingApps: string[],
     setInstances: (instances: Array<ServerInstanceStore>) => void,
     updateInstance: (instance: ServerInstanceStore) => void,
+    setApplicationCurrentPackages: (packages: Array<ApplicationPackage>) => void,
+    addInstallingApp: (app: string )=> void,
+    addErrorApp: (app: string )=> void,
     clear: () => void,
+    clearAppInstallation: ()=>void,
 };
 
 const useInstanceStore = create<ServerInstanceStoreState>()(
     devtools(
         (set) => ({
             instances: null,
+            applicationCurrentPackages: null,
+            installingApps: [],
+            errorInstallingApps: [],
             setInstances: (instances) => set(() => ({ instances })),
             updateInstance: (instance) => set(state=>{
                 let instances = state.instances;
@@ -29,7 +39,18 @@ const useInstanceStore = create<ServerInstanceStoreState>()(
                 })
                 return {instances: instancesUpdate};
             }),
-            clear: () => set(()=>({instances: null})),
+            setApplicationCurrentPackages: (applicationCurrentPackages) => set(() => ({ applicationCurrentPackages })),
+            addInstallingApp: (app) => set(state=>{
+                let apps = [...state.installingApps, app];
+                return { installingApps: apps };
+            }),
+            addErrorApp: (app) => set(state=>{
+                let apps = state.installingApps.filter(item=>item!==app);
+                let errorApps = [...state.errorInstallingApps, app];
+                return { installingApps: apps, errorInstallingApps: errorApps };
+            }),
+            clear: () => set(()=>({instances: null, installingApps: [], errorInstallingApps: []})),
+            clearAppInstallation: () => set(()=>({installingApps: [], errorInstallingApps: []})),
         })
     ),
 );

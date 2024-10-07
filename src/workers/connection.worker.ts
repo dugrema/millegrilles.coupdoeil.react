@@ -6,8 +6,10 @@ import { messageStruct, keymaster, encryption } from 'millegrilles.cryptography'
 
 const DOMAINE_CORETOPOLOGIE = 'CoreTopologie';
 const DOMAINE_COREPKI = 'CorePki';
+const DOMAINE_CORECATALOGUES = 'CoreCatalogues';
 const DOMAINE_MAITREDESCLES = 'MaitreDesCles';
 const DOMAINE_FICHIERS = 'fichiers';
+const DOMAINE_INSTANCE = 'instance';
 
 // export type SendChatMessageCommand = { 
 //     conversation_id: string,
@@ -103,6 +105,18 @@ export type InstanceEventCallback = SubscriptionMessage & {
     },
 };
 
+export type ApplicationPackage = {
+    nom: string,
+    version: string,
+    securite?: string,
+    dependances?: [{
+        name: string,
+        image: string,
+    }]
+};
+
+export type GetCurrentApplicationPackagesResponse = MessageResponse & { resultats?: ApplicationPackage[] };
+
 export class AppsConnectionWorker extends ConnectionWorker {
 
     async authenticate(reconnect?: boolean) {
@@ -184,6 +198,27 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async getApplicationList(): Promise<MessageResponse> {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'listeApplicationsDeployees', {eventName: 'request_application_list'});
+    }
+
+    async getCurrentPackagesList(): Promise<GetCurrentApplicationPackagesResponse> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({}, DOMAINE_CORECATALOGUES, 'listeApplications');
+    }
+
+    async getPackageContent(name: string): Promise<GetCurrentApplicationPackagesResponse> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({nom: name}, DOMAINE_CORECATALOGUES, 'infoApplication');
+    }
+
+    async installApplication(name: string, instanceId: string, exchange: string, applicationPackage: any) {
+        // { 'nom_application': nomApplication, configuration, instance_id: instanceId, exchange }
+        if(!this.connection) throw new Error("Connection is not initialized");
+        let command = {
+            nom_application: name,
+            configuration: applicationPackage,
+            instance_id: instanceId,
+        };
+        return this.connection.sendCommand(command, DOMAINE_INSTANCE, 'installerApplication', {partition: instanceId, exchange, noverif: true});
     }
 
     // // AI Chat application

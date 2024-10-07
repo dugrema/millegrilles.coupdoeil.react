@@ -5,6 +5,8 @@
     },
     "requests": [
         {"domain": "*", "action": "ping"},
+        {"domain": "CoreCatalogues", "action": "listeApplications"},
+        {"domain": "CoreCatalogues", "action": "infoApplication"},
         {"domain": "CoreTopologie", "action": "listeDomaines"},
         {"domain": "CoreTopologie", "action": "listeNoeuds"},
         {"domain": "fichiers", "action": "domainesBackupV2", "exchange": "2.prive"},
@@ -14,7 +16,8 @@
     "commands": [
         {"domain": "*", "action": "regenerer"},
         {"domain": "*", "action": "declencherBackup"},
-        {"domain": "MaitreDesCles", "action": "rechiffrerBatch"}
+        {"domain": "MaitreDesCles", "action": "rechiffrerBatch"},
+        {"domain": "instance", "action": "installerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]}
     ],
     "subscriptions": {
         "domainEvents": {"exchanges": ["3.protege"], "routingKeys": ["evenement.*.presenceDomaine", "evenement.*.regeneration"]},

@@ -17,6 +17,7 @@ function Instances() {
     let workers = useWorkers();
     let setInstances = useInstanceStore(state=>state.setInstances);
     let updateInstance = useInstanceStore(state=>state.updateInstance);
+    let setApplicationCurrentPackages = useInstanceStore(state=>state.setApplicationCurrentPackages);
     let clearStore = useInstanceStore(state=>state.clear);
 
     let instanceEventsCb = useMemo(()=>{
@@ -39,6 +40,15 @@ function Instances() {
                 if(response.resultats) setInstances(response.resultats)
             })
             .catch(err=>console.error("Error loading domain list", err));
+
+
+        // Load current application packages
+        workers.connection.getCurrentPackagesList()
+            .then(response=>{
+                if(response.resultats) setApplicationCurrentPackages(response.resultats);
+                else console.error("Error receiving application packages: ", response);
+            })
+            .catch(err=>console.error("Error loading application packages", err));
 
         // Cleanup
         return () => { 

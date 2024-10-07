@@ -1,9 +1,10 @@
-import { useOutletContext } from "react-router-dom";
+import { Link, useOutletContext, useParams } from "react-router-dom";
 import { ApplicationConfiguree, ServerInstance } from "../workers/connection.worker";
 import React, { useMemo } from "react";
 
 function InstanceApplications() {
 
+    let { instanceId } = useParams();
     let { instance } = useOutletContext() as {instance: ServerInstance};
 
     let applications = useMemo(()=>{
@@ -11,8 +12,15 @@ function InstanceApplications() {
         return services.map(item=>{
             return (
                 <React.Fragment key={item.name}>
-                    <p>{item.name}</p>
-                    <p>{item.version}</p>
+                    <p className='col-span-3'>{item.name}</p>
+                    <p className='col-span-2'>{item.version}</p>
+                    <div className='col-span-7'>
+                        <button
+                            className="varbtn w-20 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
+                                Remove
+                        </button>
+
+                    </div>
                 </React.Fragment>
             )
         })
@@ -22,10 +30,10 @@ function InstanceApplications() {
         <section>
             <h2 className='text-lg font-bold pt-4'>Applications</h2>
 
-            <button
+            <Link to={`/coupdoeil2/instances/${instanceId}/newApplication`}
                 className='btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900'>
                     Install new
-            </button>
+            </Link>
             <button
                 className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
                     Refresh packages
@@ -35,9 +43,10 @@ function InstanceApplications() {
                     Upgrade all
             </button>
 
-            <div className='grid grid-cols-2'>
-                <p className='font-bold pt-4 pb-2'>Name</p>
-                <p className='font-bold pt-4 pb-2'>Version</p>
+            <div className='grid grid-cols-12'>
+                <p className='font-bold pt-4 pb-2 col-span-3'>Name</p>
+                <p className='font-bold pt-4 pb-2 col-span-2'>Version</p>
+                <p className='font-bold pt-4 pb-2 col-span-7'>Actions</p>
 
                 {applications}
             </div>
@@ -50,6 +59,7 @@ export default InstanceApplications;
 
 type InstanceApp = {
     name: string,
+    image?: string,
     version?: string,
     docker?: {
         running: boolean,
@@ -58,7 +68,7 @@ type InstanceApp = {
     }
 };
 
-function prepareApps(instance: ServerInstance): InstanceApp[] {
+export function prepareApps(instance: ServerInstance): InstanceApp[] {
     let applications = instance.applications_configurees;
     let webapps = instance.webapps || [];
     console.debug("Applications %O, webapps: %O", applications, webapps);
@@ -68,11 +78,15 @@ function prepareApps(instance: ServerInstance): InstanceApp[] {
     if(instance.services) {
         for(let appName of Object.keys(instance.services)) {
             let service = instance.services[appName];
-            apps[appName] = {name: appName, docker: {
-                running: service.etat==='running', 
-                preparing: service.etat==='preparing',
-                replicas: service.replicas,
-            }}
+            apps[appName] = {
+                name: appName, 
+                image: service.image,
+                version: service.version,
+                docker: {
+                    running: service.etat==='running', 
+                    preparing: service.etat==='preparing',
+                    replicas: service.replicas,
+                }}
         }
     }
 

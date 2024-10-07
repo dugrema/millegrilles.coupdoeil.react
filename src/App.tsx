@@ -19,6 +19,7 @@ const InstanceDetail = React.lazy(()=>import('./instances/InstanceDetail'));
 const InstanceApplications = React.lazy(()=>import('./instances/InstanceApplications'));
 const InstanceInformation = React.lazy(()=>import('./instances/InstanceInformation'));
 const InstanceConfigure = React.lazy(()=>import('./instances/InstanceConfigure'));
+const InstanceInstallNewApplication = React.lazy(()=>import('./instances/InstanceInstallNewApplication'));
 
 const Domains = React.lazy(()=>import('./domains/Domains'));
 const DomainBackup = React.lazy(()=>import('./domains/DomainBackup'));
@@ -53,7 +54,8 @@ const router = createBrowserRouter([
                 children: [
                     { path: "/coupdoeil2/instances/:instanceId", element: <InstanceApplications /> },
                     { path: "/coupdoeil2/instances/:instanceId/info", element: <InstanceInformation /> },
-                    { path: "/coupdoeil2/instances/:instanceId/configure", element: <InstanceConfigure /> }
+                    { path: "/coupdoeil2/instances/:instanceId/configure", element: <InstanceConfigure /> },
+                    { path: "/coupdoeil2/instances/:instanceId/newApplication", element: <InstanceInstallNewApplication /> }
                 ]
             },
         ]
