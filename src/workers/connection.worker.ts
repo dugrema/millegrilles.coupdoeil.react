@@ -241,6 +241,11 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendCommand(command, DOMAINE_INSTANCE, 'arreterApplication', {partition: instanceId, exchange, noverif: true});        
     }
 
+    async refreshPackages() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({}, DOMAINE_INSTANCE, 'transmettreCatalogues', {noverif: true});
+    }
+
     // // AI Chat application
     // async sendChatMessage(
     //     command: SendChatMessageCommand, 

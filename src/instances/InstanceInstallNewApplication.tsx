@@ -1,4 +1,4 @@
-import React, { MouseEvent, useCallback, useMemo } from "react";
+import React, { MouseEvent, useCallback, useMemo, useState } from "react";
 import useInstanceStore from "./instanceStore";
 import { ApplicationPackage, ServerInstance } from "../workers/connection.worker";
 import { useOutletContext, useParams, Link, useNavigate } from "react-router-dom";
@@ -15,8 +15,11 @@ function InstallNewApplication() {
     let currentPackages = useInstanceStore(state=>state.applicationCurrentPackages);
     let addInstallingApp = useInstanceStore(state=>state.addInstallingApp);
     let addErrorApp = useInstanceStore(state=>state.addErrorApp);
+    let setApplicationCurrentPackages = useInstanceStore(state=>state.setApplicationCurrentPackages);
     let { instanceId } = useParams();
     let { instance } = useOutletContext() as {instance: ServerInstance};
+
+    let [refreshing, setRefreshing] = useState(false);
 
     let installHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
         if(!ready || !workers) throw new Error('workers not initialized');
@@ -35,6 +38,28 @@ function InstallNewApplication() {
             });
     }, [workers, ready, addInstallingApp, instanceId, instance]);
 
+    let refreshPackagesHandler = useCallback(()=>{
+        if(!workers || !ready) throw new Error('workers not initialized');
+        setRefreshing(true);
+        workers.connection.refreshPackages()
+            .then(async response => {
+                console.debug("Response ", response);
+                await new Promise(resolve=>setTimeout(resolve, 1_000));
+                // Load current application packages
+                if(workers) {
+                    let packages = await workers.connection.getCurrentPackagesList();
+                    if(packages.resultats) {
+                        console.debug("Updated packages: ", packages.resultats);
+                        setApplicationCurrentPackages(packages.resultats);
+                    }
+                }
+            })
+            .catch(err=>console.error("Error refreshing application packages", err))
+            .finally(()=>{
+                setRefreshing(false);
+            });
+    },[workers, ready, refreshing, setRefreshing]);
+
     let applications = useMemo(()=>{
         if(!currentPackages) return [];
 
@@ -50,7 +75,7 @@ function InstallNewApplication() {
                     <p className='col-span-3'>{item.nom}</p>
                     <p className='col-span-2'>{item.version}</p>
                     <div className='col-span-7'>
-                        <button value={item.nom} onClick={installHandler}
+                        <button value={item.nom} onClick={installHandler} disabled={!ready}
                             className="varbtn w-20 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
                                 Install
                         </button>
@@ -70,7 +95,7 @@ function InstallNewApplication() {
                         Back to applications
                 </Link>
 
-                <button
+                <button onClick={refreshPackagesHandler} disabled={!ready || refreshing}
                     className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
                         Refresh packages
                 </button>
