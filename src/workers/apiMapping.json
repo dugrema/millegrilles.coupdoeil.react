@@ -21,6 +21,7 @@
         {"domain": "*", "action": "regenerer"},
         {"domain": "*", "action": "declencherBackup"},
         {"domain": "CoreMaitreDesComptes", "action": "signerCompteParProprietaire", "exchange": "2.prive"},
+        {"domain": "CoreMaitreDesComptes", "action": "majUsagerDelegations"},
         {"domain": "MaitreDesCles", "action": "rechiffrerBatch"},
         {"domain": "instance", "action": "installerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},
         {"domain": "instance", "action": "supprimerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},

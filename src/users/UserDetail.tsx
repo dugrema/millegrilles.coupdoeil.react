@@ -1,9 +1,9 @@
 import { Link, useParams } from "react-router-dom";
 import useUserStore, { UserDetailStore } from "./userStore";
-import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import React, { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
-import { CertificateRequest, Passkey, UserCookie, UserDetail } from "../workers/connection.worker";
+import { CertificateRequest, ChangeUserSecurityCommand, Passkey, UserCookie, UserDetail } from "../workers/connection.worker";
 import { Formatters } from "millegrilles.reactdeps.typescript";
 
 function UserDetailPage() {
@@ -52,51 +52,16 @@ function UserDetailPage() {
             </section>
 
             <section>
-                <h2 className='text-lg font-bold pt-4 pb-2'>User security level</h2>
-                
-                <ul className="items-center w-full text-sm font-medium text-slate-900 bg-slate-400 border border-slate-800 rounded-lg sm:flex dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                    <li className="w-full border-b border-slate-800 sm:border-b-0 sm:border-r dark:border-gray-600">
-                        <div className="flex items-center ps-3">
-                            <input id="horizontal-list-1" type="radio" value="1.public" name="list-radio" 
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"/>
-                            <label htmlFor="horizontal-list-1" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                Public resources only (1.public)
-                            </label>
-                        </div>
-                    </li>
-                    <li className="w-full border-b border-slate-800 sm:border-b-0 sm:border-r dark:border-gray-600">
-                        <div className="flex items-center ps-3">
-                            <input id="horizontal-list-2" type="radio" value="2.prive" name="list-radio" 
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"/>
-                            <label htmlFor="horizontal-list-2" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                Private applications (2.prive)
-                            </label>
-                        </div>
-                    </li>
-                    <li className="w-full border-b border-slate-800 sm:border-b-0 sm:border-r dark:border-gray-600">
-                        <div className="flex items-center ps-3">
-                            <input id="horizontal-list-3" type="radio" value="3.protege" name="list-radio" 
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"/>
-                            <label htmlFor="horizontal-list-3" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                Administrator (3.protege)
-                            </label>
-                        </div>
-                    </li>
-                </ul>
-                <button
-                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                        Change security
-                </button>
-
-            </section>
-
-            <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>Actions on account</h2>
 
-                <p>Activate with code provided by the user.</p>
-                <div className='grid grid-cols-6 pb-4'>
+                <p className='pb-1'>Activate with code provided by the user.</p>
+                <div className='grid grid-cols-1 sm:grid-cols-3 md:grid-cols-6 pb-4'>
                     <ActivateCode username={user?.nomUsager} />
                 </div>
+
+                <p className='pb-1'>Change user security level.</p>
+                <UserSecurity value={user} />
+
             </section>
 
             <section className='pt-4'>
@@ -214,7 +179,7 @@ function PasskeyList(props: {value: UserDetail | null}) {
         passkeysCopy.sort(sortPasskeys);
         return passkeysCopy.map(item=>{
             return (
-                <React.Fragment key={item.cred_id+item.hostname+item.date_creation}>
+                <React.Fragment key={item.cred_id}>
                     <p>{item.hostname}</p>
                     <p><Formatters.FormatterDate value={item.date_creation} /></p>
                     <p><Formatters.FormatterDate value={item.dernier_auth} /></p>
@@ -304,4 +269,115 @@ function formatActivationCode(code: string) {
     let code1 = codeClean.slice(0, 4);
     let code2 = codeClean.slice(4);
     return [code1, code2].join('-');
+}
+
+function UserSecurity(props: {value: UserDetailStore | null}) {
+
+    let { value } = props;
+
+    let workers = useWorkers();
+    let ready = useConnectionStore(state=>state.connectionAuthenticated);
+
+    let [security, setSecurity] = useState('');
+    let [success, setSuccess] = useState(false);
+    let [error, setError] = useState('');
+    let [changed, setChanged] = useState(false);
+
+    let securityOnChangeHandler = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+        let newSecurity = e.currentTarget.value;
+        if(newSecurity !== security) {
+            setChanged(true);
+            setSecurity(newSecurity);
+        }
+        setSuccess(false);
+        setError('');
+    }, [security, setChanged, setSecurity, setSuccess, setError]);
+
+    let changeSecurity = useCallback(()=>{
+        if(!workers || !ready) throw new Error("workers not initialized");
+        if(!security) throw new Error('Security level not provided');
+        if(!value) throw new Error("User information not provided");
+
+        let userId = value.userId;
+        let command = {userId} as ChangeUserSecurityCommand;
+        if(security === '1.public') {
+            command.delegation_globale = null;
+            command.compte_prive = null;
+        } else if(security === '2.prive') {
+            command.delegation_globale = null;
+            command.compte_prive = true;
+        } else if(security === '3.protege') {
+            command.delegation_globale = 'proprietaire';
+            command.compte_prive = null;
+        }
+        
+        workers.connection.changeUserSecurity(command)
+            .then(response=>{
+                console.debug("changeUserSecurity Response ", response);
+                if(response.nomUsager) {
+                    setSuccess(true);
+                    setError('');
+                } else if(response.err) {
+                    setSuccess(false);
+                    setError(response.err);
+                }
+            })
+            .catch(err=>console.error("changeUserSecurity Error", err))
+
+    }, [workers, ready, value, security, setSuccess, setError]);
+
+    let buttonClassName = useMemo(()=>{
+        if(success) return 'btn inline-block text-center bg-green-700 hover:bg-green-600 active:bg-green-500 disabled:bg-green-800';
+        if(error) return 'btn inline-block text-center bg-red-700 hover:bg-red-600 active:bg-red-500 disabled:bg-red-800';
+        return 'btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800';
+    }, [success, error]);
+
+    useEffect(()=>{
+        if(!value) return setSecurity('');
+        if(value.delegation_globale === 'proprietaire') {
+            setSecurity('3.protege');
+        } else if(value.compte_prive) {
+            setSecurity('2.prive');
+        } else {
+            setSecurity('1.public');
+        }
+    }, [setSecurity, value]);
+
+    return (
+        <>
+            <ul className="items-center w-full text-sm font-medium text-slate-900 bg-slate-400 border border-slate-800 rounded-lg md:flex dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <li className="w-full border-b border-slate-800 sm:border-b-0 sm:border-r dark:border-gray-600">
+                    <div className="flex items-center ps-3">
+                        <input id="horizontal-list-1" type="radio" value="1.public" checked={security==='1.public'} onChange={securityOnChangeHandler} name="list-radio" 
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"/>
+                        <label htmlFor="horizontal-list-1" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                            Public resources only (1.public)
+                        </label>
+                    </div>
+                </li>
+                <li className="w-full border-b border-slate-800 sm:border-b-0 sm:border-r dark:border-gray-600">
+                    <div className="flex items-center ps-3">
+                        <input id="horizontal-list-2" type="radio" value="2.prive" checked={security==='2.prive'} onChange={securityOnChangeHandler} name="list-radio" 
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"/>
+                        <label htmlFor="horizontal-list-2" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                            Private applications (2.prive)
+                        </label>
+                    </div>
+                </li>
+                <li className="w-full border-b border-slate-800 sm:border-b-0 sm:border-r dark:border-gray-600">
+                    <div className="flex items-center ps-3">
+                        <input id="horizontal-list-3" type="radio" value="3.protege" checked={security==='3.protege'} onChange={securityOnChangeHandler} name="list-radio" 
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"/>
+                        <label htmlFor="horizontal-list-3" className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                            Administrator (3.protege)
+                        </label>
+                    </div>
+                </li>
+            </ul>
+            <button onClick={changeSecurity} disabled={!ready || !changed}
+                className={'mt-4 ' + buttonClassName}>
+                    Change security
+            </button>
+        </>
+    )
 }

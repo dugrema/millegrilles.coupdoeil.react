@@ -103,21 +103,14 @@ export type ApplicationPackage = {
 
 export type GetCurrentApplicationPackagesResponse = MessageResponse & { resultats?: ApplicationPackage[] };
 
-export type UserListItem = {
-    userId: string,
-    nomUsager: string,
-    delegation_globale?: string | null,
-    compte_prive?: boolean | null,
-}
+export type UserListItem = UserDelegationInformation;
 
 export type ResponseGetUserList = MessageResponse & {
     usagers: Array<UserListItem>,
 };
 
 export type UserEventCallback = SubscriptionMessage & {
-    message: messageStruct.MilleGrillesMessage & {
-        user_id: string,
-    },
+    message: messageStruct.MilleGrillesMessage & UserListItem,
 };
 
 export type UserCookie = {date_creation: number, expiration: number, hostname: string};
@@ -135,6 +128,17 @@ type GetPasswordsResponse = MessageResponse & {secrets?: PasswordDict};
 export type CertificateRequest = {nomUsager: string, csr: string, date: number, activationTierce?: boolean};
 
 type VerifyActivationCodeResponse = MessageResponse & {code?: string, nomusager?: string, csr?: string};
+
+export type ChangeUserSecurityCommand = {userId: string, delegation_globale: string | null, compte_prive: boolean | null};
+
+export type UserDelegationInformation = {
+    nomUsager: string,
+    userId: string,
+    compte_prive: boolean | null,
+    delegation_globale: string | null,
+    delegations_date: number | null,
+    delegations_version: number | null
+};
 
 export class AppsConnectionWorker extends ConnectionWorker {
 
@@ -290,6 +294,11 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async activateAccountByAdmin(userId: string, request: CertificateRequest) {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendCommand({userId, demandeCertificat: request}, DOMAINE_COREMAITREDESCOMPTES, 'signerCompteParProprietaire');
+    }
+
+    async changeUserSecurity(command: ChangeUserSecurityCommand) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand(command, DOMAINE_COREMAITREDESCOMPTES, 'majUsagerDelegations') as Promise<MessageResponse & UserDelegationInformation>;
     }
 
     async subscribeUserEvents(cb: SubscriptionCallback): Promise<void> {

@@ -7,7 +7,7 @@ import Footer from '../Footer';
 import useWorkers, { AppWorkers } from '../workers/workers';
 import useUserStore from './userStore';
 import useConnectionStore from '../connectionStore';
-import { SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
+import { MessageResponse, SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
 import { UserListItem, UserEventCallback } from '../workers/connection.worker';
 
 function Users() {
@@ -15,13 +15,13 @@ function Users() {
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
     let workers = useWorkers();
     let setUsers = useUserStore(state=>state.setUsers);
-    let updateDomain = useUserStore(state=>state.updateUser);
+    let updateUser = useUserStore(state=>state.updateUser);
     let clearStore = useUserStore(state=>state.clear);
 
     let userEventsCb = useMemo(()=>{
         if(!workers) return null;
-        return proxy((event: SubscriptionMessage)=>processEvent(workers, event, updateDomain))
-    }, [workers, updateDomain]);
+        return proxy((event: SubscriptionMessage)=>processEvent(workers, event, updateUser))
+    }, [workers, updateUser]);
 
     useEffect(()=>{
         if(!ready || !userEventsCb) return;
@@ -49,7 +49,7 @@ function Users() {
     
             clearStore(); 
         }
-    }, [ready, workers, clearStore, userEventsCb, setUsers, updateDomain]);
+    }, [ready, workers, clearStore, userEventsCb, setUsers, updateUser]);
 
     return (
         <div>
@@ -72,11 +72,14 @@ async function processEvent(workers: AppWorkers | null, event: SubscriptionMessa
 
     console.debug("User event ", eventUser);
 
-    // if(action === 'presenceDomaine') {
-    //     processEventPresenceDomaine(eventDomains, updateDomain);
-    // } else if(action === 'regeneration') {
-    //     processEventRebuildDomain(eventDomains, updateDomain);
-    // }
+    if(action === 'majCompteUsager') {
+        let message = eventUser.message;
+        updateUser(message);
+    } else if(action === 'inscrireCompteUsager') {
+
+    } else if(action === 'supprimerCompteUsager') {
+
+    } 
 }
 
 export function mapUserSecurity(user: UserListItem): string {
