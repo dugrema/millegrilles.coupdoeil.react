@@ -66,11 +66,10 @@ function UserDetailPage() {
 
             <section className='pt-4'>
                 <h2 className='text-lg font-bold pb-2'>Passkeys</h2>
-                <div className='grid grid-cols-4'>
+                <div className='grid grid-cols-3'>
                     <p className='font-bold'>Hostname</p>
                     <p className='font-bold'>Created</p>
                     <p className='font-bold'>Last login</p>
-                    <p></p>
                     <PasskeyList value={userDetail} />
                 </div>
             </section>
@@ -92,7 +91,7 @@ function UserDetailPage() {
             <section className='pt-10'>
                 <h2 className='text-lg font-bold pb-2'>Live account eviction</h2>
                 <p>This is used to remove user passkeys and sessions and forcibly evict anyone currently logged-in with the <span className='font-bold'>{user?.nomUsager}</span> account.</p>
-                <EvitActions />
+                <EvictActions />
             </section>
         </>
     );
@@ -117,6 +116,11 @@ function ActivateCode(props: {username?: string | null}) {
         setSuccess(false);
         setCode(e.currentTarget.value)
     }, [setCode, setSuccess]);
+    let buttonClassName = useMemo(()=>{
+        if(success) return 'btn inline-block text-center bg-green-700 hover:bg-green-600 active:bg-green-500 disabled:bg-green-800';
+        if(codeError) return 'btn inline-block text-center bg-red-700 hover:bg-red-600 active:bg-red-500 disabled:bg-red-800';
+        return 'btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800';
+    }, [codeError, success]);
 
     let activateHandler = useCallback(()=>{
         if(!workers || !ready) throw new Error("workers not initialized");
@@ -141,7 +145,7 @@ function ActivateCode(props: {username?: string | null}) {
                 setCodeError('');
                 setCode(''); // Reset code
             } else {
-                if(activationResponse.err) setCodeError(activationResponse.err);
+                setCodeError(activationResponse.err || 'Error');
             }
         })
         .catch(err=>{
@@ -150,12 +154,6 @@ function ActivateCode(props: {username?: string | null}) {
             setCodeError(''+err);
         });
     }, [workers, ready, code, userId, username, setCode, setCodeError, setSuccess]);
-
-    let buttonClassName = useMemo(()=>{
-        if(success) return 'btn inline-block text-center bg-green-700 hover:bg-green-600 active:bg-green-500 disabled:bg-green-800';
-        if(codeError) return 'btn inline-block text-center bg-red-700 hover:bg-red-600 active:bg-red-500 disabled:bg-red-800';
-        return 'btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800';
-    }, [codeError, success]);
 
     return (
         <>
@@ -183,12 +181,6 @@ function PasskeyList(props: {value: UserDetail | null}) {
                     <p>{item.hostname}</p>
                     <p><Formatters.FormatterDate value={item.date_creation} /></p>
                     <p><Formatters.FormatterDate value={item.dernier_auth} /></p>
-                    <div>
-                        <button 
-                            className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                                Delete
-                        </button>
-                    </div>
                 </React.Fragment>
             )
         });
@@ -218,14 +210,61 @@ function CookiesList(props: {value: UserDetail | null}) {
     return (<>{cookies}</>);
 }
 
-function EvitActions() {
+function EvictActions() {
 
+    let workers = useWorkers();
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
 
+    let {userId} = useParams();
+
+    let [waiting, setWaiting] = useState(false);
+    let [error, setError] = useState('');
+    let [success, setSuccess] = useState(false);
+    let buttonClassName = useMemo(()=>{
+        if(success) return 'btn inline-block text-center bg-green-700 hover:bg-green-600 active:bg-green-500 disabled:bg-green-800';
+        if(error) return 'btn inline-block text-center bg-red-700 hover:bg-red-600 active:bg-red-500 disabled:bg-red-800';
+        return 'btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800';
+    }, [error, success]);
+
     let [deletePasskeys, setDeletePasskeys] = useState(false);
-    let deletePasskeysChangeHandler = useCallback((e: ChangeEvent<HTMLInputElement>)=>setDeletePasskeys(e.currentTarget.checked), [setDeletePasskeys]);
+    let deletePasskeysChangeHandler = useCallback((e: ChangeEvent<HTMLInputElement>)=>{
+        setDeletePasskeys(e.currentTarget.checked)
+        setSuccess(false);
+        setError('');
+    }, [setDeletePasskeys, setSuccess, setError]);
     let [deleteSessions, setDeleteSessions] = useState(false);
-    let deleteSessionsChangeHandler = useCallback((e: ChangeEvent<HTMLInputElement>)=>setDeleteSessions(e.currentTarget.checked), [setDeleteSessions]);
+    let deleteSessionsChangeHandler = useCallback((e: ChangeEvent<HTMLInputElement>)=>{
+        setDeleteSessions(e.currentTarget.checked)
+        setSuccess(false);
+        setError('');
+    }, [setDeleteSessions]);
+
+    let evictHandler = useCallback(()=>{
+        if(!workers || !ready) throw new Error("workers not initialized");
+        if(!deletePasskeys && !deleteSessions) throw new Error("No action required");
+        if(!userId) throw new Error("UserId not provided");
+
+        setWaiting(true);
+        workers.connection.evictUser(userId, deletePasskeys, deleteSessions)
+            .then(response=>{
+                console.debug("evictUser Response");
+                if(response.ok) {
+                    setSuccess(true);
+                    setError('');
+                } else {
+                    setSuccess(false);
+                    setError(response.err || 'Error');
+                }
+            })
+            .catch(err=>{
+                console.error("evictUser Error", err);
+                setSuccess(false);
+                setError(''+err);
+            })
+            .finally(()=>{
+                setWaiting(false);
+            })
+    }, [workers, ready, deletePasskeys, deleteSessions, userId, setWaiting, setSuccess, setError]);
 
     return (
         <>
@@ -239,8 +278,8 @@ function EvitActions() {
                 <label htmlFor='deleteSessions' className='pl-2'>Evict all current sessions for the user account.</label>
             </div>
 
-            <button disabled={!ready || (!deletePasskeys && !deleteSessions)}
-                className='btn mt-4 inline-block text-center bg-red-700 hover:bg-red-600 active:bg-red-500 disabled:bg-red-800'>
+            <button disabled={waiting || !ready || (!deletePasskeys && !deleteSessions)} onClick={evictHandler}
+                className={'mt-4 ml-6 ' + buttonClassName}>
                     Apply
             </button>
         </>        

@@ -301,6 +301,13 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendCommand(command, DOMAINE_COREMAITREDESCOMPTES, 'majUsagerDelegations') as Promise<MessageResponse & UserDelegationInformation>;
     }
 
+    async evictUser(userId: string, resetWebauthn: boolean, evictAllSessions: boolean) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand(
+            {userId, resetWebauthn, evictAllSessions}, 
+            DOMAINE_COREMAITREDESCOMPTES, 'resetWebauthnUsager');
+    }
+
     async subscribeUserEvents(cb: SubscriptionCallback): Promise<void> {
         if(!this.connection) throw new Error("Connection is not initialized");
         return await this.connection.subscribe('userEvents', cb);
