@@ -1,16 +1,17 @@
 {
     "defaults": {
-        "domain": "CoreTopologie",
+        "domain": "",
         "exchange": "3.protege"
     },
     "requests": [
         {"domain": "*", "action": "ping"},
         {"domain": "CoreCatalogues", "action": "listeApplications"},
         {"domain": "CoreCatalogues", "action": "infoApplication"},
-        {"domain": "CoreTopologie", "action": "listeDomaines"},
-        {"domain": "CoreTopologie", "action": "listeNoeuds"},
         {"domain": "CoreMaitreDesComptes", "action": "getListeUsagers"},
         {"domain": "CoreMaitreDesComptes", "action": "getPasskeysUsager", "exchange": "2.prive"},
+        {"domain": "CoreMaitreDesComptes", "action": "getCsrRecoveryParcode", "exchange": "2.prive"},
+        {"domain": "CoreTopologie", "action": "listeDomaines"},
+        {"domain": "CoreTopologie", "action": "listeNoeuds"},
         {"domain": "fichiers", "action": "domainesBackupV2", "exchange": "2.prive"},
         {"domain": "MaitreDesCles", "action": "compterClesNonDechiffrables"},
         {"domain": "MaitreDesCles", "action": "clesNonDechiffrablesV2"},
@@ -19,6 +20,7 @@
     "commands": [
         {"domain": "*", "action": "regenerer"},
         {"domain": "*", "action": "declencherBackup"},
+        {"domain": "CoreMaitreDesComptes", "action": "signerCompteParProprietaire", "exchange": "2.prive"},
         {"domain": "MaitreDesCles", "action": "rechiffrerBatch"},
         {"domain": "instance", "action": "installerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},
         {"domain": "instance", "action": "supprimerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},

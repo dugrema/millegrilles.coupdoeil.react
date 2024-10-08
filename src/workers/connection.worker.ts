@@ -132,6 +132,10 @@ export type UserDetail = {
 export type PasswordDict = {[key: string]: string};
 type GetPasswordsResponse = MessageResponse & {secrets?: PasswordDict};
 
+export type CertificateRequest = {nomUsager: string, csr: string, date: number, activationTierce?: boolean};
+
+type VerifyActivationCodeResponse = MessageResponse & {code?: string, nomusager?: string, csr?: string};
+
 export class AppsConnectionWorker extends ConnectionWorker {
 
     async authenticate(reconnect?: boolean) {
@@ -276,6 +280,16 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async getUserPasskeys(userId: string) {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendRequest({userId}, DOMAINE_COREMAITREDESCOMPTES, 'getPasskeysUsager') as Promise<MessageResponse & UserDetail>;
+    }
+
+    async verifyActivationCode(userName: string, code: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({nom_usager: userName, code}, DOMAINE_COREMAITREDESCOMPTES, 'getCsrRecoveryParcode') as Promise<VerifyActivationCodeResponse>;
+    }
+
+    async activateAccountByAdmin(userId: string, request: CertificateRequest) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({userId, demandeCertificat: request}, DOMAINE_COREMAITREDESCOMPTES, 'signerCompteParProprietaire');
     }
 
     async subscribeUserEvents(cb: SubscriptionCallback): Promise<void> {
