@@ -13,7 +13,8 @@
         {"domain": "CoreMaitreDesComptes", "action": "getPasskeysUsager", "exchange": "2.prive"},
         {"domain": "fichiers", "action": "domainesBackupV2", "exchange": "2.prive"},
         {"domain": "MaitreDesCles", "action": "compterClesNonDechiffrables"},
-        {"domain": "MaitreDesCles", "action": "clesNonDechiffrablesV2"}
+        {"domain": "MaitreDesCles", "action": "clesNonDechiffrablesV2"},
+        {"domain": "instance", "action": "getPasswords", "exchanges": ["1.public", "2.prive", "3.protege"]}
     ],
     "commands": [
         {"domain": "*", "action": "regenerer"},

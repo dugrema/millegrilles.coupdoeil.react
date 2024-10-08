@@ -129,6 +129,9 @@ export type UserDetail = {
     passkeys?: Passkey[],
 }
 
+export type PasswordDict = {[key: string]: string};
+type GetPasswordsResponse = MessageResponse & {secrets?: PasswordDict};
+
 export class AppsConnectionWorker extends ConnectionWorker {
 
     async authenticate(reconnect?: boolean) {
@@ -229,33 +232,38 @@ export class AppsConnectionWorker extends ConnectionWorker {
             configuration: applicationPackage,
             instance_id: instanceId,
         };
-        return this.connection.sendCommand(command, DOMAINE_INSTANCE, 'installerApplication', {partition: instanceId, exchange, noverif: true});
+        return this.connection.sendCommand(command, DOMAINE_INSTANCE, 'installerApplication', {partition: instanceId, exchange, role: 'instance'});
     }
 
     async removeApplication(name: string, instanceId: string, exchange: string) {
         if(!this.connection) throw new Error("Connection is not initialized");
         if(exchange === '4.secure') exchange = '3.protege';  // Downgrade, the secure server is listening on 3.protege
         let command = { nom_application: name, instance_id: instanceId };
-        return this.connection.sendCommand(command, DOMAINE_INSTANCE, 'supprimerApplication', {partition: instanceId, exchange, noverif: true});        
+        return this.connection.sendCommand(command, DOMAINE_INSTANCE, 'supprimerApplication', {partition: instanceId, exchange, role: 'instance'});        
     }
 
     async startApplication(name: string, instanceId: string, exchange: string) {
         if(!this.connection) throw new Error("Connection is not initialized");
         if(exchange === '4.secure') exchange = '3.protege';  // Downgrade, the secure server is listening on 3.protege
         let command = { nom_application: name, instance_id: instanceId };
-        return this.connection.sendCommand(command, DOMAINE_INSTANCE, 'demarrerApplication', {partition: instanceId, exchange, noverif: true});        
+        return this.connection.sendCommand(command, DOMAINE_INSTANCE, 'demarrerApplication', {partition: instanceId, exchange, role: 'instance'});
     }
 
     async stopApplication(name: string, instanceId: string, exchange: string) {
         if(!this.connection) throw new Error("Connection is not initialized");
         if(exchange === '4.secure') exchange = '3.protege';  // Downgrade, the secure server is listening on 3.protege
         let command = { nom_application: name, instance_id: instanceId };
-        return this.connection.sendCommand(command, DOMAINE_INSTANCE, 'arreterApplication', {partition: instanceId, exchange, noverif: true});        
+        return this.connection.sendCommand(command, DOMAINE_INSTANCE, 'arreterApplication', {partition: instanceId, exchange, role: 'instance'});        
     }
 
     async refreshPackages() {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendCommand({}, DOMAINE_INSTANCE, 'transmettreCatalogues', {noverif: true});
+        return this.connection.sendCommand({}, DOMAINE_INSTANCE, 'transmettreCatalogues', {role: 'instance'});
+    }
+
+    async getApplicationPasswords(instanceId: string, exchange: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({}, DOMAINE_INSTANCE, 'getPasswords', {role: 'instance', partition: instanceId, exchange}) as GetPasswordsResponse;
     }
 
     // Users

@@ -43,13 +43,15 @@ function InstallNewApplication() {
         setRefreshing(true);
         workers.connection.refreshPackages()
             .then(async response => {
-                console.debug("Response ", response);
+                if(!response.ok) {
+                    console.error("refreshPackages Error ", response);
+                    return;
+                }
                 await new Promise(resolve=>setTimeout(resolve, 1_000));
                 // Load current application packages
                 if(workers) {
                     let packages = await workers.connection.getCurrentPackagesList();
                     if(packages.resultats) {
-                        console.debug("Updated packages: ", packages.resultats);
                         setApplicationCurrentPackages(packages.resultats);
                     }
                 }

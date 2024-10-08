@@ -1,6 +1,6 @@
 import { Link, useOutletContext, useParams } from "react-router-dom";
-import { ApplicationConfiguree, ServerInstance } from "../workers/connection.worker";
-import React, { ChangeEvent, MouseEvent, useCallback, useMemo, useState } from "react";
+import { ApplicationConfiguree, PasswordDict, ServerInstance } from "../workers/connection.worker";
+import React, { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
 import { ToggleSwitch } from "flowbite-react";
@@ -28,7 +28,7 @@ function InstanceApplications() {
         if(!workers || !ready) throw new Error("workers not initialized");
         let security = instance.securite;
         if(!security) throw new Error("No security level on instance");
-        console.debug("Toggle application %s to running?%s", name, running);
+        // console.debug("Toggle application %s to running?%s", name, running);
         let action = workers.connection.startApplication;
         if(!running) { action = workers.connection.stopApplication; }
         action(name, instance.instance_id, security)
@@ -65,32 +65,41 @@ function InstanceApplications() {
     }, [workers, instance]);
 
     return (
-        <section>
-            <h2 className='text-lg font-bold pt-4'>Applications</h2>
+        <>
+            <section>
+                <h2 className='text-lg font-bold pt-4'>Applications</h2>
 
-            <Link to={`/coupdoeil2/instances/${instanceId}/newApplication`}
-                className='btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900'>
-                    Install new
-            </Link>
-            <button
-                className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                    Refresh packages
-            </button>
-            <button
-                className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                    Upgrade all
-            </button>
+                <Link to={`/coupdoeil2/instances/${instanceId}/newApplication`}
+                    className='btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900'>
+                        Install new
+                </Link>
+                <Link to={`/coupdoeil2/instances/${instanceId}/passwords`}
+                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                        Passwords
+                </Link>
+                <button
+                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                        Refresh packages
+                </button>
+                <button
+                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                        Upgrade all
+                </button>
+            </section>
 
-            <div className='grid grid-cols-12'>
-                <p className='font-bold pt-4 pb-2 col-span-3'>Name</p>
-                <p className='font-bold pt-4 pb-2 col-span-2'>Version</p>
-                <p className='font-bold pt-4 pb-2 col-span-1'>Status</p>
-                <p className='font-bold pt-4 pb-2 col-span-6'>Actions</p>
+            <section>
+                <h2 className='text-lg font-bold pt-4'>Applications</h2>
 
-                {applications}
-            </div>
+                <div className='grid grid-cols-12'>
+                    <p className='font-bold pt-4 pb-2 col-span-3'>Name</p>
+                    <p className='font-bold pt-4 pb-2 col-span-2'>Version</p>
+                    <p className='font-bold pt-4 pb-2 col-span-1'>Status</p>
+                    <p className='font-bold pt-4 pb-2 col-span-6'>Actions</p>
 
-        </section>
+                    {applications}
+                </div>
+            </section>
+        </>
     );
 }
 
@@ -149,8 +158,6 @@ export function prepareApps(instance: ServerInstance): InstanceApp[] {
     servicesCopy.sort((a: InstanceApp, b: InstanceApp)=>{
         return a.name.localeCompare(b.name)
     })
-
-    console.debug("Services : ", servicesCopy);
 
     return servicesCopy;
 }

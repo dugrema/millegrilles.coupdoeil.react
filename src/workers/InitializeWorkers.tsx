@@ -59,9 +59,9 @@ function InitializeWorkers() {
             // Determine if this is a new instance in installation mode
             return fetch('/installation/api/info')
                 .then(async response => {
-                    console.debug("Status: ", response);
+                    // console.debug("Status: ", response);
                     let content = await response.json() as ServerInstallationStatus;
-                    console.debug("Response content ", content);
+                    // console.debug("Response content ", content);
                     if(!content.idmg) {
                         setInstallationMode(true);  // This is a new instance
                     } else if(content.ca) {
