@@ -113,11 +113,12 @@ export type UserEventCallback = SubscriptionMessage & {
     message: messageStruct.MilleGrillesMessage & UserListItem,
 };
 
+export type UserActivation = {date_creation: number, fingerprint_pk: string};
 export type UserCookie = {date_creation: number, expiration: number, hostname: string};
 export type Passkey = {cred_id: string, date_creation: number, dernier_auth: number, hostname: string};
 export type UserDetail = {
     user_id: string,
-    activations?: any,
+    activations?: UserActivation[],
     cookies?: UserCookie[],
     passkeys?: Passkey[],
 }

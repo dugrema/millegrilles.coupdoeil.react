@@ -3,7 +3,7 @@ import useUserStore, { UserDetailStore } from "./userStore";
 import React, { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
-import { CertificateRequest, ChangeUserSecurityCommand, Passkey, UserCookie, UserDetail } from "../workers/connection.worker";
+import { CertificateRequest, ChangeUserSecurityCommand, Passkey, UserActivation, UserCookie, UserDetail } from "../workers/connection.worker";
 import { Formatters } from "millegrilles.reactdeps.typescript";
 
 function UserDetailPage() {
@@ -43,11 +43,11 @@ function UserDetailPage() {
             <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>User detail</h2>
 
-                <div className='grid grid-cols-2'>
-                    <p>User name</p>
+                <div className='grid grid-cols-1 lg:grid-cols-2'>
+                    <p className='font-bold'>User name</p>
                     <p>{user?.nomUsager}</p>
-                    <p>User Id</p>
-                    <p>{user?.userId}</p>
+                    <p className='font-bold'>User Id</p>
+                    <p className='text-xs sm:text-base'>{user?.userId}</p>
                 </div>
             </section>
 
@@ -76,6 +76,11 @@ function UserDetailPage() {
 
             <section className='pt-4'>
                 <h2 className='text-lg font-bold pb-2'>Browser activations</h2>
+                <div className='grid grid-cols-1 md:grid-cols-3'>
+                    <p className='font-bold md:col-span-2'>Fingerprint</p>
+                    <p className='font-bold'>Created</p>
+                    <ActivationList value={userDetail} />
+                </div>
             </section>
 
             <section className='pt-4'>
@@ -172,7 +177,7 @@ function PasskeyList(props: {value: UserDetail | null}) {
     let { value } = props;
 
     let passkeys = useMemo(()=>{
-        if(!value?.passkeys) return [<></>];
+        if((!value?.passkeys) || value.passkeys.length === 0) return [<p>None</p>];
         let passkeysCopy = [...value.passkeys];
         passkeysCopy.sort(sortPasskeys);
         return passkeysCopy.map(item=>{
@@ -189,11 +194,31 @@ function PasskeyList(props: {value: UserDetail | null}) {
     return (<>{passkeys}</>);
 }
 
+function ActivationList(props: {value: UserDetail | null}) {
+    let { value } = props;
+
+    let activations = useMemo(()=>{
+        if((!value?.activations) || value.activations.length === 0) return [<p>None</p>];
+        let activationsCopy = [...value.activations];
+        activationsCopy.sort(sortuserActivations);
+        return activationsCopy.map(item=>{
+            return (
+                <React.Fragment key={item.fingerprint_pk+item.date_creation}>
+                    <p className='md:col-span-2 break-words'>{item.fingerprint_pk}</p>
+                    <p><Formatters.FormatterDate value={item.date_creation} /></p>
+                </React.Fragment>
+            )
+        });
+    }, [value]);
+
+    return (<>{activations}</>);
+}
+
 function CookiesList(props: {value: UserDetail | null}) {
     let { value } = props;
 
     let cookies = useMemo(()=>{
-        if(!value?.cookies) return [<></>];
+        if((!value?.cookies) || value.cookies.length === 0) return [<p>None</p>];
         let cookiesCopy = [...value.cookies];
         cookiesCopy.sort(sortCookies);
         return cookiesCopy.map(item=>{
@@ -270,7 +295,7 @@ function EvictActions() {
         <>
             <div className='pt-2 pl-6'>
                 <input id='deletePasskeys' type='checkbox' checked={deletePasskeys} onChange={deletePasskeysChangeHandler} />
-                <label htmlFor='deletePasskeys' className='pl-2'>Delete all passkeys for the user account.</label>
+                <label htmlFor='deletePasskeys' className='pl-2'>Delete all passkeys and browser activations for the user account.</label>
             </div>
 
             <div className='pt-2 pl-6'>
@@ -297,6 +322,11 @@ function sortCookies(a: UserCookie, b: UserCookie) {
     if(a === b) return 0;
     let comp = a.hostname.localeCompare(b.hostname);
     if(comp !== 0) return comp;
+    return a.date_creation-b.date_creation;
+}
+
+function sortuserActivations(a: UserActivation, b: UserActivation) {
+    if(a === b) return 0;
     return a.date_creation-b.date_creation;
 }
 
