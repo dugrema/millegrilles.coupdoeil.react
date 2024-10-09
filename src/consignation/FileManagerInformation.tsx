@@ -1,13 +1,16 @@
-import { Link, useParams } from "react-router-dom";
+import { useCallback, useMemo } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+
 import useInstanceStore, { ServerInstanceStore } from "../instances/instanceStore";
 import useFileManagerStore, { FileManagerStore } from "./fileManagementStore";
-import { useCallback, useMemo } from "react";
 import { Formatters } from "millegrilles.reactdeps.typescript";
 import useWorkers from "../workers/workers";
 import useConnectionStore from "../connectionStore";
+import ActionButton from "../components/ActionButton";
 
 function FileManagerInformation() {
 
+    let navigate = useNavigate();
     let workers = useWorkers();
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
     let { instanceId } = useParams();
@@ -21,17 +24,13 @@ function FileManagerInformation() {
         return [instance, fileManager];
     }, [instances, fileManagers, instanceId]);
 
-    let removeHandler = useCallback(()=>{
+    let removeHandler = useCallback(async ( )=> {
         if(!workers || !ready) throw new Error("workers not initialized");
         if(!instanceId) throw new Error("instanceId not provided");
-        workers.connection.removeFileManager(instanceId)
-            .then(response=>{
-                console.debug("removeFileManager Response", response);
-            })
-            .catch(err=>{
-                console.error("removeFileManager Error", err);
-            })
-    }, [workers, ready, instanceId]);
+        let response = await workers.connection.removeFileManager(instanceId);
+        if(!response.ok) throw new Error(response.err || "Error");
+        navigate('/coupdoeil2/fileManagement');
+    }, [workers, ready, instanceId, navigate]);
 
     return (
         <>
@@ -67,10 +66,9 @@ function FileManagerInformation() {
                     Click on this button to remove the file manager from the list. The configuration is kept 
                     and will be re-used if you bring it back up on the same instance at a later date.
                 </p>
-                <button onClick={removeHandler} disabled={!ready || !instanceId}
-                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                        Remove
-                </button>
+                <ActionButton onClick={removeHandler} disabled={!ready || !instanceId}>
+                    Remove
+                </ActionButton>
             </section>
 
         </>

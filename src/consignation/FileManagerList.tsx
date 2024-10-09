@@ -5,19 +5,17 @@ import useInstanceStore from "../instances/instanceStore";
 import { ConditionalFormatters, Formatters } from "millegrilles.reactdeps.typescript";
 import useWorkers from "../workers/workers";
 import useConnectionStore from "../connectionStore";
+import ActionButton from "../components/ActionButton";
 
 function FileManagerList() {
 
     let workers = useWorkers();
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
 
-    let syncHandler = useCallback(()=>{
+    let syncHandler = useCallback(async () => {
         if(!workers || !ready) throw new Error('workers not initialized');
-        workers.connection.syncFileManagers()
-            .then(response=>{
-                console.debug("syncFileManagers Response", response);
-            })
-            .catch(err=>console.error("Error sync file managers", err));
+        let response = await workers.connection.syncFileManagers();
+        if(!response.ok) { throw new Error(response.err || 'Error'); }
     }, [workers, ready]);
 
     let reindexHandler = useCallback(()=>{
@@ -51,10 +49,7 @@ function FileManagerList() {
 
                 <h2 className='text-lg font-bold pt-4 pb-2'>Utilities</h2>
 
-                <button onClick={syncHandler} disabled={!ready}
-                    className='btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900'>
-                        Synchronize
-                </button>
+                <ActionButton onClick={syncHandler} disabled={!ready} mainButton={true}>Synchronize</ActionButton>
 
                 <button onClick={reindexHandler} disabled={!ready}
                     className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
@@ -99,7 +94,10 @@ function List() {
 
     let listElems = useMemo(()=>{
         if(!fileManagerList) return <p>Loading ...</p>;
-        return fileManagerList.map(item=>{
+
+        let activeManagers = fileManagerList.filter(item=>!item.supprime);
+
+        return activeManagers.map(item=>{
             let instance = instances?.filter(instance=>instance.instance_id === item.instance_id).pop();
             let url = new URL(item.consignation_url || 'http://fichiers');
             let label = instance?.hostname || url.hostname;

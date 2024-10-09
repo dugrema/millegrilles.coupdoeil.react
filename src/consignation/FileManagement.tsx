@@ -8,6 +8,7 @@ import useConnectionStore from '../connectionStore';
 import useWorkers, { AppWorkers } from '../workers/workers';
 import useFileManagerStore, { FileManagerStore } from './fileManagementStore';
 import { SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
+import { FileManager } from '../workers/connection.worker';
 
 
 function FileManagement() {
@@ -79,7 +80,7 @@ function processEvent(workers: AppWorkers | null, event: SubscriptionMessage, up
     } else if(action === 'syncUpload') {
         
     } else if(action === 'instanceConsignationSupprimee') {
-        
+        processEventRemoved(event, updateFileManager);
     } else {
         console.warn("Unmanaged event", event);
     }
@@ -92,8 +93,15 @@ function processEventPresence(event: SubscriptionMessage, updateFileManager: (e:
         let instanceId = certificate.extensions?.commonName;
         if(instanceId) {
             console.debug("Presence instance_id %s at %s", instanceId, estampille);
-            let updateValue = {instance_id: instanceId, '_mg-derniere-modification': estampille};
+            let updateValue = {instance_id: instanceId, '_mg-derniere-modification': estampille, supprime: false};
             updateFileManager(updateValue);
         }
     }
+}
+
+function processEventRemoved(event: SubscriptionMessage, updateFileManager: (e: FileManagerStore)=>void) {
+    let message = event.message as FileManager;
+    let instanceId = message.instance_id;
+    let updateValue = {instance_id: instanceId, supprime: true};
+    updateFileManager(updateValue);
 }
