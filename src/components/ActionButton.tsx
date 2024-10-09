@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { IconCheckSvg, IconXSvg } from "./Icons";
+import { IconCheckSvg, IconCompactDiscSvg, IconXSvg } from "./Icons";
 
 function ActionButton(props: {onClick: ()=>Promise<void>, disabled?: boolean | null, mainButton?: boolean, children: string}) {
 
@@ -20,11 +20,11 @@ function ActionButton(props: {onClick: ()=>Promise<void>, disabled?: boolean | n
         ];
         if(mainButton) return [
             'btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900', 
-            <span className='ml-9'/>
+            waiting?<IconCompactDiscSvg className='w-6 mr-2 fill-slate-500 inline animate-spin' />:<span className='ml-9'/>
         ];
         return [
             'btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800', 
-            <span className='ml-9'/>
+            waiting?<IconCompactDiscSvg className='w-6 mr-2 fill-slate-500 inline animate-spin' />:<span className='ml-9'/>
         ];
     }, [error, success, mainButton]);
 
