@@ -76,7 +76,7 @@ function InstallNewApplication() {
                 <React.Fragment key={item.nom}>
                     <p className='col-span-3'>{item.nom}</p>
                     <p className='col-span-2'>{item.version}</p>
-                    <div className='col-span-7'>
+                    <div className='col-span-7 pb-2 sm:pb-0'>
                         <button value={item.nom} onClick={installHandler} disabled={!ready}
                             className="varbtn w-20 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
                                 Install
@@ -102,7 +102,7 @@ function InstallNewApplication() {
                         Refresh packages
                 </button>
 
-                <div className='grid grid-cols-12'>
+                <div className='grid grid-cols-4 md:grid-cols-12'>
                     <p className='font-bold pt-4 pb-2 col-span-3'>Name</p>
                     <p className='font-bold pt-4 pb-2 col-span-2'>Version</p>
                     <p className='font-bold pt-4 pb-2 col-span-7'>Actions</p>
