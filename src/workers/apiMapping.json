@@ -24,6 +24,7 @@
         {"domain": "CoreMaitreDesComptes", "action": "signerCompteParProprietaire", "exchange": "2.prive"},
         {"domain": "CoreMaitreDesComptes", "action": "majUsagerDelegations"},
         {"domain": "CoreMaitreDesComptes", "action": "resetWebauthnUsager"},
+        {"domain": "CoreTopologie", "action": "supprimerConsignation"},
         {"domain": "MaitreDesCles", "action": "rechiffrerBatch"},
         {"domain": "fichiers", "action": "declencherSync", "exchange": "2.prive"},
         {"domain": "instance", "action": "installerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},

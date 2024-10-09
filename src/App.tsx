@@ -34,7 +34,9 @@ const UserDetail = React.lazy(()=>import('./users/UserDetail'));
 
 const FileManagement = React.lazy(()=>import('./consignation/FileManagement'));
 const FileManagerList = React.lazy(()=>import('./consignation/FileManagerList'));
-const FileManagerDetail = React.lazy(()=>import('./consignation/FileManagerDetail'));
+const FileManagerDetail = React.lazy(()=>import('./consignation/FileManagerInformation'));
+const FileManagerConfiguration = React.lazy(()=>import('./consignation/FileManagerConfiguration'));
+// const FileManagerSftpConfiguration = React.lazy(()=>import('./consignation/FileManagerSftpConfiguration'));
 
 const KeyManagement = React.lazy(()=>import('./utilities/KeyManagement'));
 const KeyManagementOptions = React.lazy(()=>import('./utilities/KeyManagementOptions'));
@@ -112,6 +114,7 @@ const router = createBrowserRouter([
         children: [
             { path: "/coupdoeil2/fileManagement", element: <FileManagerList /> },
             { path: "/coupdoeil2/fileManagement/:instanceId", element: <FileManagerDetail /> },
+            { path: "/coupdoeil2/fileManagement/:instanceId/configure", element: <FileManagerConfiguration /> },
         ]
   	},
       {

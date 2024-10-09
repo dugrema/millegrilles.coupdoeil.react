@@ -364,6 +364,11 @@ export class AppsConnectionWorker extends ConnectionWorker {
         //return this.connection.sendCommand({}, DOMAINE_COREMAITREDESCOMPTES, 'resetWebauthnUsager');
     }
 
+    async removeFileManager(instanceId: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({instance_id: instanceId}, DOMAINE_CORETOPOLOGIE, 'supprimerConsignation');
+    }
+
     async subscribeFileManagerEvents(cb: SubscriptionCallback): Promise<void> {
         if(!this.connection) throw new Error("Connection is not initialized");
         return await this.connection.subscribe('fileManagerEvents', cb);
