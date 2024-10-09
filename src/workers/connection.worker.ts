@@ -141,6 +141,28 @@ export type UserDelegationInformation = {
     delegations_version: number | null
 };
 
+export type FileManagerFileInformation = {
+    taille?: number,
+    nombre?: number,
+};
+
+export type FileManager = {
+    instance_id: string,
+    consignation_url?: string,
+    primaire?: boolean,
+    supprime?: boolean,
+    sync_actif?: boolean,
+    type_store?: string,
+    "_mg-derniere-modification"?: number,
+    principal?: FileManagerFileInformation,
+    orphelin?: FileManagerFileInformation,
+    manquant?: FileManagerFileInformation,
+}
+
+export type GetFileManagerListResponse = MessageResponse & {
+    liste: FileManager[],
+};
+
 export class AppsConnectionWorker extends ConnectionWorker {
 
     async authenticate(reconnect?: boolean) {
@@ -317,6 +339,39 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async unsubscribeUserEvents(cb: SubscriptionCallback): Promise<void> {
         if(!this.connection) throw new Error("Connection is not initialized");
         return await this.connection.unsubscribe('userEvents', cb);
+    }
+
+    // File managers
+    async getFileManagerList() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'getConfigurationFichiers') as Promise<GetFileManagerListResponse>;
+    }
+
+    async syncFileManagers() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({}, DOMAINE_FICHIERS, 'declencherSync');
+    }
+
+    async reindexFileManagers() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        throw new Error('todo')
+        // return this.connection.sendCommand({}, DOMAINE_COREMAITREDESCOMPTES, 'resetWebauthnUsager');
+    }
+
+    async resetTransfersFileManagers() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        throw new Error('todo')
+        //return this.connection.sendCommand({}, DOMAINE_COREMAITREDESCOMPTES, 'resetWebauthnUsager');
+    }
+
+    async subscribeFileManagerEvents(cb: SubscriptionCallback): Promise<void> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return await this.connection.subscribe('fileManagerEvents', cb);
+    }
+
+    async unsubscribeFileManagerEvents(cb: SubscriptionCallback): Promise<void> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return await this.connection.unsubscribe('fileManagerEvents', cb);
     }
 
 }

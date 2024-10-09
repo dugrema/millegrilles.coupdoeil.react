@@ -9,6 +9,7 @@ import './i18n';
 import 'font-awesome/css/font-awesome.min.css';
 import 'react-datetime/css/react-datetime.css';
 import './App.css';
+import { InstanceEventHandler } from './instances/Instances';
 
 
 const LandingPage = React.lazy(()=>import('./LandingPage'));
@@ -31,11 +32,14 @@ const Users = React.lazy(()=>import('./users/Users'));
 const UserList = React.lazy(()=>import('./users/UserList'));
 const UserDetail = React.lazy(()=>import('./users/UserDetail'));
 
+const FileManagement = React.lazy(()=>import('./consignation/FileManagement'));
+const FileManagerList = React.lazy(()=>import('./consignation/FileManagerList'));
+const FileManagerDetail = React.lazy(()=>import('./consignation/FileManagerDetail'));
+
 const KeyManagement = React.lazy(()=>import('./utilities/KeyManagement'));
 const KeyManagementOptions = React.lazy(()=>import('./utilities/KeyManagementOptions'));
 const DecryptKeys = React.lazy(()=>import('./utilities/DecryptKeys'));
 const ApplicationPackages = React.lazy(()=>import('./utilities/ApplicationPackages'));
-const ConsignationFichiers = React.lazy(()=>import('./consignation/ConsignationFichiers'));
 const Installer = React.lazy(()=>import('./installer/Installer'));
 const InstallSelect = React.lazy(()=>import('./installer/InstallSelect'));
 const Install3Protege = React.lazy(()=>import('./installer/Install3Protege'));
@@ -102,11 +106,12 @@ const router = createBrowserRouter([
         ]
   	},
     {
-		path: "/coupdoeil2/consignation",
-		element: <ConsignationFichiers />,
+		path: "/coupdoeil2/fileManagement",
+		element: <FileManagement />,
         errorElement: <ErrorPage />,
         children: [
-            // { path: "/apps/aichat", element: <ChatSummaryHistory /> },
+            { path: "/coupdoeil2/fileManagement", element: <FileManagerList /> },
+            { path: "/coupdoeil2/fileManagement/:instanceId", element: <FileManagerDetail /> },
         ]
   	},
       {
@@ -128,6 +133,7 @@ function App() {
                 <RouterProvider router={router} />
             </div>
             <InitializeWorkers />
+            <InstanceEventHandler />
         </>
     );
     

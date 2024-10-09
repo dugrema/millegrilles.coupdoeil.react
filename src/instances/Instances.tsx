@@ -12,13 +12,29 @@ import { InstanceEventCallback, ServerInstance } from '../workers/connection.wor
 
 
 function Instances() {
+    return (
+        <div>
+            <HeaderMenu title="Coup D'Oeil" backLink={true} />
 
+            <main className='fixed top-9 bottom-8 overflow-y-auto pt-2 pb-2 pl-2 pr-2 w-full'>
+                <Outlet />
+            </main>
+            
+            <Footer />
+
+            {/* <InstanceEventHandler />  // This element is now at the top level of the App */}
+        </div>
+    );
+}
+
+export default Instances;
+
+export function InstanceEventHandler() {
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
     let workers = useWorkers();
     let setInstances = useInstanceStore(state=>state.setInstances);
     let updateInstance = useInstanceStore(state=>state.updateInstance);
     let setApplicationCurrentPackages = useInstanceStore(state=>state.setApplicationCurrentPackages);
-    let clearStore = useInstanceStore(state=>state.clear);
 
     let instanceEventsCb = useMemo(()=>{
         if(!workers) return null;
@@ -56,25 +72,11 @@ function Instances() {
                 workers.connection.unsubscribeInstanceEvents(instanceEventsCb)
                     .catch(err=>console.error("Error unsubscribing from chat conversation events", err));
             }
-    
-            clearStore(); 
         }
-    }, [ready, workers, clearStore, instanceEventsCb, setInstances, setApplicationCurrentPackages]);
+    }, [ready, workers, instanceEventsCb, setInstances, setApplicationCurrentPackages]);
 
-    return (
-        <div>
-            <HeaderMenu title="Coup D'Oeil" backLink={true} />
-
-            <main className='fixed top-9 bottom-8 overflow-y-auto pt-2 pb-2 pl-2 pr-2 w-full'>
-                <Outlet />
-            </main>
-            
-            <Footer />
-        </div>
-    );
+    return <></>;
 }
-
-export default Instances;
 
 async function processEvent(workers: AppWorkers | null, event: SubscriptionMessage, updateInstance: (update: ServerInstance)=>void) {
     let eventInstance = event as InstanceEventCallback;

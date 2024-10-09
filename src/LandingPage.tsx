@@ -80,9 +80,9 @@ function SystemManagement() {
                         </Link>
                     </li>
                     <li className='pt-2'>
-                        <Link to='/coupdoeil2/consignation' 
+                        <Link to='/coupdoeil2/fileManagement' 
                             className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                                File servers
+                                File management
                         </Link>
                     </li>
                 </ul>
