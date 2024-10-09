@@ -19,7 +19,7 @@ function FileManagerConfiguration() {
     let [publicFileUrl, setPublicFileUrl] = useState('');
     let [synchronizationActive, setSynchronizationActive] = useState(null as boolean | null);
     let [synchronizationInterval, setSynchronizationInterval] = useState(null as number | null);
-    const storeType = 'millegrilles';
+    const storeType = 'millegrille';
 
     let [instance, fileManager] = useMemo(()=>{
         if(!instances || !fileManagers || !instanceId) return [null, null];
