@@ -149,9 +149,11 @@ export type FileManagerFileInformation = {
 export type FileManager = {
     instance_id: string,
     consignation_url?: string,
+    url_download?: string,
     primaire?: boolean,
     supprime?: boolean,
     sync_actif?: boolean,
+    sync_intervalle?: number,
     type_store?: string,
     "_mg-derniere-modification"?: number,
     principal?: FileManagerFileInformation,
@@ -161,6 +163,15 @@ export type FileManager = {
 
 export type GetFileManagerListResponse = MessageResponse & {
     liste: FileManager[],
+};
+
+export type FileManagerConfiguration = {
+    instance_id: string,
+    type_store?: string,
+    consignation_url?: string,
+    url_download?: string,
+    sync_actif?: boolean,
+    sync_intervalle?: number | null,
 };
 
 export class AppsConnectionWorker extends ConnectionWorker {
@@ -349,7 +360,7 @@ export class AppsConnectionWorker extends ConnectionWorker {
 
     async syncFileManagers() {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendCommand({}, DOMAINE_FICHIERS, 'declencherSync');
+        return this.connection.sendCommand({}, DOMAINE_FICHIERS, 'declencherSync', {role: 'fichiers'});
     }
 
     async reindexFileManagers() {
@@ -367,6 +378,11 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async removeFileManager(instanceId: string) {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendCommand({instance_id: instanceId}, DOMAINE_CORETOPOLOGIE, 'supprimerConsignation');
+    }
+
+    async setFileManagerConfiguration(configuration: FileManagerConfiguration) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand(configuration, DOMAINE_CORETOPOLOGIE, 'configurerConsignation');
     }
 
     async subscribeFileManagerEvents(cb: SubscriptionCallback): Promise<void> {

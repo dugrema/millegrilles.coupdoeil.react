@@ -153,7 +153,10 @@ export class AppsEncryptionWorker {
         return info;
     }
 
-    async encryptMessageMgs4ToBase64(cleartext: Object | string | Uint8Array, domains: string[], key?: string | Uint8Array): Promise<keymaster.EncryptionBase64Result> {
+    async encryptMessageMgs4ToBase64(cleartext: Object | string | Uint8Array, domains: string | string[], key?: string | Uint8Array): Promise<keymaster.EncryptionBase64Result> {
+        if(typeof(domains) === 'string') {
+            domains = [domains];
+        }
         let info = await this.encryptMessageMgs4(cleartext, domains, key);
 
         let infoBase64: keymaster.EncryptionBase64Result = {
