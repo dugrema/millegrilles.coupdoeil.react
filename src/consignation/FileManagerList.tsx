@@ -100,7 +100,7 @@ function List() {
     let listElems = useMemo(()=>{
         if(!fileManagerList) return <p>Loading ...</p>;
         return fileManagerList.map(item=>{
-            let instance = instances?.filter(item=>item.instance_id === item.instance_id).pop();
+            let instance = instances?.filter(instance=>instance.instance_id === item.instance_id).pop();
             let url = new URL(item.consignation_url || 'http://fichiers');
             let label = instance?.hostname || url.hostname;
             if(label === 'fichiers') {

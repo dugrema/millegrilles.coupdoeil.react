@@ -8,8 +8,6 @@ import useConnectionStore from '../connectionStore';
 import useWorkers, { AppWorkers } from '../workers/workers';
 import useFileManagerStore, { FileManagerStore } from './fileManagementStore';
 import { SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
-import { certificates } from 'millegrilles.cryptography';
-import { X509Certificate } from '@peculiar/x509';
 
 
 function FileManagement() {
