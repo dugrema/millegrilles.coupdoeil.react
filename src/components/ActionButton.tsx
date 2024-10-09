@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { IconCheckSvg, IconUpload, IconXSvg } from "./Icons";
+import { IconCheckSvg, IconXSvg } from "./Icons";
 
 function ActionButton(props: {onClick: ()=>Promise<void>, disabled?: boolean | null, mainButton?: boolean, children: string}) {
 
