@@ -1,6 +1,6 @@
 import {proxy} from 'comlink';
 import { Outlet } from 'react-router-dom';
-import { MessageResponse, SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
+import { SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
 
 import HeaderMenu from '../Menu';
 import Footer from '../Footer';
@@ -59,7 +59,7 @@ function Instances() {
     
             clearStore(); 
         }
-    }, [ready, workers, clearStore, instanceEventsCb, setInstances]);
+    }, [ready, workers, clearStore, instanceEventsCb, setInstances, setApplicationCurrentPackages]);
 
     return (
         <div>

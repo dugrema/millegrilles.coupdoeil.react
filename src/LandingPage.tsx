@@ -15,7 +15,7 @@ function LandingPage() {
         if(installationMode === true) {
             navigate('/coupdoeil2/install');  // Redirect to the installation screen
         }
-    }, [installationMode])
+    }, [installationMode, navigate]);
 
     return (
         <div>

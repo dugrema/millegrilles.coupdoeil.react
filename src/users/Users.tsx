@@ -7,7 +7,7 @@ import Footer from '../Footer';
 import useWorkers, { AppWorkers } from '../workers/workers';
 import useUserStore from './userStore';
 import useConnectionStore from '../connectionStore';
-import { MessageResponse, SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
+import { SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
 import { UserListItem, UserEventCallback } from '../workers/connection.worker';
 
 function Users() {

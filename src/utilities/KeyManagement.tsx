@@ -1,6 +1,6 @@
 import HeaderMenu from '../Menu';
 import Footer from '../Footer';
-import { Link, Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 
 
 function KeyManagement() {

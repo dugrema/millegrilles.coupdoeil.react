@@ -1,6 +1,6 @@
 import { Link, useOutletContext, useParams } from "react-router-dom";
-import { ApplicationConfiguree, PasswordDict, ServerInstance } from "../workers/connection.worker";
-import React, { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { ServerInstance } from "../workers/connection.worker";
+import React, { MouseEvent, useCallback, useMemo } from "react";
 import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
 import { ToggleSwitch } from "flowbite-react";
@@ -62,7 +62,7 @@ function InstanceApplications() {
                 </React.Fragment>
             )
         })
-    }, [workers, instance]);
+    }, [instance, ready, removeHandler, toggleApplication]);
 
     return (
         <>
@@ -163,8 +163,4 @@ export function prepareApps(instance: ServerInstance): InstanceApp[] {
     })
 
     return servicesCopy;
-}
-
-function preparePackages() {
-
 }
