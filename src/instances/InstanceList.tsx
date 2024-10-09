@@ -33,9 +33,10 @@ function InstanceList() {
 
             <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>Instance list</h2>
-                <div className='grid grid-cols-3'>
-                    <p className='font-bold col-span-2'>Instance name</p>
-                    <p className='font-bold'>Last presence</p>
+                <div className='grid grid-cols-1 sm:grid-cols-4'>
+                    <p className='font-bold pb-2 sm:col-span-2'>Instance name</p>
+                    <p className='font-bold pb-2'>Last presence</p>
+                    <p className='font-bold pb-2'>Security level</p>
                     <ShowList />
                 </div>
             </section>
@@ -60,10 +61,11 @@ function ShowList() {
         return instanceCopy.map(item=>{
             return (
                 <React.Fragment key={item.instance_id}>
-                    <Link className='col-span-2 underline font-bold' to={`/coupdoeil2/instances/${item.instance_id}`}>
+                    <Link className='sm:col-span-2 underline font-bold' to={`/coupdoeil2/instances/${item.instance_id}`}>
                         {item.hostname}
                     </Link>
                     <ConditionalFormatters.FormatterConditionalDate value={item.date_presence} warn={360} error={1800} />
+                    <p className='pb-2 sm:pb-0'>{item.securite}</p>
                 </React.Fragment>
             )
         });
