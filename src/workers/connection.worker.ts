@@ -52,12 +52,19 @@ export type ResponseGetNonDecryptableKeyBatch = MessageResponse & {
     idx?: number,
 };
 
+export type DiskInformation = {
+    mountpoint: string,
+    total: number,
+    used: number,
+    free: number,
+}
+
 export type ServerInstance = {
     instance_id: string,
     applications_configurees: ApplicationConfiguree[],
     date_presence: number,
     containers: any,
-    disk: any,
+    disk?: DiskInformation[],
     domaine?: string,
     domaines?: string[],
     fqdn_detecte?: string,

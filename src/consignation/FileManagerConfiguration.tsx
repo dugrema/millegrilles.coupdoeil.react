@@ -42,10 +42,9 @@ function FileManagerConfiguration() {
         };
         
         let response = await workers.connection.setFileManagerConfiguration(command);
-
-        // if(!response.ok) {
-        //     throw new Error(response.err || 'Error');
-        // }
+        if(!response.ok) {
+            throw new Error(response.err || 'Error');
+        }
     }, [workers, ready, instanceId, internalCommunicationUrl, publicFileUrl, synchronizationActive, synchronizationInterval]);
 
     useEffect(()=>{
@@ -55,7 +54,7 @@ function FileManagerConfiguration() {
         setPublicFileUrl(fileManager.url_download || '');
         setSynchronizationActive(!!fileManager.sync_actif);
         setSynchronizationInterval(fileManager.sync_intervalle || 86400);
-    }, [instance, setInternalCommunicationUrl, setPublicFileUrl, setSynchronizationActive, setSynchronizationInterval]);
+    }, [instance, setInternalCommunicationUrl, setPublicFileUrl, setSynchronizationActive, setSynchronizationInterval, fileManager]);
 
     return (
         <>
@@ -70,7 +69,7 @@ function FileManagerConfiguration() {
 
             <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>Communication parameters</h2>
-                <CommunicationParameters fileManager={fileManager} 
+                <CommunicationParameters
                     internalCommunicationUrl={internalCommunicationUrl}
                     setInternalCommunicationUrl={setInternalCommunicationUrl} 
                     publicFileUrl={publicFileUrl}
@@ -80,7 +79,7 @@ function FileManagerConfiguration() {
 
             <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>Primary server configuration</h2>
-                <PrimaryInstanceParameters fileManager={fileManager}
+                <PrimaryInstanceParameters
                     synchronizationActive={synchronizationActive}
                     setSynchronizationActive={setSynchronizationActive}
                     synchronizationInterval={synchronizationInterval}
@@ -103,7 +102,6 @@ function FileManagerConfiguration() {
 export default FileManagerConfiguration;
 
 type CommunicationParametersProps = {
-    fileManager: FileManagerStore | null | undefined,
     internalCommunicationUrl: string,
     setInternalCommunicationUrl: Dispatch<string>,
     publicFileUrl: string,
@@ -113,7 +111,6 @@ type CommunicationParametersProps = {
 function CommunicationParameters(props: CommunicationParametersProps) {
 
     let {
-        fileManager, 
         internalCommunicationUrl, setInternalCommunicationUrl,
         publicFileUrl, setPublicFileUrl,
     } = props;
@@ -158,7 +155,6 @@ function CommunicationParameters(props: CommunicationParametersProps) {
 }
 
 type PrimaryInstanceParametersProps = {
-    fileManager: FileManagerStore | null | undefined,
     synchronizationActive: boolean | null,
     setSynchronizationActive: Dispatch<boolean>,
     synchronizationInterval: number | null,
@@ -168,7 +164,6 @@ type PrimaryInstanceParametersProps = {
 function PrimaryInstanceParameters(props: PrimaryInstanceParametersProps) {
 
     let {
-        fileManager,
         synchronizationActive, setSynchronizationActive,
         synchronizationInterval, setSynchronizationInterval,
     } = props;

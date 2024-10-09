@@ -7,6 +7,7 @@ import { Formatters } from "millegrilles.reactdeps.typescript";
 import useWorkers from "../workers/workers";
 import useConnectionStore from "../connectionStore";
 import ActionButton from "../components/ActionButton";
+import { InstanceStorageInformation } from "../instances/InstanceInformation";
 
 function FileManagerInformation() {
 
@@ -121,7 +122,13 @@ function InstanceInformation(props: {instance: ServerInstanceStore | null | unde
             </div>
 
             <h3 className='font-bold pt-4 pb-4'>Storage</h3>
-            !!! TODO !!!
+            <div className='grid grid-cols-6'>
+                <p className='font-bold pb-2 col-span-3'>Mount</p>
+                <p className='font-bold pb-2'>Total</p>
+                <p className='font-bold pb-2'>Used</p>
+                <p className='font-bold pb-2'>Free</p>
+                <InstanceStorageInformation value={instance} />
+            </div>
         </>
     );
 }

@@ -11,6 +11,7 @@ function InstanceDetail() {
 
     let instance = useMemo(()=>{
         if(!instances) return {};
+        console.debug("Instances", instances);
         return instances.filter(item=>item.instance_id === instanceId).pop();
     }, [instances, instanceId]) as ServerInstance | null;
 
