@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { Domain, UserDelegationInformation, UserListItem } from '../workers/connection.worker';
+import { UserListItem } from '../workers/connection.worker';
 
 export type UserDetailStore = UserListItem & {
 };

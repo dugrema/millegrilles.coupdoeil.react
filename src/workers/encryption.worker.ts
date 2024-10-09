@@ -2,7 +2,7 @@ import '@solana/webcrypto-ed25519-polyfill';
 import { expose } from 'comlink';
 
 import { encryption, encryptionMgs4, multiencoding, keymaster, x25519, certificates } from 'millegrilles.cryptography';
-import { deflate, inflate, gzip, ungzip } from 'pako';
+import { inflate, gzip } from 'pako';
 
 export type EncryptionOptions = {
     base64?: boolean,

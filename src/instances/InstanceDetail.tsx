@@ -1,8 +1,8 @@
 import { useMemo } from "react";
-import { Link, Outlet, useLocation, useParams } from "react-router-dom";
+import { Link, Outlet, useParams } from "react-router-dom";
 import useInstanceStore from "./instanceStore";
 import { ServerInstance } from "../workers/connection.worker";
-import { Formatters } from "millegrilles.reactdeps.typescript";
+import { ConditionalFormatters } from "millegrilles.reactdeps.typescript";
 
 function InstanceDetail() {
 
@@ -24,7 +24,7 @@ function InstanceDetail() {
 
             <section className='grid grid-cols-2 pt-2 pb-4'>
                 <p>Last presence</p>
-                <Formatters.FormatterDate value={instance?.date_presence} />
+                <ConditionalFormatters.FormatterConditionalDate value={instance?.date_presence} warn={360} error={1800} />
             </section>
 
             <nav>

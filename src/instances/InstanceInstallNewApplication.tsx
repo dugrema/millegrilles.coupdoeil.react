@@ -1,7 +1,7 @@
 import React, { MouseEvent, useCallback, useMemo, useState } from "react";
 import useInstanceStore from "./instanceStore";
 import { ApplicationPackage, ServerInstance } from "../workers/connection.worker";
-import { useOutletContext, useParams, Link, useNavigate } from "react-router-dom";
+import { useOutletContext, useParams, Link } from "react-router-dom";
 import { prepareApps } from "./InstanceApplications";
 import useWorkers, { AppWorkers } from "../workers/workers";
 import useConnectionStore from "../connectionStore";
@@ -36,7 +36,7 @@ function InstallNewApplication() {
                 console.error("Error installation application", err);
                 addErrorApp(value);
             });
-    }, [workers, ready, addInstallingApp, instanceId, instance]);
+    }, [workers, ready, addInstallingApp, instanceId, instance, addErrorApp]);
 
     let refreshPackagesHandler = useCallback(()=>{
         if(!workers || !ready) throw new Error('workers not initialized');
@@ -60,7 +60,7 @@ function InstallNewApplication() {
             .finally(()=>{
                 setRefreshing(false);
             });
-    },[workers, ready, refreshing, setRefreshing]);
+    },[workers, ready, setRefreshing, setApplicationCurrentPackages]);
 
     let applications = useMemo(()=>{
         if(!currentPackages) return [];
@@ -85,7 +85,7 @@ function InstallNewApplication() {
                 </React.Fragment>
             )
         })
-    }, [workers, ready, instance, currentPackages, installHandler]);
+    }, [ready, instance, currentPackages, installHandler]);
 
     return (
         <>

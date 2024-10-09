@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import useUserStore, { UserDetailStore } from "./userStore";
-import React, { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
+import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
 import { CertificateRequest, ChangeUserSecurityCommand, Passkey, UserActivation, UserCookie, UserDetail } from "../workers/connection.worker";
@@ -19,7 +19,7 @@ function UserDetailPage() {
     let user = useMemo(()=>{
         if(!users) return null;
         return users.filter(item=>item.userId===userId).pop();
-    }, [users]) as UserDetailStore | null;
+    }, [users, userId]) as UserDetailStore | null;
 
     useEffect(()=>{
         if(!workers || !ready || !userId) return;  // Not ready

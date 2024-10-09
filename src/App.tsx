@@ -1,5 +1,5 @@
 import React from 'react';
-import { createBrowserRouter, RouterProvider, Link } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import { ErrorPage } from './ErrorBoundary';
 import InitializeWorkers from './workers/InitializeWorkers';

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import useDomainStore, { DomainStore } from './domainStore';
 import { MouseEvent, useCallback, useMemo } from 'react';
 import { DomainBackupInformation } from '../workers/connection.worker';
-import { Formatters } from 'millegrilles.reactdeps.typescript';
+import { ConditionalFormatters } from 'millegrilles.reactdeps.typescript';
 import useWorkers from '../workers/workers';
 import useConnectionStore from '../connectionStore';
 
@@ -85,7 +85,7 @@ export function DomainListSection(props: DomainListSectionProps) {
         let domainCopy = [...domains];
         domainCopy.sort(sortDomains);
         return domainCopy.map(item=><DomainItem key={item.domaine} value={item} rebuild={rebuild} backup={backup} />)
-    }, [domains, rebuild]);
+    }, [domains, rebuild, backup]);
 
     return (
         <div className='grid grid-cols-2 lg:grid-cols-6'>
@@ -115,7 +115,7 @@ function DomainItem(props: DomainItemProps) {
     return (
         <>
             <p className='col-span-2 '>{value.domaine}</p>
-            <Formatters.FormatterDate value={value.presence?value.presence:undefined} />
+            <ConditionalFormatters.FormatterConditionalDate value={value.presence?value.presence:undefined} warn={360} error={1800} />
             <p>{value.instance_id}</p>
             <p className='pb-2'><DomainStatus value={value} /></p>
             <div className='pb-2'>

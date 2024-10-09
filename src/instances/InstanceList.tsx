@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import useInstanceStore from "./instanceStore";
 import { useMemo } from "react";
 import { ServerInstance } from "../workers/connection.worker";
-import { Formatters } from 'millegrilles.reactdeps.typescript';
+import { ConditionalFormatters } from 'millegrilles.reactdeps.typescript';
 
 function InstanceList() {
     return (
@@ -63,7 +63,7 @@ function ShowList() {
                     <Link className='col-span-2 underline font-bold' to={`/coupdoeil2/instances/${item.instance_id}`}>
                         {item.hostname}
                     </Link>
-                    <Formatters.FormatterDate value={item.date_presence} />
+                    <ConditionalFormatters.FormatterConditionalDate value={item.date_presence} warn={360} error={1800} />
                 </React.Fragment>
             )
         });
