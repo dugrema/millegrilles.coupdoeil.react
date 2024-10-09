@@ -21,7 +21,7 @@ function LandingPage() {
         <div>
             <HeaderMenu title="Coup D'Oeil" />
 
-            <main className='fixed top-6 bottom-8 overflow-y-auto pt-4 pb-2 pl-2 pr-2 w-full'>
+            <main className='fixed top-9 bottom-8 overflow-y-auto pt-2 pb-2 pl-2 pr-2 w-full'>
                 <h1 className='text-xl font-bold pt-4'>Configuration of the MilleGrilles system</h1>
 
                 <section className='pt-6'>

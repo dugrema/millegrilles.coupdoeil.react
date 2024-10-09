@@ -52,7 +52,7 @@ function InstanceApplications() {
                             <>Nginx</>
                         }
                     </div>
-                    <div className='col-span-6'>
+                    <div className='col-span-6 pb-2 md:pb-0'>
                         <button onClick={removeHandler} disabled={!ready} value={item.name}
                             className="varbtn w-20 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
                                 Remove
@@ -90,9 +90,15 @@ function InstanceApplications() {
             <section>
                 <h2 className='text-lg font-bold pt-4'>Applications</h2>
 
-                <div className='grid grid-cols-12'>
-                    <p className='font-bold pt-4 pb-2 col-span-3'>Name</p>
-                    <p className='font-bold pt-4 pb-2 col-span-2'>Version</p>
+                {(ready && instance)?
+                    <p>{applications.length} applications deployed</p>
+                :
+                    <p>Loading</p>
+                }
+
+                <div className='grid grid-cols-6 sm:grid-cols-12'>
+                    <p className='font-bold pt-4 pb-2 col-span-3 break-words'>Name</p>
+                    <p className='font-bold pt-4 pb-2 col-span-2 break-words'>Version</p>
                     <p className='font-bold pt-4 pb-2 col-span-1'>Status</p>
                     <p className='font-bold pt-4 pb-2 col-span-6'>Actions</p>
 
@@ -117,9 +123,6 @@ type InstanceApp = {
 };
 
 export function prepareApps(instance: ServerInstance): InstanceApp[] {
-    let applications = instance.applications_configurees;
-    let webapps = instance.webapps || [];
-
     let apps = {} as {[name: string]: InstanceApp};
 
     if(instance.services) {
