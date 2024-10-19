@@ -45,6 +45,7 @@ const ApplicationPackages = React.lazy(()=>import('./utilities/ApplicationPackag
 const Installer = React.lazy(()=>import('./installer/Installer'));
 const InstallSelect = React.lazy(()=>import('./installer/InstallSelect'));
 const Install3Protege = React.lazy(()=>import('./installer/Install3Protege'));
+const InstallationStatus = React.lazy(()=>import('./installer/InstallationStatus'));
 
 const router = createBrowserRouter([
 	{
@@ -117,13 +118,14 @@ const router = createBrowserRouter([
             { path: "/coupdoeil2/fileManagement/:instanceId/configure", element: <FileManagerConfiguration /> },
         ]
   	},
-      {
+    {
 		path: "/coupdoeil2/install",
 		element: <Installer />,
         errorElement: <ErrorPage />,
         children: [
             { path: "/coupdoeil2/install", element: <InstallSelect /> },
             { path: "/coupdoeil2/install/3protege", element: <Install3Protege /> },
+            { path: "/coupdoeil2/install/status", element: <InstallationStatus /> },
         ]
   	},
 ]);

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 import MasterKeyLoader, { MasterKeyFile, MasterKeyInformation } from "../utilities/MasterKeyLoader";
@@ -203,17 +203,20 @@ type InstallInstanceProps = {
 function InstallInstance(props: InstallInstanceProps) {
     let { masterKey } = props;
 
+    let navigate = useNavigate();
+
     let [running, setRunning] = useState(false);
     let runSetupHandler = useCallback(()=>{
         runSetup(masterKey)
             .then(()=>{
                 console.debug("Initial setup done.")
+                navigate('/coupdoeil2/install/status');
             })
             .catch(err=>console.error("Error during initial setup: ", err))
             .finally(()=>{
                 setRunning(false);
             });
-    }, [masterKey, setRunning]);
+    }, [masterKey, setRunning, navigate]);
 
     return (
         <section>
