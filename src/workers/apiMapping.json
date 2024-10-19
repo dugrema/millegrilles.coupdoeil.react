@@ -24,6 +24,7 @@
         {"domain": "CoreMaitreDesComptes", "action": "signerCompteParProprietaire", "exchange": "2.prive"},
         {"domain": "CoreMaitreDesComptes", "action": "majUsagerDelegations"},
         {"domain": "CoreMaitreDesComptes", "action": "resetWebauthnUsager"},
+        {"domain": "CoreTopologie", "action": "supprimerInstance"},
         {"domain": "CoreTopologie", "action": "supprimerConsignation"},
         {"domain": "CoreTopologie", "action": "configurerConsignation"},
         {"domain": "MaitreDesCles", "action": "rechiffrerBatch"},

@@ -52,6 +52,7 @@ function ShowList() {
     let sortedInstances = useMemo(()=>{
         if(!instances) return [];
         let instanceCopy = [...instances];
+
         instanceCopy.sort((a: ServerInstance, b: ServerInstance)=>{
             if(a === b) return 0;
             if(!a) return 1;
@@ -62,6 +63,7 @@ function ShowList() {
             if(comp !== 0) return comp;
             return a.instance_id.localeCompare(b.instance_id);
         });
+
         return instanceCopy.map(item=>{
             return (
                 <React.Fragment key={item.instance_id}>

@@ -195,6 +195,11 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'listeNoeuds') as MessageResponse & {resultats?: ServerInstance[]};
     }
 
+    async deleteInstance(instanceId: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({instance_id: instanceId}, DOMAINE_CORETOPOLOGIE, 'supprimerInstance');
+    }
+
     async subscribeInstanceEvents(cb: SubscriptionCallback): Promise<void> {
         if(!this.connection) throw new Error("Connection is not initialized");
         return await this.connection.subscribe('instanceEvents', cb);

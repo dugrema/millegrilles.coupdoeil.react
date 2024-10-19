@@ -1,4 +1,24 @@
+import { useCallback } from "react";
+import { useParams } from "react-router-dom";
+
+import ActionButton from "../components/ActionButton";
+import useWorkers from "../workers/workers";
+import useConnectionStore from "../connectionStore";
+
 function InstanceConfigure() {
+
+    let { instanceId } = useParams();
+    let workers = useWorkers();
+    let ready = useConnectionStore(state=>state.connectionAuthenticated);
+
+    let deleteInstanceHandler = useCallback(async () => {
+        if(!ready) return;
+        if(!workers) throw new Error("workers not initialized");
+        if(!instanceId) throw new Error("instanceId not provided");
+        let response = await workers.connection.deleteInstance(instanceId)
+        if(response.ok !== true) throw new Error("Error deleting instance: " + response);
+    }, [workers, ready, instanceId]);
+
     return (
         <>
             <section>
@@ -7,10 +27,10 @@ function InstanceConfigure() {
 
             <section className='pt-10'>
                 <h2 className='text-lg font-bold pt-4'>Danger zone</h2>
-                <button 
-                    className='btn inline-block text-center bg-red-700 hover:bg-red-500 active:bg-red-600'>
+                <ActionButton onClick={deleteInstanceHandler} disabled={!ready || !instanceId}>
                         Delete instance
-                </button>
+                </ActionButton>
+
             </section>
         </>
     )
