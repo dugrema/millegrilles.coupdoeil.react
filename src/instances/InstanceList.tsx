@@ -56,13 +56,17 @@ function ShowList() {
             if(a === b) return 0;
             if(!a) return 1;
             if(!b) return -1;
-            return a.hostname.localeCompare(b.hostname);
+            if(a.hostname === b.hostname) return 0;
+            let hostnameA = a.hostname || '';
+            let comp = hostnameA.localeCompare(b.hostname);
+            if(comp !== 0) return comp;
+            return a.instance_id.localeCompare(b.instance_id);
         });
         return instanceCopy.map(item=>{
             return (
                 <React.Fragment key={item.instance_id}>
                     <Link className='sm:col-span-2 underline font-bold' to={`/coupdoeil2/instances/${item.instance_id}`}>
-                        {item.hostname}
+                        {item.hostname || item.instance_id}
                     </Link>
                     <ConditionalFormatters.FormatterConditionalDate value={item.date_presence} warn={360} error={1800} />
                     <p className='pb-2 sm:pb-0'>{item.securite}</p>
