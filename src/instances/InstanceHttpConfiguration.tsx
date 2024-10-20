@@ -1,5 +1,6 @@
 import axios from "axios";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, Dispatch, useCallback, useEffect, useMemo, useState } from "react";
+import { Url } from "url";
 
 type HttpsProps = {
     url: URL,
@@ -124,3 +125,21 @@ export function HttpsConfigureMqConnection(props: HttpsProps) {
 export function HttpsAssociateNewInstance(props: HttpsProps) {
     return <p>Associate new instance</p>;
 }
+
+// export function MqConnectionParameters(props: {setUrl: Dispatch<Url|null>}) {
+    
+//     let { setUrl } = props;
+
+//     let [urlString, setUrlString] = useState('');
+//     let urlStringChangeHandler = useCallback((e: ChangeEvent<HTMLInputElement>)=>{
+//         setUrl(null);
+//         setUrlString(e.currentTarget.value);
+//     }, [setUrlString, setUrl]);
+
+//     return (
+//         <>
+//             <input type="url" value={urlString} onChange={urlStringChangeHandler} />
+//             <button></button>
+//         </>
+//     );
+// }

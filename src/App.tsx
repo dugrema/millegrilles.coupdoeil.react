@@ -22,6 +22,7 @@ const InstanceInformation = React.lazy(()=>import('./instances/InstanceInformati
 const InstanceConfigure = React.lazy(()=>import('./instances/InstanceConfigure'));
 const InstanceInstallNewApplication = React.lazy(()=>import('./instances/InstanceInstallNewApplication'));
 const InstanceApplicationPasswords = React.lazy(()=>import('./instances/InstanceApplicationPasswords'));
+const InstanceAssociateNew = React.lazy(()=>import('./instances/InstanceAssociateNew'));
 
 const Domains = React.lazy(()=>import('./domains/Domains'));
 const DomainBackup = React.lazy(()=>import('./domains/DomainBackup'));
@@ -60,6 +61,7 @@ const router = createBrowserRouter([
         errorElement: <ErrorPage />,
         children: [
             { path: "/coupdoeil2/instances", element: <InstanceList /> },
+            { path: "/coupdoeil2/instances/associate", element: <InstanceAssociateNew /> },
             { 
                 path: "/coupdoeil2/instances/:instanceId", 
                 element: <InstanceDetail />,
@@ -68,7 +70,7 @@ const router = createBrowserRouter([
                     { path: "/coupdoeil2/instances/:instanceId/info", element: <InstanceInformation /> },
                     { path: "/coupdoeil2/instances/:instanceId/configure", element: <InstanceConfigure /> },
                     { path: "/coupdoeil2/instances/:instanceId/newApplication", element: <InstanceInstallNewApplication /> },
-                    { path: "/coupdoeil2/instances/:instanceId/passwords", element: <InstanceApplicationPasswords /> }
+                    { path: "/coupdoeil2/instances/:instanceId/passwords", element: <InstanceApplicationPasswords /> },
                 ]
             },
         ]

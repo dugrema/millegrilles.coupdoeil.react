@@ -19,10 +19,10 @@ function InstanceList() {
 
                 <h2 className='text-lg font-bold pt-4 pb-2'>Actions on unlisted instances via https</h2>
 
-                <button
+                <Link to='/coupdoeil2/instances/associate'
                     className='btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900'>
                         Associate new
-                </button>
+                </Link>
 
                 <button
                     className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
