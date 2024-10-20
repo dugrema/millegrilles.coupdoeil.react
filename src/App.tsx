@@ -45,8 +45,10 @@ const DecryptKeys = React.lazy(()=>import('./utilities/DecryptKeys'));
 const ApplicationPackages = React.lazy(()=>import('./utilities/ApplicationPackages'));
 const Installer = React.lazy(()=>import('./installer/Installer'));
 const InstallSelect = React.lazy(()=>import('./installer/InstallSelect'));
-const Install3Protege = React.lazy(()=>import('./installer/Install3Protege'));
 const Install4Secure = React.lazy(()=>import('./installer/Install4Secure'));
+const Install3Protege = React.lazy(()=>import('./installer/Install3Protege'));
+const Install2Prive = React.lazy(()=>import('./installer/Install2Prive'));
+const Install1Public = React.lazy(()=>import('./installer/Install1Public'));
 const InstallationStatus = React.lazy(()=>import('./installer/InstallationStatus'));
 
 const router = createBrowserRouter([
@@ -127,8 +129,10 @@ const router = createBrowserRouter([
         errorElement: <ErrorPage />,
         children: [
             { path: "/coupdoeil2/install", element: <InstallSelect /> },
-            { path: "/coupdoeil2/install/3protege", element: <Install3Protege /> },
             { path: "/coupdoeil2/install/4secure", element: <Install4Secure /> },
+            { path: "/coupdoeil2/install/3protege", element: <Install3Protege /> },
+            { path: "/coupdoeil2/install/2private", element: <Install2Prive /> },
+            { path: "/coupdoeil2/install/1public", element: <Install1Public /> },
             { path: "/coupdoeil2/install/status", element: <InstallationStatus /> },
         ]
   	},
