@@ -6,6 +6,7 @@ import { messageStruct, keymaster, encryption } from 'millegrilles.cryptography'
 
 const DOMAINE_CORETOPOLOGIE = 'CoreTopologie';
 const DOMAINE_CORECATALOGUES = 'CoreCatalogues';
+const DOMAINE_CORE_PKI = 'CorePki';
 const DOMAINE_MAITREDESCLES = 'MaitreDesCles';
 const DOMAINE_FICHIERS = 'fichiers';
 const DOMAINE_INSTANCE = 'instance';
@@ -181,6 +182,17 @@ export type FileManagerConfiguration = {
     sync_intervalle?: number | null,
 };
 
+export type GenerateCertificateInstanceCommand = {
+    csr: string, 
+    securite: string, 
+    role: string, 
+    roles?: string[], 
+    exchanges: string[], 
+    dns?: {localhost?: boolean, hostnames?: string[]},
+}
+
+export type GenerateCertificateInstanceResponse = MessageResponse & { certificat?: string[] };
+
 export class AppsConnectionWorker extends ConnectionWorker {
 
     async authenticate(reconnect?: boolean) {
@@ -198,6 +210,11 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async deleteInstance(instanceId: string) {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendCommand({instance_id: instanceId}, DOMAINE_CORETOPOLOGIE, 'supprimerInstance');
+    }
+
+    async generateSatelliteInstanceCertificate(command: GenerateCertificateInstanceCommand) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand(command, DOMAINE_CORE_PKI, 'signerCsr') as Promise<GenerateCertificateInstanceResponse>;
     }
 
     async subscribeInstanceEvents(cb: SubscriptionCallback): Promise<void> {

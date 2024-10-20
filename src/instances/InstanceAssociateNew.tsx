@@ -3,10 +3,11 @@ import { Link } from "react-router-dom";
 import ActionButton from "../components/ActionButton";
 import axios from "axios";
 import { InstanceInformation, ServerConfiguration } from "./InstanceHttpConfiguration";
-import useWorkers from "../workers/workers";
+import useWorkers, { AppWorkers } from "../workers/workers";
 import useConnectionStore from "../connectionStore";
 import { messageStruct } from "millegrilles.cryptography";
 import { MessageResponse } from "millegrilles.reactdeps.typescript";
+import { GenerateCertificateInstanceCommand } from "../workers/connection.worker";
 
 function AssociateNew() {
 
@@ -197,6 +198,7 @@ function AssociateInstanceButton(props: {value: ServerConfiguration | null, urlM
     let workers = useWorkers();
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
     let idmg = useConnectionStore(state=>state.idmg);
+    let caPem = useConnectionStore(state=>state.ca);
 
     let associateHandler = useCallback(async () => {
         if(!ready || !workers) throw new Error('workers not initialized');
@@ -207,32 +209,15 @@ function AssociateInstanceButton(props: {value: ServerConfiguration | null, urlM
         let mqURL = new URL(urlMq.replace('amqps:', 'https:'));
         console.debug("MQ Url string : %O, %O", urlMq, mqURL);
 
-        let params = {
-            host: mqURL.hostname,
-            port: mqURL.port,
-        };
-
         if(security === '4.secure') {
-            // Just need to configure MQ
-            let command = await workers.connection.createRoutedMessage(
-                messageStruct.MessageKind.Command, params, {action: 'changerConfigurationMq'});
-            console.debug("Signed MQ command", command);
-
-            let mqConfigUrl = new URL(instanceUrl.href);
-            mqConfigUrl.pathname = '/installation/api/configurerMQ';
-
-            let response = await axios({method: 'POST', url: mqConfigUrl.href, data: command});
-            if(response.data.ok !== true) {
-                console.warn("Response ", response);
-                throw new Error(`Association failed: ${response.data.err}`);
-            }
+            await installSecure(workers, instanceUrl, mqURL);
         } else if (['1.public', '2.prive'].includes(security)) {
             // Sign CSR, send installation command.
-            throw new Error('todo');
+            await installSatellite(workers, instanceUrl, mqURL, security, caPem);
         } else {
             throw new Error(`Security level ${security} is not supported`);
         }
-    }, [workers, ready, value, urlMq, instanceUrl]);
+    }, [workers, ready, value, urlMq, instanceUrl, caPem]);
 
     if(!value) return <></>;
 
@@ -259,125 +244,81 @@ function AssociateInstanceButton(props: {value: ServerConfiguration | null, urlM
     return <ActionButton onClick={associateHandler} disabled={!ready}>Associate</ActionButton>
 }
 
-// async function prendrePossession(workers, usager, csr, securite, hostname, hostMq, portMq, confirmationCb, erreurCb) {
-  
-//     try {
-//         // console.debug("Demander la creation d'un nouveau certificat %s pour %s (MQ %s:%s)", securite, hostname, hostMq, portMq)
-    
-//         const connexion = workers.connexion
-//         const urlInstaller = new URL('https://localhost/installation/api/installer')
-//         urlInstaller.hostname = hostname
+async function installSecure(workers: AppWorkers, instanceUrl: URL, mqUrl: URL) {
+    let params = {
+        host: mqUrl.hostname,
+        port: mqUrl.port,
+    };
 
-//         let role = 'public'
-//         let exchanges = ['1.public']
-//         if(securite === '1.public') role = 'public'
-//         else if(securite === '2.prive') {
-//             role = 'prive'
-//             exchanges.push('2.prive')
-//         }
-//         else if(securite === '3.protege') {
-//             exchanges.push('2.prive')
-//             exchanges.push('3.protege')
-//             role = 'protege'
-//         }
-//         exchanges = exchanges.reverse()
-        
-//         const hostnames = [hostname]
-//         const hostnameNoDomain = hostname.split('.').shift()
-//         if(hostnameNoDomain != hostname) {
-//             hostnames.push(hostnameNoDomain)
-//         }
+    // Just need to configure MQ
+    let command = await workers.connection.createRoutedMessage(
+        messageStruct.MessageKind.Command, params, {action: 'changerConfigurationMq'});
+    console.debug("Signed MQ command", command);
 
-//         const commande = {csr, securite, role, roles: ['instance'], exchanges, dns: {localhost: true, hostnames}}
-    
-//         try {
-//             var resultatCertificat = await connexion.genererCertificatNoeud(commande)
-//         } catch(err) {
-//             console.error("Erreur creation certificat ", err);
-//             erreurCb(err, 'Erreur creation certificat')
-//             return
-//         }
-    
-//         //console.debug("prendrePossession Reception info certificat : %O", resultatCertificat)
-//         if(!resultatCertificat.certificat) {
-//             erreurCb(null, "Erreur creation certificat pour prise de possession - non genere")
-//             return
-//         }
+    let mqConfigUrl = new URL(instanceUrl.href);
+    mqConfigUrl.pathname = '/installation/api/configurerMQ';
 
-//         const paramsInstallation = {
-//             hostname,
-//             certificat: resultatCertificat.certificat,
-//             certificatMillegrille: usager.ca,
-//             securite,
-//             host: hostMq,
-//             port: portMq,
-//         }
+    let response = await axios({method: 'POST', url: mqConfigUrl.href, data: command});
+    if(response.data.ok !== true) {
+        console.warn("Response ", response);
+        throw new Error(`Association failed: ${response.data.err}`);
+    }
+}
+
+async function installSatellite(workers: AppWorkers, instanceUrl: URL, mqUrl: URL, security: string, caCertificate: string) {
+
+    // Get the CSR
+    const urlCsr = new URL(instanceUrl.href)
+    urlCsr.pathname = '/installation/api/csrInstance';
+    let responseCsr = await axios({method: 'GET', url: urlCsr.href, timeout: 5_000});
+    let csrValue = responseCsr.data;
+    if(typeof(csrValue) !== 'string') throw new Error("Wrong CSR response type, must be text");
     
-//         //console.debug("Transmettre parametres installation noeud : %O", paramsInstallation)
+    // Prepare values
+    let role = 'public';
+    let exchanges = ['1.public'];
+    if(security === '2.prive') {
+        role = 'prive'
+        exchanges.push('2.prive')
+    }
+    exchanges = exchanges.reverse();
     
-//         try {
-//             const reponse = await axios({
-//                 url: urlInstaller.href,
-//                 method: 'post',
-//                 data: paramsInstallation,
-//                 timeout: 15000,
-//             })
-//             //console.debug("Recu reponse demarrage installation noeud\n%O", reponse)
-//             const data = reponse.data || {}
-//             if(data.err) {
-//                 erreurCb(data.err)
-//             } else {
-//                 confirmationCb(`Prise de possession de ${hostname} reussie.`)
-//             }
-//         } catch(err) {
-//             erreurCb(err, `Erreur prise de possession de l'instance`)
-//             return
-//         }
-    
-//     } catch(err) {
-//         erreurCb(err)
-//     }
-// }
+    const hostnames = [instanceUrl.hostname]
+
+    // Generate the certificate
+    let certificateCommand = {
+        csr: csrValue, securite: security, 
+        role, roles: ['instance'], exchanges, 
+        dns: {localhost: true, hostnames}
+    } as GenerateCertificateInstanceCommand;
+    console.debug("Certificate command", certificateCommand);
+    let certificateResponse = await workers.connection.generateSatelliteInstanceCertificate(certificateCommand);
+    console.debug("Response ", certificateResponse);
+    if(certificateResponse.ok !== true || !certificateResponse.certificat) {
+        throw new Error('Error signing instance certificate: ' + certificateResponse.err);
+    }
+    let certificate = certificateResponse.certificat;
+
+    let installationParams = {
+        hostname: instanceUrl.hostname,
+        certificat: certificate,
+        certificatMillegrille: caCertificate,
+        securite: security,
+        host: mqUrl.hostname,
+        port: mqUrl.port,
+    }
+
+    console.debug("Installation params: ", installationParams);
+
+    const urlInstaller = new URL(instanceUrl.href)
+    urlInstaller.pathname = '/installation/api/installer';
+    let responseInstallation = await axios({method: 'POST', url: urlInstaller.href, data: installationParams, timeout: 5_000});
+    if(responseInstallation.data.ok !== true) {
+        throw new Error("Error associating new instance: " + responseInstallation.data.err);
+    }
+}
 
 
-
-// async function configurerMq(workers, hostname, hostMq, portMq, confirmationCb, erreurCb) {
-//     const {connexion} = workers
-  
-//     var commande = {}
-//     if(!hostMq && !portMq) {
-//       commande.supprimer_params_mq = true
-//     } else {
-//       commande.host = hostMq
-//       commande.port = portMq
-//     }
-  
-//     const domaine = 'monitor', action = 'changerConfigurationMq'
-//     // const commandeSignee = await connexion.formatterMessage(commande, domaine, {kind: MESSAGE_KINDS.KIND_COMMANDE, action})
-//     const commandeSignee = await connexion.formatterMessage(KIND_COMMANDE, commande, {domaine, action, ajouterCertificat: true})
-  
-//     console.debug("Commande a transmettre : %O", commandeSignee)
-//     const url = new URL('https://localhost/installation/api/configurerMQ')
-//     url.hostname = hostname
-//     try {
-//       const reponse = await axios({
-//         method: 'post',
-//         url,
-//         data: commandeSignee,
-//         timeout: 20000,
-//       })
-//       console.debug("Reponse configuration MQ : %O", reponse)
-//       const data = reponse.data
-//       if(data.ok === false) {
-//         erreurCb(data.err, 'Erreur changement configuration MQ')
-//       } else {
-//         confirmationCb('Configuration MQ modifiee avec succes')
-//       }
-//     } catch(err) {
-//       erreurCb(err, 'Erreur changement configuration MQ')
-//     }
-//   }
-  
 //   function AfficherExpirationCertificat(props) {
 //     const [certificat, setCertificat] = useState('')
 //     useEffect(_=>{
@@ -431,4 +372,3 @@ function AssociateInstanceButton(props: {value: ServerConfiguration | null, urlM
 //       </>
 //     )
 //   }
-  
