@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import useConnectionStore from "../connectionStore";
+import Maintenance from "./Maintenance";
 
 function InstallSelect() {
 
@@ -14,13 +15,14 @@ function InstallSelect() {
                 </Link>
             }
 
-            <h1 className='text-xl font-bold pt-4'>Installer</h1>
+            <h1 className='text-xl font-bold pt-4 pb-4'>Instance setup</h1>
 
             <Instructions />
 
-            <section>
-                <SelectingInstallationType />
-            </section>
+            <section><SelectingInstallationType /></section>
+
+            <Maintenance />
+
         </>
     )
 }
@@ -32,7 +34,7 @@ function Instructions() {
     if(!installationMode) return <></>;
 
     return (
-        <section className='pt-4 pb-6'>
+        <section className='pb-6'>
             <h2 className='text-lg font-bold'>Installing a new MilleGrilles instance server</h2>
             <p className='pb-2'>
                 This is the installer application for MilleGrilles instances. You can complete the initial setup
@@ -84,10 +86,10 @@ function SelectingInstallationType() {
 
                 <p className='col-span-12 font-bold pt-4'>Satellite instances (system support, optional)</p>
                 <div className='col-span-3 text-right pt-2 pr-2'>
-                    <button value='3.protege'
+                    <Link to='/coupdoeil2/install/2private'
                         className="btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
                             Private
-                    </button>
+                    </Link>
                 </div>
                 <p className='col-span-9 pt-2'>
                     This is the default support type to host web applications and file managers. The private instance cannot host
@@ -95,10 +97,10 @@ function SelectingInstallationType() {
                 </p>
 
                 <div className='col-span-3 text-right pt-2 pr-2'>
-                    <button value='4.secure'
+                    <Link to='/coupdoeil2/install/4secure'
                         className="btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
                             Secure
-                    </button>
+                    </Link>
                 </div>
                 <p className='col-span-9 pt-2'>
                     This is the most secure instance type. It has no open server ports aside from the management interface. Web applications
@@ -108,10 +110,10 @@ function SelectingInstallationType() {
                 </p>
 
                 <div className='col-span-3 text-right pt-2 pr-2'>
-                    <button value='1.public'
+                    <Link to='/coupdoeil2/install/1public'
                         className="btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
                             Public
-                    </button>
+                    </Link>
                 </div>
                 <p className='col-span-9 pt-2'>
                     This is the least secure instance type. It is only meant to handle outgoing connections from a potentially

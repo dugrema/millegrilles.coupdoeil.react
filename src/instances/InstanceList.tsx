@@ -17,7 +17,7 @@ function InstanceList() {
 
             <section>
 
-                <h2 className='text-lg font-bold pt-4 pb-2'>Actions on instances</h2>
+                <h2 className='text-lg font-bold pt-4 pb-2'>Actions on unlisted instances via https</h2>
 
                 <button
                     className='btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900'>
