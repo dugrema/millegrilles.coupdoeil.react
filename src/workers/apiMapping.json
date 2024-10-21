@@ -28,6 +28,7 @@
         {"domain": "CoreTopologie", "action": "supprimerInstance"},
         {"domain": "CoreTopologie", "action": "supprimerConsignation"},
         {"domain": "CoreTopologie", "action": "configurerConsignation"},
+        {"domain": "CoreTopologie", "action": "setConsignationInstance"},
         {"domain": "MaitreDesCles", "action": "rechiffrerBatch"},
         {"domain": "fichiers", "action": "declencherSync", "exchange": "2.prive"},
         {"domain": "instance", "action": "installerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},

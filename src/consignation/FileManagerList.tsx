@@ -6,6 +6,7 @@ import { ConditionalFormatters, Formatters } from "millegrilles.reactdeps.typesc
 import useWorkers from "../workers/workers";
 import useConnectionStore from "../connectionStore";
 import ActionButton from "../components/ActionButton";
+import { FileManager } from "../workers/connection.worker";
 
 function FileManagerList() {
 
@@ -96,6 +97,7 @@ function List() {
         if(!fileManagerList) return <p>Loading ...</p>;
 
         let activeManagers = fileManagerList.filter(item=>!item.supprime);
+        activeManagers.sort(sortFileManagers);
 
         return activeManagers.map(item=>{
             let instance = instances?.filter(instance=>instance.instance_id === item.instance_id).pop();
@@ -151,4 +153,18 @@ function CurrentTransfers() {
     return (
         <></>
     );
+}
+
+export function sortFileManagers(a: FileManager, b: FileManager)  {
+    if(a === b) return 0;
+    if(!a) return 1;
+    if(!b) return -1;
+    let urlA = a.consignation_url;
+    let urlB = b.consignation_url;
+    if(urlA !== urlB) {
+        if(!urlA) return 1;
+        if(!urlB) return -1;
+        return urlA.localeCompare(urlB);
+    }
+    return a.instance_id.localeCompare(b.instance_id);
 }

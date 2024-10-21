@@ -79,6 +79,7 @@ export type ServerInstance = {
     system_fans?: any,
     system_temperature?: any,
     webapps?: InstanceWebApp[],
+    consignation_id?: string,
 }
 
 export type ApplicationConfiguree = {
@@ -215,6 +216,11 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async generateSatelliteInstanceCertificate(command: GenerateCertificateInstanceCommand) {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendCommand(command, DOMAINE_CORE_PKI, 'signerCsr') as Promise<GenerateCertificateInstanceResponse>;
+    }
+
+    async setFileManagerForInstance(instanceId: string, fileManagerId: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({instance_id: instanceId, consignation_id: fileManagerId}, DOMAINE_CORETOPOLOGIE, 'setConsignationInstance') as Promise<GenerateCertificateInstanceResponse>;
     }
 
     async subscribeInstanceEvents(cb: SubscriptionCallback): Promise<void> {
