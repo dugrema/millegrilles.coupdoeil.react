@@ -37,7 +37,17 @@ function AssociateNew() {
                     Back
             </Link>
 
-            <h1 className='text-xl font-bold pt-4'>Associate new instance</h1>
+            <h1 className='text-xl font-bold pt-4'>Associate instance</h1>
+
+            <p className='pt-2'>
+                A new instance certificate will be created and the bus configuration will be provided to an instance that is already
+                locked to this System Id.
+            </p>
+
+            <p className='pt-2'>
+                This feature can also be used to configure a brand new instance or renew the certificate and fix the bus configuration
+                of an already configured instance.
+            </p>
 
             <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>MilleGrilles bus connection (RabbitMQ)</h2>
@@ -223,9 +233,9 @@ function AssociateInstanceButton(props: {value: ServerConfiguration | null, urlM
     if(value.info.idmg !== idmg) {
         return (
             <>
-                <p className='text-red-500 font-bold'>Error</p>
+                <p className='text-red-500 font-bold pt-4'>Error</p>
                 <p className='text-red-500'>The instance cannot be managed by this system (wrong IDMG).</p>
-                <p>This system is <span className='font-bold'>{idmg}</span>.</p>
+                <p>This System's Id is <span className='font-bold'>{idmg}</span>.</p>
             </>
         )
     }
@@ -233,7 +243,7 @@ function AssociateInstanceButton(props: {value: ServerConfiguration | null, urlM
     if(value.info.securite === '3.protege') {
         return (
             <>
-                <p className='text-red-500 font-bold'>Error</p>
+                <p className='text-red-500 font-bold pt-4'>Error</p>
                 <p className='text-red-500'>A 3.protege instance cannot be associated to a system.</p>
                 <p>This instance is the core of the system with the MilleGrilles bus. Other instances can be associated to it.</p>
             </>

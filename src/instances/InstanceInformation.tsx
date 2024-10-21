@@ -87,6 +87,7 @@ function InstanceCertificate(props: {value: ServerInstance | null | undefined}) 
     let [unavailable, setUnavailable] = useState(false);
     let [certificate, setCertificate] = useState(null as certificates.CertificateWrapper | null);
     let [expired, setExpired] = useState(false);
+    let [signingCertificate, setSigningCertificate] = useState(null as certificates.CertificateWrapper | null);
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
 
     useEffect(()=>{
@@ -108,6 +109,18 @@ function InstanceCertificate(props: {value: ServerInstance | null | undefined}) 
                 certificate.populateExtensions();
                 console.debug("Certificate ", certificate);
                 setCertificate(certificate);
+
+
+                // Check if this is a 3.protege or 4.secure instance certificate
+                let exchanges = certificate.extensions?.exchanges;
+                if(exchanges && exchanges.includes('3.protege')) {
+                    // Extract the signing certificate
+                    let signingCertificate = new certificates.CertificateWrapper([instanceInformation.certificat[1]]);
+                    signingCertificate.populateExtensions();
+                    console.debug("Signing certificate ", signingCertificate);
+                    setSigningCertificate(signingCertificate);
+                }
+
             } else {
                 console.error("No certificate information");
                 setExpired(true);
@@ -118,7 +131,7 @@ function InstanceCertificate(props: {value: ServerInstance | null | undefined}) 
             console.error("Error loading instance information via HTTPS", err)
             setUnavailable(true);
         });
-    }, [ready, value, setUnavailable, setCertificate, setExpired]);
+    }, [ready, value, setUnavailable, setCertificate, setSigningCertificate, setExpired]);
 
     return (
         <section>
@@ -134,6 +147,7 @@ function InstanceCertificate(props: {value: ServerInstance | null | undefined}) 
             :<></>}
             <ShowCertificateInformation value={certificate} />
             <RenewCertificateButton certificate={certificate} instance={value} onChange={setCertificate} />
+            <ShowSigningCertificateInformation value={signingCertificate} />
         </section>
     )
 }
@@ -221,4 +235,44 @@ function RenewCertificateButton(props: RenewCertificateButtonProps) {
     if(!featureAvailable) return <></>;
 
     return <ActionButton onClick={renewHandler}>Renew</ActionButton>
+}
+
+function ShowSigningCertificateInformation(props: {value: certificates.CertificateWrapper | null}) {
+
+    let {value} = props;
+
+    let [expired, notAfterDateClassName] = useMemo(()=>{
+        let notAfter = value?.certificate?.notAfter;
+        if(!notAfter) return [false, ''];  // No information
+
+        let now = new Date();
+
+        let expired = notAfter < now;
+        if(expired) return [true, 'text-red-500'];
+        
+        let dueSoon = notAfter.getTime() < (now.getTime() + 180*86_400_000);
+        if(dueSoon) return [false, 'text-yellow-400'];
+
+        return [false, ''];
+    }, [value]);
+
+    if(!value) return <></>;
+
+    return (
+        <section>
+            <h2 className='text-lg font-bold pt-4'>Signing certificate</h2>
+            <div className='grid grid-cols-1 sm:grid-cols-2 pb-4'>
+                <p>Instance Id</p>
+                <p>{value.extensions?.commonName}</p>
+                <p>Valid not before</p>
+                <p><Formatters.FormatterDate value={value.certificate.notBefore.getTime()/1000} /></p>
+                <p>Valid not after</p>
+                <p className={notAfterDateClassName}>
+                    <Formatters.FormatterDate value={value.certificate.notAfter.getTime()/1000} />
+                    {expired?<> (Expired)</>:<></>}
+                    
+                </p>
+            </div>
+        </section>
+    )
 }
