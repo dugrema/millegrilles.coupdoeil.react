@@ -1,7 +1,7 @@
 import axios from "axios";
 import { certificates } from "millegrilles.cryptography";
 import { Formatters } from "millegrilles.reactdeps.typescript";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Dispatch, useCallback, useEffect, useMemo, useState } from "react";
 import MasterKeyLoader, { MasterKeyInformation } from "../utilities/MasterKeyLoader";
 import ActionButton from "../components/ActionButton";
 import { installIntermediateCertificate } from "../installer/GenerateCertificates";
@@ -73,7 +73,6 @@ export function HttpsRenewSigningCertificate(props: HttpsProps) {
 
     let { url, server } = props;
 
-    let [csr, setCsr] = useState('');
     let [masterKey, setMasterKey] = useState(null as MasterKeyInformation | null)
 
     let [signingCertificate, setSigningCertificate] = useState(null as certificates.CertificateWrapper | null);
@@ -89,7 +88,8 @@ export function HttpsRenewSigningCertificate(props: HttpsProps) {
         if(!masterKey) throw new Error('master key not loaded');
         let security = server?.info.securite;
         if(!security) throw new Error('security not provided');
-        await installIntermediateCertificate(masterKey, security);  // Throws error on failure
+        let certificate = await installIntermediateCertificate(masterKey, security);  // Throws error on failure
+        setSigningCertificate(certificate);
     }, [server, masterKey]);
 
     useEffect(()=>{
@@ -103,17 +103,7 @@ export function HttpsRenewSigningCertificate(props: HttpsProps) {
             console.debug("Signing certificate ", signingCertificate);
             setSigningCertificate(signingCertificate);
         }
-
-        Promise.resolve().then(async()=>{
-            let urlCsr = new URL(url.href);
-            urlCsr.pathname = '/installation/api/csr';
-            let response = await axios({method: 'GET', url: urlCsr.href});
-            console.debug("CSR response\n%s", response.data);
-            setCsr(response.data);
-        })
-        .catch(err=>console.error("Error loading CSR", err));
-        
-    }, [url, setCsr, featureAvailable, server]);
+    }, [url, featureAvailable, server]);
 
     if(!signingCertificate ||  !featureAvailable) return <></>;  // Not applicable
 

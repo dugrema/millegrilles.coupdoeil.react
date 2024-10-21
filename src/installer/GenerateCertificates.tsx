@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-import { forgePrivateKey } from "millegrilles.cryptography";
+import { certificates, forgePrivateKey } from "millegrilles.cryptography";
 
 import { MasterKeyInformation } from "../utilities/MasterKeyLoader";
 
@@ -50,7 +50,7 @@ async function runSetup(masterKey: MasterKeyInformation, security: string) {
     await installIntermediateCertificate(masterKey, security);
 }
 
-export async function installIntermediateCertificate(masterKey: MasterKeyInformation, security: string) {
+export async function installIntermediateCertificate(masterKey: MasterKeyInformation, security: string): Promise<certificates.CertificateWrapper> {
     // Get the CSR
     let response = await axios({method: 'GET', url: '/installation/api/csr'});
     let csrValue = response.data;
@@ -58,7 +58,12 @@ export async function installIntermediateCertificate(masterKey: MasterKeyInforma
     
     // Generate new signing certificate
     let intermediateCertificate = await forgePrivateKey.generateIntermediateCertificate(
-        csrValue, masterKey.file.racine.certificat, masterKey.key);
+        csrValue, masterKey.file.racine.certificat, masterKey.key) as string;
+    console.debug("Intermediate certificate", intermediateCertificate);
+
+    // Verify certificate
+    let certificateWrapper = new certificates.CertificateWrapper([intermediateCertificate]);
+    certificateWrapper.populateExtensions();
 
     // Send setup instructions
     let params = {
@@ -70,4 +75,6 @@ export async function installIntermediateCertificate(masterKey: MasterKeyInforma
 
     console.debug("Installation parameters: ", params);
     await axios.post('/installation/api/installer', params);  // Throws error on failure
+
+    return certificateWrapper;
 }

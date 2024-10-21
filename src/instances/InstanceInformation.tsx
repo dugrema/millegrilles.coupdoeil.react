@@ -90,6 +90,12 @@ function InstanceCertificate(props: {value: ServerInstance | null | undefined}) 
     let [signingCertificate, setSigningCertificate] = useState(null as certificates.CertificateWrapper | null);
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
 
+    let signingRenewUrl = useMemo(()=>{
+        let hostname = value?.hostname;
+        if(!signingCertificate || !hostname) return null;
+        return new URL(`https://${hostname}/coupdoeil2/install`).href;
+    }, [value, signingCertificate]);
+
     useEffect(()=>{
         if(!value || !ready) return;
         let hostname = value.hostname;
@@ -148,6 +154,11 @@ function InstanceCertificate(props: {value: ServerInstance | null | undefined}) 
             <ShowCertificateInformation value={certificate} />
             <RenewCertificateButton certificate={certificate} instance={value} onChange={setCertificate} />
             <ShowSigningCertificateInformation value={signingCertificate} />
+            {signingRenewUrl?
+                <p>
+                    To renew the signing certificate, go to: <a href={signingRenewUrl} className='underline'>{signingRenewUrl}</a>
+                </p>
+            :<></>}
         </section>
     )
 }
