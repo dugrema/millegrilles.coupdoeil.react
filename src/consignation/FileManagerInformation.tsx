@@ -121,14 +121,7 @@ function InstanceInformation(props: {instance: ServerInstanceStore | null | unde
                 <p className='col-span-2'>{nombreManquants}</p>
             </div>
 
-            <h3 className='font-bold pt-4 pb-4'>Storage</h3>
-            <div className='grid grid-cols-6'>
-                <p className='font-bold pb-2 col-span-3'>Mount</p>
-                <p className='font-bold pb-2'>Total</p>
-                <p className='font-bold pb-2'>Used</p>
-                <p className='font-bold pb-2'>Free</p>
-                <InstanceStorageInformation value={instance} />
-            </div>
+            <InstanceStorageInformation value={instance} />
         </>
     );
 }
