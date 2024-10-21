@@ -168,6 +168,7 @@ export type FileManager = {
     principal?: FileManagerFileInformation,
     orphelin?: FileManagerFileInformation,
     manquant?: FileManagerFileInformation,
+    hostnames?: string[],
 }
 
 export type GetFileManagerListResponse = MessageResponse & {

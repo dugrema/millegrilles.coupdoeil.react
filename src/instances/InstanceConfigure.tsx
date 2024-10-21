@@ -106,12 +106,17 @@ function ConfigureFileManager() {
         if(!currentInstance) return;
         if(selected !== null) return;
         // Init
-        setSelected(currentInstance.consignation_id || '');
-    }, [currentInstance, selected, setSelected])
+        if(currentInstance.consignation_id) {
+            setSelected(currentInstance.consignation_id);
+        } else {
+            setSelected('');
+        }
+    }, [currentInstance, instances, selected, setSelected]);
 
     return (
         <section>
             <h2 className='text-lg font-bold pt-4'>Instance file manager</h2>
+
             <div className='grid grid-cols-1 md:grid-cols-3'>
                 <label htmlFor='select-file-manager'>Select file manager</label>
                 <select id='select-file-manager' value={selected||''} onChange={onChangeHandler} 
