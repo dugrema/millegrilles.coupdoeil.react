@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import useUserStore from "./userStore";
 import React, { useMemo } from "react";
 import { mapUserSecurity } from "./Users";
+import { UserDelegationInformation } from "../workers/connection.worker";
 
 function UserList() {
 
@@ -9,7 +10,11 @@ function UserList() {
 
     let userRows = useMemo(()=>{
         if(!users) return [];
-        return users.map(item=>{
+
+        let userCopy = [...users];
+        userCopy.sort(sortUsers);
+
+        return userCopy.map(item=>{
             let security = mapUserSecurity(item);
             return (
                 <React.Fragment key={item.userId}>
@@ -47,3 +52,15 @@ function UserList() {
 }
 
 export default UserList;
+
+function sortUsers(a: UserDelegationInformation, b: UserDelegationInformation) {
+    if(a===b) return 0;
+    let usernameA = a.nomUsager;
+    let usernameB = b.nomUsager;
+    if(usernameA !== usernameB) {
+        if(!usernameA) return 1;
+        if(!usernameB) return -1;
+        return usernameA.localeCompare(usernameB);
+    }
+    return a.userId.localeCompare(b.userId);
+}

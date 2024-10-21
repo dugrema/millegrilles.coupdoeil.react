@@ -5,6 +5,7 @@ import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
 import { CertificateRequest, ChangeUserSecurityCommand, Passkey, UserActivation, UserCookie, UserDetail } from "../workers/connection.worker";
 import { Formatters } from "millegrilles.reactdeps.typescript";
+import ActionButton from "../components/ActionButton";
 
 function UserDetailPage() {
 
@@ -243,53 +244,28 @@ function EvictActions() {
     let {userId} = useParams();
 
     let [waiting, setWaiting] = useState(false);
-    let [error, setError] = useState('');
-    let [success, setSuccess] = useState(false);
-    let buttonClassName = useMemo(()=>{
-        if(success) return 'btn inline-block text-center bg-green-700 hover:bg-green-600 active:bg-green-500 disabled:bg-green-800';
-        if(error) return 'btn inline-block text-center bg-red-700 hover:bg-red-600 active:bg-red-500 disabled:bg-red-800';
-        return 'btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800';
-    }, [error, success]);
 
     let [deletePasskeys, setDeletePasskeys] = useState(false);
     let deletePasskeysChangeHandler = useCallback((e: ChangeEvent<HTMLInputElement>)=>{
         setDeletePasskeys(e.currentTarget.checked)
-        setSuccess(false);
-        setError('');
-    }, [setDeletePasskeys, setSuccess, setError]);
+    }, [setDeletePasskeys]);
     let [deleteSessions, setDeleteSessions] = useState(false);
     let deleteSessionsChangeHandler = useCallback((e: ChangeEvent<HTMLInputElement>)=>{
         setDeleteSessions(e.currentTarget.checked)
-        setSuccess(false);
-        setError('');
     }, [setDeleteSessions]);
 
-    let evictHandler = useCallback(()=>{
+    let evictHandler = useCallback(async () => {
         if(!workers || !ready) throw new Error("workers not initialized");
         if(!deletePasskeys && !deleteSessions) throw new Error("No action required");
         if(!userId) throw new Error("UserId not provided");
 
         setWaiting(true);
-        workers.connection.evictUser(userId, deletePasskeys, deleteSessions)
-            .then(response=>{
-                console.debug("evictUser Response");
-                if(response.ok) {
-                    setSuccess(true);
-                    setError('');
-                } else {
-                    setSuccess(false);
-                    setError(response.err || 'Error');
-                }
-            })
-            .catch(err=>{
-                console.error("evictUser Error", err);
-                setSuccess(false);
-                setError(''+err);
-            })
-            .finally(()=>{
-                setWaiting(false);
-            })
-    }, [workers, ready, deletePasskeys, deleteSessions, userId, setWaiting, setSuccess, setError]);
+        let response = await workers.connection.evictUser(userId, deletePasskeys, deleteSessions)
+        console.debug("evictUser Response");
+        if(!response.ok) {
+            throw new Error('Error evicting user: ' + response.err);
+        }
+    }, [workers, ready, deletePasskeys, deleteSessions, userId, setWaiting]);
 
     return (
         <>
@@ -303,10 +279,9 @@ function EvictActions() {
                 <label htmlFor='deleteSessions' className='pl-2'>Evict all current sessions for the user account.</label>
             </div>
 
-            <button disabled={waiting || !ready || (!deletePasskeys && !deleteSessions)} onClick={evictHandler}
-                className={'mt-4 ml-6 ' + buttonClassName}>
-                    Apply
-            </button>
+            <ActionButton onClick={evictHandler} disabled={waiting || !ready || (!deletePasskeys && !deleteSessions)}>
+                Apply
+            </ActionButton>
         </>        
     )
 }
@@ -348,8 +323,6 @@ function UserSecurity(props: {value: UserDetailStore | null}) {
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
 
     let [security, setSecurity] = useState('');
-    let [success, setSuccess] = useState(false);
-    let [error, setError] = useState('');
     let [changed, setChanged] = useState(false);
 
     let securityOnChangeHandler = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -358,11 +331,9 @@ function UserSecurity(props: {value: UserDetailStore | null}) {
             setChanged(true);
             setSecurity(newSecurity);
         }
-        setSuccess(false);
-        setError('');
-    }, [security, setChanged, setSecurity, setSuccess, setError]);
+    }, [security, setChanged, setSecurity]);
 
-    let changeSecurity = useCallback(()=>{
+    let changeSecurity = useCallback(async () => {
         if(!workers || !ready) throw new Error("workers not initialized");
         if(!security) throw new Error('Security level not provided');
         if(!value) throw new Error("User information not provided");
@@ -380,26 +351,12 @@ function UserSecurity(props: {value: UserDetailStore | null}) {
             command.compte_prive = null;
         }
         
-        workers.connection.changeUserSecurity(command)
-            .then(response=>{
-                console.debug("changeUserSecurity Response ", response);
-                if(response.nomUsager) {
-                    setSuccess(true);
-                    setError('');
-                } else if(response.err) {
-                    setSuccess(false);
-                    setError(response.err);
-                }
-            })
-            .catch(err=>console.error("changeUserSecurity Error", err))
-
-    }, [workers, ready, value, security, setSuccess, setError]);
-
-    let buttonClassName = useMemo(()=>{
-        if(success) return 'btn inline-block text-center bg-green-700 hover:bg-green-600 active:bg-green-500 disabled:bg-green-800';
-        if(error) return 'btn inline-block text-center bg-red-700 hover:bg-red-600 active:bg-red-500 disabled:bg-red-800';
-        return 'btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800';
-    }, [success, error]);
+        let response = await workers.connection.changeUserSecurity(command)
+        console.debug("changeUserSecurity Response ", response);
+        if(!response.userId) {
+            throw new Error("Error changing security: " + response.err);
+        }
+    }, [workers, ready, value, security]);
 
     useEffect(()=>{
         if(!value) return setSecurity('');
@@ -443,10 +400,9 @@ function UserSecurity(props: {value: UserDetailStore | null}) {
                     </div>
                 </li>
             </ul>
-            <button onClick={changeSecurity} disabled={!ready || !changed}
-                className={'mt-4 ' + buttonClassName}>
-                    Change security
-            </button>
+            <ActionButton onClick={changeSecurity} disabled={!ready || !changed}>
+                Change security
+            </ActionButton>
         </>
     )
 }
