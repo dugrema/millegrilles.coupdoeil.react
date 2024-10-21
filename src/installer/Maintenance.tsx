@@ -3,7 +3,7 @@ import axios from "axios";
 
 import useConnectionStore from "../connectionStore";
 
-import { HttpsConfigureMqConnection, HttpsRenewCertificate, HttpsRenewSigningCertificate, InstanceInformation, ServerConfiguration } from "../instances/InstanceHttpConfiguration";
+import { InstanceInformation, ServerConfiguration } from "../instances/InstanceHttpConfiguration";
 
 function Maintenance() {
     let installationMode = useConnectionStore(state=>state.installationMode);
@@ -45,13 +45,16 @@ function Maintenance() {
                 </p>
             </section>
 
-            <section><HttpsRenewCertificate url={url} server={serverConfiguration} /></section>
-
-            <section><HttpsConfigureMqConnection url={url} server={serverConfiguration} /></section>
-
-            <section><HttpsRenewSigningCertificate url={url} server={serverConfiguration} /></section>
+            <ShowServerConfiguration value={serverConfiguration} />
         </>
     )
 }
 
 export default Maintenance;
+
+function ShowServerConfiguration(props: {value: ServerConfiguration | null}) {
+    return (
+        <section>
+        </section>
+    )
+}

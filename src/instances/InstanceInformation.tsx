@@ -216,7 +216,7 @@ function RenewCertificateButton(props: RenewCertificateButtonProps) {
         // Show new certificate
         onChange(newCertificateWrapper);
 
-    }, [workers, ready, value, instance]);
+    }, [workers, ready, value, instance, onChange]);
 
     if(!featureAvailable) return <></>;
 

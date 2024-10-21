@@ -6,7 +6,6 @@ import { InstanceInformation, ServerConfiguration } from "./InstanceHttpConfigur
 import useWorkers, { AppWorkers } from "../workers/workers";
 import useConnectionStore from "../connectionStore";
 import { messageStruct } from "millegrilles.cryptography";
-import { MessageResponse } from "millegrilles.reactdeps.typescript";
 import { GenerateCertificateInstanceCommand } from "../workers/connection.worker";
 
 function AssociateNew() {
@@ -99,7 +98,7 @@ function InstanceConnectHttp(props: {setUrl: Dispatch<URL|null>}) {
             setOpenSeparate('');
             return;
         }
-        let { request, response, code, message, isAxiosError } = err;
+        let { response, code, message, isAxiosError } = err;
         if(isAxiosError && code === axios.AxiosError.ERR_NETWORK) {
             setOpenSeparate(urlInput);
             return;
@@ -144,7 +143,7 @@ function OpenSeparateWindow(props: {url: string | null}) {
                 You can try to open the page directly from the browser and allowing the security exception. Then try the connect button again.
             </p>
 
-            <p className='font-bold'>Open <a href={url} target='_blank' className='underline'>{url}</a></p>
+            <p className='font-bold'>Open <a href={url} target='_blank' rel='noreferrer' className='underline'>{url}</a></p>
         </>
     )
 }
@@ -163,7 +162,7 @@ function ShowServerConfiguration(props: {value: ServerConfiguration | null, urlM
     let securityClassName = useMemo(()=>{
         if(value?.info.securite !== '3.protege') return '';
         return 'text-red-500';
-    }, [value, idmg]);
+    }, [value]);
 
     if(!value) return <></>;
 
