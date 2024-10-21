@@ -3,7 +3,9 @@ import axios from "axios";
 
 import useConnectionStore from "../connectionStore";
 
-import { InstanceInformation, ServerConfiguration } from "../instances/InstanceHttpConfiguration";
+import { InstanceInformation, ServerConfiguration, HttpsRenewSigningCertificate } from "../instances/InstanceHttpConfiguration";
+import { ShowCertificateInformation } from "../instances/InstanceInformation";
+import { certificates } from "millegrilles.cryptography";
 
 function Maintenance() {
     let installationMode = useConnectionStore(state=>state.installationMode);
@@ -38,14 +40,11 @@ function Maintenance() {
                 <h2 className='text-lg font-bold pb-4'>Maintenance mode</h2>
 
                 <p className='pb-2'>The initial setup is complete.</p>
-
-                <p className='pb-2'>
-                    You can use this page to fix some of the configuration of instance {url.hostname} when
-                    the MilleGrilles bus is not working.
-                </p>
             </section>
 
             <ShowServerConfiguration value={serverConfiguration} />
+
+            <HttpsRenewSigningCertificate server={serverConfiguration} url={url} />
         </>
     )
 }
@@ -53,8 +52,21 @@ function Maintenance() {
 export default Maintenance;
 
 function ShowServerConfiguration(props: {value: ServerConfiguration | null}) {
+
+    let { value } = props;
+
+    let certificate = useMemo(()=>{
+        let certificate = value?.info.certificat;
+        if(!certificate) return null;
+        let certificateWrapper = new certificates.CertificateWrapper(certificate);
+        certificateWrapper.populateExtensions();
+        return certificateWrapper;
+    }, [value]);
+
     return (
         <section>
+            <h2 className='text-lg font-bold pb-2'>Instance information</h2>
+            <ShowCertificateInformation value={certificate} />
         </section>
     )
 }

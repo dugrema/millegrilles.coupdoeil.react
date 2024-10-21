@@ -50,7 +50,7 @@ async function runSetup(masterKey: MasterKeyInformation, security: string) {
     await installIntermediateCertificate(masterKey, security);
 }
 
-async function installIntermediateCertificate(masterKey: MasterKeyInformation, security: string) {
+export async function installIntermediateCertificate(masterKey: MasterKeyInformation, security: string) {
     // Get the CSR
     let response = await axios({method: 'GET', url: '/installation/api/csr'});
     let csrValue = response.data;

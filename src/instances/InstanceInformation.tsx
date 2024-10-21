@@ -6,7 +6,7 @@ import { Formatters } from "millegrilles.reactdeps.typescript";
 
 import { DiskInformation, ServerInstance } from "../workers/connection.worker";
 import useInstanceStore from "./instanceStore";
-import { InstanceInformation } from "./InstanceHttpConfiguration";
+import { InstanceInformation, ShowSigningCertificateInformation } from "./InstanceHttpConfiguration";
 import useConnectionStore from "../connectionStore";
 import ActionButton from "../components/ActionButton";
 import useWorkers from "../workers/workers";
@@ -152,7 +152,7 @@ function InstanceCertificate(props: {value: ServerInstance | null | undefined}) 
     )
 }
 
-function ShowCertificateInformation(props: {value: certificates.CertificateWrapper | null}) {
+export function ShowCertificateInformation(props: {value: certificates.CertificateWrapper | null}) {
 
     let {value} = props;
 
@@ -235,44 +235,4 @@ function RenewCertificateButton(props: RenewCertificateButtonProps) {
     if(!featureAvailable) return <></>;
 
     return <ActionButton onClick={renewHandler}>Renew</ActionButton>
-}
-
-function ShowSigningCertificateInformation(props: {value: certificates.CertificateWrapper | null}) {
-
-    let {value} = props;
-
-    let [expired, notAfterDateClassName] = useMemo(()=>{
-        let notAfter = value?.certificate?.notAfter;
-        if(!notAfter) return [false, ''];  // No information
-
-        let now = new Date();
-
-        let expired = notAfter < now;
-        if(expired) return [true, 'text-red-500'];
-        
-        let dueSoon = notAfter.getTime() < (now.getTime() + 180*86_400_000);
-        if(dueSoon) return [false, 'text-yellow-400'];
-
-        return [false, ''];
-    }, [value]);
-
-    if(!value) return <></>;
-
-    return (
-        <section>
-            <h2 className='text-lg font-bold pt-4'>Signing certificate</h2>
-            <div className='grid grid-cols-1 sm:grid-cols-2 pb-4'>
-                <p>Instance Id</p>
-                <p>{value.extensions?.commonName}</p>
-                <p>Valid not before</p>
-                <p><Formatters.FormatterDate value={value.certificate.notBefore.getTime()/1000} /></p>
-                <p>Valid not after</p>
-                <p className={notAfterDateClassName}>
-                    <Formatters.FormatterDate value={value.certificate.notAfter.getTime()/1000} />
-                    {expired?<> (Expired)</>:<></>}
-                    
-                </p>
-            </div>
-        </section>
-    )
 }
