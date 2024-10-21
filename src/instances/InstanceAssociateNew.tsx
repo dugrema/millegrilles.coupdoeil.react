@@ -258,15 +258,14 @@ async function installSecure(workers: AppWorkers, instanceUrl: URL, mqUrl: URL) 
     let mqConfigUrl = new URL(instanceUrl.href);
     mqConfigUrl.pathname = '/installation/api/configurerMQ';
 
-    let response = await axios({method: 'POST', url: mqConfigUrl.href, data: command});
+    let response = await axios({method: 'POST', url: mqConfigUrl.href, data: command, timeout: 5_000});
     if(response.data.ok !== true) {
         console.warn("Response ", response);
         throw new Error(`Association failed: ${response.data.err}`);
     }
 }
 
-async function installSatellite(workers: AppWorkers, instanceUrl: URL, mqUrl: URL, security: string, caCertificate: string) {
-
+export async function generateSatelliteCertificate(workers: AppWorkers, instanceUrl: URL, security: string) {
     // Get the CSR
     const urlCsr = new URL(instanceUrl.href)
     urlCsr.pathname = '/installation/api/csrInstance';
@@ -298,6 +297,12 @@ async function installSatellite(workers: AppWorkers, instanceUrl: URL, mqUrl: UR
         throw new Error('Error signing instance certificate: ' + certificateResponse.err);
     }
     let certificate = certificateResponse.certificat;
+    return certificate;
+}
+
+async function installSatellite(workers: AppWorkers, instanceUrl: URL, mqUrl: URL, security: string, caCertificate: string) {
+
+    let certificate = await generateSatelliteCertificate(workers, instanceUrl, security);
 
     let installationParams = {
         hostname: instanceUrl.hostname,
