@@ -219,7 +219,7 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendCommand(command, DOMAINE_CORE_PKI, 'signerCsr') as Promise<GenerateCertificateInstanceResponse>;
     }
 
-    async setFileManagerForInstance(instanceId: string, fileManagerId: string) {
+    async setFileManagerForInstance(instanceId: string, fileManagerId: string | null) {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendCommand({instance_id: instanceId, consignation_id: fileManagerId}, DOMAINE_CORETOPOLOGIE, 'setConsignationInstance') as Promise<GenerateCertificateInstanceResponse>;
     }

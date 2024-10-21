@@ -45,7 +45,7 @@ function AssociateNew() {
             </p>
 
             <p className='pt-2'>
-                This feature can also be used to configure a brand new instance or renew the certificate and fix the bus configuration
+                This feature can be used to configure a brand new instance or renew the certificate and fix the bus configuration
                 of an already configured instance.
             </p>
 

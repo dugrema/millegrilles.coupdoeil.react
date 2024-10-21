@@ -84,7 +84,7 @@ function ConfigureFileManager() {
         if(!instanceId) throw new Error('Instance id not provided');
         if(selected === null) throw new Error('File manager id not provided');
         // workers.connexion.setConsignationPourInstance(instanceId, consignation_id)
-        let response = await workers.connection.setFileManagerForInstance(instanceId, selected);
+        let response = await workers.connection.setFileManagerForInstance(instanceId, selected?selected:null);
         if(response.ok !== true) {
             throw new Error(`Error changing file manager for instance: ${response.err}`);
         }
