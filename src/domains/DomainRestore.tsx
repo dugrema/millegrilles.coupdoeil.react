@@ -169,7 +169,7 @@ async function restoreInitialDomain(workers: AppWorkers, domain: string, masterK
     delete encryptedKeys.cleSecrete;
     delete encryptedKeys.digest;
 
-    await workers.connection.rebuildDomain(domain, encryptedKeys);
+    return await workers.connection.rebuildDomain(domain, encryptedKeys);
 }
 
 async function loadDomainBackupKeys(workers: AppWorkers, domain: string, masterKey: Uint8Array) {
@@ -275,17 +275,16 @@ function DomainListRegeneration(props: {masterKey: MasterKeyInformation | null})
     let workers = useWorkers();
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
     
-    let rebuildHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
+    let rebuildHandler = useCallback(async (domain: string ) => {
         if(!ready) throw new Error("not authenticated");
         if(!workers) throw new Error("workers not initialized");
-        let domain = e.currentTarget.value;
 
         if(masterKey) {
-            restoreInitialDomain(workers, domain, masterKey.key)
-                .catch(err=>console.error("Error restoring domain %s: %O", domain, err));
+            let response = await restoreInitialDomain(workers, domain, masterKey.key);
+            if(response.ok !== true) throw new Error('Error restoring initial domain' + response.err);
         } else {
-            workers.connection.rebuildDomain(domain)
-                .catch(err=>console.error("Error rebuilding domain %s: %O", domain, err));
+            let response = await workers.connection.rebuildDomain(domain)
+            if(response.ok !== true) throw new Error('Error restoring domain' + response.err);
         }
     }, [workers, ready, masterKey]);
 

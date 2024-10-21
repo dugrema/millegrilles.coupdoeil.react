@@ -5,6 +5,7 @@ import { DomainBackupInformation } from '../workers/connection.worker';
 import { ConditionalFormatters } from 'millegrilles.reactdeps.typescript';
 import useWorkers from '../workers/workers';
 import useConnectionStore from '../connectionStore';
+import ActionButton from '../components/ActionButton';
 
 
 function DomainList() {
@@ -12,25 +13,17 @@ function DomainList() {
     let workers = useWorkers();
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
 
-    let rebuildHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
+    let rebuildHandler = useCallback(async (domaine: string) => {
         if(!ready || !workers) throw new Error("workers not initialized");
-        let domain = e.currentTarget.value;
-        workers.connection.rebuildDomain(domain)
-            .catch(err=>console.error("Error rebuilding domain %s: %O", domain, err));
+        let response = await workers.connection.rebuildDomain(domaine);
+        console.debug("Rebuild response ", response);
+        if(response.ok !== true) throw new Error('Error starting rebuild: ' + response.err);
     }, [workers, ready]);
 
-    let domainBackupHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
+    let domainBackupHandler = useCallback(async (domaine: string) => {
         if(!ready || !workers) throw new Error("workers not initialized");
-        let domain = e.currentTarget.value;
-        workers.connection.backupDomain(domain)
-            .then(response=>{
-                if(response.ok !== true) {
-                    console.error("Backup start error: ", response.err);
-                } else {
-                    console.info("Backup on %s started", domain);
-                }
-            })
-            .catch(err=>console.error("Error backing up domain %s: %O", domain, err));
+        let response = await workers.connection.backupDomain(domaine)
+        if(response.ok !== true) throw new Error('Error starting backup: ' + response.err);
     }, [workers, ready]);
 
     return (
@@ -51,11 +44,6 @@ function DomainList() {
                         Backup
                 </Link>
 
-                <button
-                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                        Rebuild all
-                </button>
-
             </section>
 
             <section>
@@ -69,8 +57,8 @@ function DomainList() {
 export default DomainList;
 
 type DomainListSectionProps = {
-    rebuild?: (e: MouseEvent<HTMLButtonElement>) => void,
-    backup?: (e: MouseEvent<HTMLButtonElement>) => void,
+    rebuild?: (domaine: string) => Promise<void>,
+    backup?: (domaine: string) => Promise<void>,
 }
 
 export function DomainListSection(props: DomainListSectionProps) {
@@ -102,8 +90,8 @@ export function DomainListSection(props: DomainListSectionProps) {
 
 type DomainItemProps = {
     value: DomainStore,
-    rebuild?: (e: MouseEvent<HTMLButtonElement>) => void,
-    backup?: (e: MouseEvent<HTMLButtonElement>) => void,
+    rebuild?: (domaine: string) => Promise<void>,
+    backup?: (domaine: string) => Promise<void>,
 }
 
 function DomainItem(props: DomainItemProps) {
@@ -111,6 +99,18 @@ function DomainItem(props: DomainItemProps) {
     let { value, rebuild, backup } = props;
 
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
+
+    let backupHandler = useCallback(async () => {
+        if(!backup) throw new Error("backup method not provided");
+        if(!value.domaine) throw new Error("domaine not provided");
+        await backup(value.domaine);
+    }, [backup]);
+
+    let rebuildHandler = useCallback(async () => {
+        if(!rebuild) throw new Error("rebuild method not provided");
+        if(!value.domaine) throw new Error("domaine not provided");
+        await rebuild(value.domaine);
+    }, [value, rebuild]);
 
     return (
         <>
@@ -120,16 +120,10 @@ function DomainItem(props: DomainItemProps) {
             <p className='pb-2'><DomainStatus value={value} /></p>
             <div className='pb-2'>
                 {backup?
-                    <button value={value.domaine} onClick={backup} disabled={!ready}
-                        className='varbtn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                            Backup
-                    </button>
+                    <ActionButton onClick={backupHandler} disabled={!ready}>Backup</ActionButton>
                 :<></>}
                 {rebuild?
-                    <button value={value.domaine} onClick={rebuild} disabled={!ready || !!value.rebuilding}
-                        className='varbtn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                            Rebuild
-                    </button>
+                    <ActionButton onClick={rebuildHandler} disabled={!ready || !!value.rebuilding}>Rebuild</ActionButton>
                 :<></>}
             </div>
         </>

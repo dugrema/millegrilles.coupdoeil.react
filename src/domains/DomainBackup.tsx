@@ -22,20 +22,10 @@ function DomainBackup() {
 
                 <h2 className='text-lg font-bold pt-4 pb-2'>Actions</h2>
 
-                <button
+                {/* <button
                     className='btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900'>
                         Run complete
-                </button>
-
-                <button
-                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                        Run incremental
-                </button>
-
-                <button
-                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                        Download all
-                </button>
+                </button> */}
 
                 <Link to='/coupdoeil2/domains/restore'
                     className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
