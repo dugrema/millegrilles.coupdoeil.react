@@ -207,11 +207,11 @@ function DomainStatus(props: {value: DomainStore}) {
         return <span>Rebuilding ({rebuildPct})%</span>;
     }
 
+    if(backupStatus) return <span>{backupStatus}</span>;
+
     if(value.reclame_fuuids) {
         return <span>Reclame fuuids</span>;
     }
-
-    if(backupStatus) return <span>{backupStatus}</span>;
 
     return <span></span>;
 }
