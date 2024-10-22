@@ -82,7 +82,7 @@ function InitialDomainsSection(props: {masterKey: MasterKeyInformation | null, m
         if(!workers) throw new Error("workers not initialized");
         if(!masterKey) throw new Error("Master key not loaded");
         let domain = e.currentTarget.value;
-        restoreInitialDomain(workers, domain, masterKey.key)
+        restoreInitialDomain(workers, domain, masterKey.key, false)
             .catch(err=>console.error("Error restoring domain %s: %O", domain, err));
     }, [workers, masterKey]);
 
@@ -134,10 +134,26 @@ function InitialDomainsSection(props: {masterKey: MasterKeyInformation | null, m
 
 }
 
-async function restoreInitialDomain(workers: AppWorkers, domain: string, masterKey: Uint8Array) {
-    let decryptedKeys = await loadDomainBackupKeys(workers, domain, masterKey);
+async function restoreInitialDomain(workers: AppWorkers, domain: string, masterKey: Uint8Array, resubmitKeys: boolean) {
+    let [caEncryptedKeys, decryptedKeys] = await loadDomainBackupKeys(workers, domain, masterKey);
     let contentToEncrypt = { cles: decryptedKeys };
-    console.debug("Decrypted rebuild command ", contentToEncrypt);
+    console.debug("CA Keys: %O. Decrypted rebuild command %O", caEncryptedKeys, contentToEncrypt);
+
+    if(resubmitKeys) {
+        console.debug("Resubmitting CA encrypted keys to ensure they exist on KeyMaster: ", caEncryptedKeys);
+        for await (let keyId of Object.keys(decryptedKeys)) {
+            let decrytpedKey = decryptedKeys[keyId];
+            if(typeof(decrytpedKey) !== 'string') {
+                console.warn("Wrong decrypted key type, skipping: ", keyId);
+                continue;
+            }
+            let decryptedKeyBytes = multiencoding.decodeBase64Nopad(decrytpedKey);
+            let caKey = caEncryptedKeys[keyId] as keymaster.DomainSignature;
+            let encryptedKey = await workers.encryption.encryptSecretKey(decryptedKeyBytes);
+            console.debug("Submit re-encrypted key Signature: %O, Key: %O", caKey, encryptedKey);
+            await workers.connection.saveKeyToKeyMaster(encryptedKey, caKey);
+        }
+    }
 
     // Encrypt the command for the domain
     let encryptedKeys = null as keymaster.EncryptionBase64Result | null;
@@ -145,7 +161,7 @@ async function restoreInitialDomain(workers: AppWorkers, domain: string, masterK
         // Use the currently loaded keymaster certificate to encrypt the keys.
         encryptedKeys = await workers.encryption.encryptMessageMgs4ToBase64(contentToEncrypt, [domain]);
     } else {
-        // Make dummy request for a certificat, this returns the CorePki certificate in the response
+        // Make dummy request for a certificate, this returns the domain's certificate in the response
         let response = await workers.connection.pingDomain(domain)
         console.debug("Ping response ", response);
         // @ts-ignore
@@ -175,15 +191,17 @@ async function restoreInitialDomain(workers: AppWorkers, domain: string, masterK
 async function loadDomainBackupKeys(workers: AppWorkers, domain: string, masterKey: Uint8Array) {
     let response = await workers.connection.getDomainBackupInformation(true, true, [domain]);
 
+    let encryptedKeys = {} as {[key: string]: keymaster.DomainSignature};
     let decryptedKeys = {} as {[key: string]: string};
     for await (let backup of response.backups) {
         if(backup.domaine !== domain) continue;  // Wrong domain
         if(!backup.cles) continue;  // No keys
+        Object.assign(encryptedKeys, backup.cles);  // Copy encrypted keys
         let domainKeys = await workers.encryption.decryptCaKeysToBase64Nopad(masterKey, backup.cles, domain);
         decryptedKeys = {...decryptedKeys, ...domainKeys};
     }
 
-    return decryptedKeys;
+    return [encryptedKeys, decryptedKeys];
 }
 
 type KeyProgress = {
@@ -280,7 +298,7 @@ function DomainListRegeneration(props: {masterKey: MasterKeyInformation | null})
         if(!workers) throw new Error("workers not initialized");
 
         if(masterKey) {
-            let response = await restoreInitialDomain(workers, domain, masterKey.key);
+            let response = await restoreInitialDomain(workers, domain, masterKey.key, true);
             if(response.ok !== true) throw new Error('Error restoring initial domain' + response.err);
         } else {
             let response = await workers.connection.rebuildDomain(domain)

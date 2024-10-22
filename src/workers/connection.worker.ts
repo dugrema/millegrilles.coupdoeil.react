@@ -431,6 +431,13 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return await this.connection.unsubscribe('fileManagerEvents', cb);
     }
 
+    // Generic
+
+    async saveKeyToKeyMaster(encryptedKey: {[keymasterId: string]: string}, caKey: keymaster.DomainSignature) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({cles: encryptedKey, signature: caKey}, DOMAINE_MAITREDESCLES, 'ajouterCleDomaines');
+    }
+
 }
 
 var worker = new AppsConnectionWorker();

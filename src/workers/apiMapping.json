@@ -30,6 +30,7 @@
         {"domain": "CoreTopologie", "action": "configurerConsignation"},
         {"domain": "CoreTopologie", "action": "setConsignationInstance"},
         {"domain": "MaitreDesCles", "action": "rechiffrerBatch"},
+        {"domain": "MaitreDesCles", "action": "ajouterCleDomaines", "exchange": "1.public"},
         {"domain": "fichiers", "action": "declencherSync", "exchange": "2.prive"},
         {"domain": "instance", "action": "installerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},
         {"domain": "instance", "action": "supprimerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},
