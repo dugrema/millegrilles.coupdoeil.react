@@ -23,13 +23,16 @@ function DomainList() {
 
     let domainBackupHandler = useCallback(async (domaine: string) => {
         if(!ready || !workers) throw new Error("workers not initialized");
-        let response = await workers.connection.backupDomain(domaine)
-        if(response.ok !== true) throw new Error('Error starting backup: ' + response.err);
+        let response = await workers.connection.backupDomain(domaine);
+        if(response.ok !== true) {
+            console.warn("Error starting backup", response);
+            throw new Error('Error starting backup: ' + response.err);
+        }
     }, [workers, ready]);
 
     let backupAllHandler = useCallback(async () => {
         if(!ready || !workers) throw new Error('workers not initialized');
-        let result = await workers.connection.backupDomain('global');
+        let result = await workers.connection.backupDomain('global', true);
         // Only check that a result was received. The command is sent to all domains at the same time, the first response wins.
         if(!result) throw new Error("No response received to complete backup command");
     }, [workers, ready]);

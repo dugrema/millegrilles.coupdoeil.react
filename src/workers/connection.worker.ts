@@ -259,9 +259,9 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendRequest({}, domain, 'ping', {domain});
     }
 
-    async backupDomain(domain: string) {
+    async backupDomain(domain: string, noverif?: boolean) {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendCommand({complet: true}, domain, 'declencherBackup', {noverif: true});
+        return this.connection.sendCommand({complet: true}, domain, 'declencherBackup', {noverif});
     }
 
     async getNonDecryptableKeyCount() {
