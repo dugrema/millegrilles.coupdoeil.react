@@ -15,7 +15,7 @@ function DomainRestore() {
 
     return (
         <>
-            <Link to='/coupdoeil2/domains/backup'
+            <Link to='/coupdoeil2/domains'
                 className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
                     Back
             </Link>

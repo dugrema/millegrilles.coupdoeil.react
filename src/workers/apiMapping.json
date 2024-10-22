@@ -39,7 +39,11 @@
         {"domain": "instance", "action": "transmettreCatalogues"}
     ],
     "subscriptions": {
-        "domainEvents": {"exchanges": ["3.protege"], "routingKeys": ["evenement.*.presenceDomaine", "evenement.*.regeneration"]},
+        "domainEvents": {"exchanges": ["3.protege"], "routingKeys": [
+            "evenement.*.presenceDomaine", 
+            "evenement.*.regeneration",
+            "evenement.*.backupMaj"
+        ]},
         "instanceEvents": {"exchanges": ["1.public", "2.prive", "3.protege"], "routingKeys": ["evenement.instance.presence"]},
         "userEvents": {"exchanges": ["3.protege"], "routingKeys": [
             "evenement.CoreMaitreDesComptes.majCompteUsager",

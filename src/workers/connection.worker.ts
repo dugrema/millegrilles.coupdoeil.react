@@ -14,7 +14,7 @@ const DOMAINE_COREMAITREDESCOMPTES = 'CoreMaitreDesComptes';
 
 export type Domain = {
     domaine: string,
-    instance_id: string | null,
+    instance_id?: string | null,
     creation?: number | null,
     presence?: number | null,
     reclame_fuuids?: boolean | null,
@@ -24,13 +24,16 @@ export type ResponseGetDomainList = MessageResponse & {
     resultats: Array<Domain>,
 };
 
+export type BackupEvent = {ok?: boolean, done?: boolean, err?: string};
+export type DomaineEvent = {
+    domaine: string,
+    primaire?: boolean | null,
+    reclame_fuuids?: boolean | null,
+    instance_id?: string | null,
+}
+
 export type DomaineEventCallback = SubscriptionMessage & {
-    message: messageStruct.MilleGrillesMessage & {
-        domaine: string,
-        primaire?: boolean | null,
-        reclame_fuuids?: boolean | null,
-        instance_id?: string | null,
-    },
+    message: messageStruct.MilleGrillesMessage & DomaineEvent & BackupEvent,
 };
 
 export type DomainBackupInformation = MessageResponse & {

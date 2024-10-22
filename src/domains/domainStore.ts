@@ -7,6 +7,9 @@ export type DomainStore = Domain & {
     rebuildDone?: boolean,
     rebuildPosition?: number,
     rebuildTotalTransactions?: number,
+    backupRunning?: boolean,
+    backupResult?: boolean,
+    backupMessage?: string | null,
 };
 
 interface DomainStoreState {

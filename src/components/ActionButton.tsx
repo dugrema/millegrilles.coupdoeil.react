@@ -1,22 +1,22 @@
 import { useCallback, useMemo, useState } from "react";
 import { IconCheckSvg, IconCompactDiscSvg, IconXSvg } from "./Icons";
 
-function ActionButton(props: {onClick: ()=>Promise<void>, disabled?: boolean | null, mainButton?: boolean, children: string}) {
+function ActionButton(props: {onClick: ()=>Promise<void>, disabled?: boolean | null, mainButton?: boolean, forceErrorStatus?: boolean, children: string}) {
 
-    let { onClick, disabled, mainButton } = props;
+    let { onClick, disabled, mainButton, forceErrorStatus } = props;
 
     let [success, setSuccess] = useState(false);
     let [waiting, setWaiting] = useState(false);
     let [error, setError] = useState('');
 
     let [buttonClassName, Icon] = useMemo(()=>{
+        if(error || forceErrorStatus) return [
+            'btn inline-block text-center bg-red-700 hover:bg-red-600 active:bg-red-500 disabled:bg-red-800', 
+            <IconXSvg className='w-6 mr-2 fill-white inline'/>
+        ];
         if(success) return [
             'btn inline-block text-center bg-green-700 hover:bg-green-600 active:bg-green-500 disabled:bg-green-800', 
             <IconCheckSvg className='w-6 mr-2 fill-green-500 inline'/>
-        ];
-        if(error) return [
-            'btn inline-block text-center bg-red-700 hover:bg-red-600 active:bg-red-500 disabled:bg-red-800', 
-            <IconXSvg className='w-6 mr-2 fill-white inline'/>
         ];
         if(mainButton) return [
             'btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900', 
@@ -26,7 +26,7 @@ function ActionButton(props: {onClick: ()=>Promise<void>, disabled?: boolean | n
             'btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800', 
             waiting?<IconCompactDiscSvg className='w-6 mr-2 fill-slate-500 inline animate-spin' />:<></>
         ];
-    }, [error, success, mainButton, waiting]);
+    }, [error, forceErrorStatus, success, mainButton, waiting]);
 
     let clickHandler = useCallback(()=>{
         // Reset

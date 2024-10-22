@@ -8,8 +8,8 @@ import useDomainStore, { DomainStore } from './domainStore';
 import useWorkers, { AppWorkers } from '../workers/workers';
 import useConnectionStore from '../connectionStore';
 import { SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
-import { Domain, DomaineEventCallback } from '../workers/connection.worker';
-import { messageStruct } from 'millegrilles.cryptography';
+import { BackupEvent, Domain, DomaineEventCallback } from '../workers/connection.worker';
+import { certificates, messageStruct } from 'millegrilles.cryptography';
 
 
 function Domains() {
@@ -75,6 +75,10 @@ async function processEvent(workers: AppWorkers | null, event: SubscriptionMessa
         processEventPresenceDomaine(eventDomains, updateDomain);
     } else if(action === 'regeneration') {
         processEventRebuildDomain(eventDomains, updateDomain);
+    } else if(action === 'backupMaj') {
+        processEventBackupDomain(eventDomains, updateDomain);
+    } else {
+        console.warn("Unknown event received: ", eventDomains);
     }
 }
 
@@ -86,6 +90,31 @@ function processEventPresenceDomaine(eventDomains: DomaineEventCallback, updateD
     if(typeof(message.reclame_fuuids) === 'boolean') presenceUpdate.reclame_fuuids = message.reclame_fuuids;
     if(message.instance_id) presenceUpdate.instance_id = message.instance_id;
     updateDomain(presenceUpdate);
+}
+
+function processEventBackupDomain(eventDomains: DomaineEventCallback, updateDomain: (update: Domain)=>void) {
+    let message = eventDomains.message as BackupEvent;
+    // @ts-ignore
+    let estampille = message.content['__original'].estampille;
+    // @ts-ignore
+    let certificat = message.content['__certificate'] as certificates.CertificateWrapper;
+    console.debug("Certificat", certificat);
+    let domain = eventDomains.routingKey.split('.')[1];
+    if(!certificat.extensions?.domains?.includes(domain)) {
+        console.warn("Backup event ignored, mismatch on domains");
+        return;
+    }
+    let instanceId = certificat.extensions.commonName;
+    let backupUpdate = { 
+        domaine: domain, 
+        instance_id: instanceId, 
+        presence: estampille, 
+        backupRunning: !message.done, 
+        backupResult: message.ok } as DomainStore;
+    if(message.err) backupUpdate.backupMessage = message.err;  // Avoid overriding last message
+    else if(message.done && message.ok) backupUpdate.backupMessage = null;  // Reset
+    console.debug("Backup update", backupUpdate);
+    updateDomain(backupUpdate);
 }
 
 type RebuildMessage = messageStruct.MilleGrillesMessage & {

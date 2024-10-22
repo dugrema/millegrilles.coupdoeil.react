@@ -16,23 +16,7 @@ function DomainBackup() {
                     Back
             </Link>
 
-            <h1 className='text-xl font-bold pt-4'>Domain backup</h1>
-
-            <section>
-
-                <h2 className='text-lg font-bold pt-4 pb-2'>Actions</h2>
-
-                {/* <button
-                    className='btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900'>
-                        Run complete
-                </button> */}
-
-                <Link to='/coupdoeil2/domains/restore'
-                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                        Restore system
-                </Link>
-
-            </section>
+            <h1 className='text-xl font-bold pt-4'>Domain backup files</h1>
 
             <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>Backup list for each domain</h2>

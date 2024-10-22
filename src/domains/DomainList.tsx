@@ -6,6 +6,7 @@ import { ConditionalFormatters } from 'millegrilles.reactdeps.typescript';
 import useWorkers from '../workers/workers';
 import useConnectionStore from '../connectionStore';
 import ActionButton from '../components/ActionButton';
+import useInstanceStore, { ServerInstanceStore } from '../instances/instanceStore';
 
 
 function DomainList() {
@@ -26,6 +27,10 @@ function DomainList() {
         if(response.ok !== true) throw new Error('Error starting backup: ' + response.err);
     }, [workers, ready]);
 
+    let backupAllHandler = useCallback(async () => {
+        throw new Error('todo');
+    }, []);
+
     return (
         <>
             <Link to='/coupdoeil2'
@@ -39,9 +44,18 @@ function DomainList() {
 
                 <h2 className='text-lg font-bold pt-4 pb-2'>Utilities</h2>
 
+                <ActionButton onClick={backupAllHandler} disabled={!ready} mainButton={true}>
+                    Backup now
+                </ActionButton>
+
+                <Link to='/coupdoeil2/domains/restore'
+                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                        Restore
+                </Link>
+
                 <Link to='/coupdoeil2/domains/backup'
-                    className='btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900'>
-                        Backup
+                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                        Files
                 </Link>
 
             </section>
@@ -79,7 +93,7 @@ export function DomainListSection(props: DomainListSectionProps) {
         <div className='grid grid-cols-2 lg:grid-cols-6'>
             <p className='col-span-2  font-bold pb-2'>Domain</p>
             <p className='font-bold pb-2'>Last presence</p>
-            <p className='font-bold pb-2'>Instance id</p>
+            <p className='font-bold pb-2'>Instance</p>
             <p className='font-bold pb-2'>Status</p>
             <p className='font-bold pb-2'>Actions</p>
             {sortedDomainElems}
@@ -99,6 +113,7 @@ function DomainItem(props: DomainItemProps) {
     let { value, rebuild, backup } = props;
 
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
+    let instances = useInstanceStore(state=>state.instances);
 
     let backupHandler = useCallback(async () => {
         if(!backup) throw new Error("backup method not provided");
@@ -112,15 +127,35 @@ function DomainItem(props: DomainItemProps) {
         await rebuild(value.domaine);
     }, [value, rebuild]);
 
+    let instanceLabel = useMemo(()=>{
+        if(!instances || !value.instance_id) return '';
+        let instance = instances.filter(item=>item.instance_id === value.instance_id).pop();
+        if(instance) {
+            let labelSplit = instance.hostname.split('.');
+            // Split the first domain value from the hostname. Allows displaying on 2 lines.
+            if(labelSplit.length > 1) {
+                return labelSplit[0] + ' .' + labelSplit.slice(1).join('.')
+            }
+            return instance.hostname;
+        }
+        return value.instance_id;
+    }, [instances]);
+
+    let backupRunning = useMemo(()=>{
+        if(value.backupRunning) return true;
+        return false;
+    }, [value]);
+
     return (
         <>
             <p className='col-span-2 '>{value.domaine}</p>
             <ConditionalFormatters.FormatterConditionalDate value={value.presence?value.presence:undefined} warn={360} error={1800} />
-            <p>{value.instance_id}</p>
+            <p className='break-words'>{instanceLabel}</p>
             <p className='pb-2'><DomainStatus value={value} /></p>
             <div className='pb-2'>
                 {backup?
-                    <ActionButton onClick={backupHandler} disabled={!ready}>Backup</ActionButton>
+                    <ActionButton onClick={backupHandler} disabled={!ready || backupRunning} 
+                        forceErrorStatus={!!value.backupMessage}>Backup</ActionButton>
                 :<></>}
                 {rebuild?
                     <ActionButton onClick={rebuildHandler} disabled={!ready || !!value.rebuilding}>Rebuild</ActionButton>
@@ -151,6 +186,13 @@ function DomainStatus(props: {value: DomainStore}) {
         return 100;
     }, [value]) as number;
 
+    let backupStatus = useMemo(()=>{
+        if(!value.backupRunning && !value.backupResult && !value.backupMessage) return null;
+        if(value.backupMessage) return value.backupMessage;
+        if(value.backupRunning) return 'Backup running';
+        if(value.backupResult) return 'Backup done';
+    }, [value]);
+
     if(value.rebuildDone) {
         return <span>Rebuild complete</span>;
     }
@@ -162,6 +204,8 @@ function DomainStatus(props: {value: DomainStore}) {
     if(value.reclame_fuuids) {
         return <span>Reclame fuuids</span>;
     }
+
+    if(backupStatus) return <span>{backupStatus}</span>;
 
     return <span></span>;
 }
