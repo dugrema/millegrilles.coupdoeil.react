@@ -36,7 +36,7 @@ function Domains() {
         // Load domains
         workers.connection.getDomainList()
             .then(response=>{
-                console.debug("Domain list", response);
+                // console.debug("Domain list", response);
                 setDomains(response.resultats)
             })
             .catch(err=>console.error("Error loading domain list", err));
@@ -98,7 +98,6 @@ function processEventBackupDomain(eventDomains: DomaineEventCallback, updateDoma
     let estampille = message.content['__original'].estampille;
     // @ts-ignore
     let certificat = message.content['__certificate'] as certificates.CertificateWrapper;
-    console.debug("Certificat", certificat);
     let domain = eventDomains.routingKey.split('.')[1];
     if(!certificat.extensions?.domains?.includes(domain)) {
         console.warn("Backup event ignored, mismatch on domains");
@@ -113,7 +112,6 @@ function processEventBackupDomain(eventDomains: DomaineEventCallback, updateDoma
         backupResult: message.ok } as DomainStore;
     if(message.err) backupUpdate.backupMessage = message.err;  // Avoid overriding last message
     else if(message.done && message.ok) backupUpdate.backupMessage = null;  // Reset
-    console.debug("Backup update", backupUpdate);
     updateDomain(backupUpdate);
 }
 
