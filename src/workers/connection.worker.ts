@@ -198,6 +198,8 @@ export type GenerateCertificateInstanceCommand = {
 
 export type GenerateCertificateInstanceResponse = MessageResponse & { certificat?: string[] };
 
+export type GetNonDecryptableKeyCount = MessageResponse & { compte?: number };
+
 export class AppsConnectionWorker extends ConnectionWorker {
 
     async authenticate(reconnect?: boolean) {
@@ -266,7 +268,7 @@ export class AppsConnectionWorker extends ConnectionWorker {
 
     async getNonDecryptableKeyCount() {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendRequest({}, DOMAINE_MAITREDESCLES, 'compterClesNonDechiffrables');
+        return await this.connection.sendRequest({}, DOMAINE_MAITREDESCLES, 'compterClesNonDechiffrables') as GetNonDecryptableKeyCount;
     }
 
     async getNonDecryptableKeyBatch(skip: number, limit: number) {

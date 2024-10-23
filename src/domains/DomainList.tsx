@@ -17,7 +17,6 @@ function DomainList() {
     let rebuildHandler = useCallback(async (domaine: string) => {
         if(!ready || !workers) throw new Error("workers not initialized");
         let response = await workers.connection.rebuildDomain(domaine);
-        console.debug("Rebuild response ", response);
         if(response.ok !== true) throw new Error('Error starting rebuild: ' + response.err);
     }, [workers, ready]);
 

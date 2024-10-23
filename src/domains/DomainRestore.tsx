@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import MasterKeyLoader, { MasterKeyInformation } from '../utilities/MasterKeyLoader';
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { DomainBackupList } from './DomainBackup';
 import UploadButton from '../components/UploadButton';
 import useWorkers, { AppWorkers } from '../workers/workers';
 import { certificates, keymaster, multiencoding, x25519 } from 'millegrilles.cryptography';
 import { DomainListSection } from './DomainList';
 import useConnectionStore from '../connectionStore';
+import { decryptNonDecryptableKeys, KeyProgress, MaitreDesClesProgress } from '../utilities/DecryptKeys';
 
 
 function DomainRestore() {
@@ -137,10 +138,10 @@ function InitialDomainsSection(props: {masterKey: MasterKeyInformation | null, m
 async function restoreInitialDomain(workers: AppWorkers, domain: string, masterKey: Uint8Array, resubmitKeys: boolean) {
     let [caEncryptedKeys, decryptedKeys] = await loadDomainBackupKeys(workers, domain, masterKey);
     let contentToEncrypt = { cles: decryptedKeys };
-    console.debug("CA Keys: %O. Decrypted rebuild command %O", caEncryptedKeys, contentToEncrypt);
+    // console.debug("CA Keys: %O. Decrypted rebuild command %O", caEncryptedKeys, contentToEncrypt);
 
     if(resubmitKeys) {
-        console.debug("Resubmitting CA encrypted keys to ensure they exist on KeyMaster: ", caEncryptedKeys);
+        // console.debug("Resubmitting CA encrypted keys to ensure they exist on KeyMaster: ", caEncryptedKeys);
         for await (let keyId of Object.keys(decryptedKeys)) {
             let decrytpedKey = decryptedKeys[keyId];
             if(typeof(decrytpedKey) !== 'string') {
@@ -150,7 +151,7 @@ async function restoreInitialDomain(workers: AppWorkers, domain: string, masterK
             let decryptedKeyBytes = multiencoding.decodeBase64Nopad(decrytpedKey);
             let caKey = caEncryptedKeys[keyId] as keymaster.DomainSignature;
             let encryptedKey = await workers.encryption.encryptSecretKey(decryptedKeyBytes);
-            console.debug("Submit re-encrypted key Signature: %O, Key: %O", caKey, encryptedKey);
+            // console.debug("Submit re-encrypted key Signature: %O, Key: %O", caKey, encryptedKey);
             await workers.connection.saveKeyToKeyMaster(encryptedKey, caKey);
         }
     }
@@ -163,13 +164,13 @@ async function restoreInitialDomain(workers: AppWorkers, domain: string, masterK
     } else {
         // Make dummy request for a certificate, this returns the domain's certificate in the response
         let response = await workers.connection.pingDomain(domain)
-        console.debug("Ping response ", response);
+        // console.debug("Ping response ", response);
         // @ts-ignore
         let certificate: certificates.CertificateWrapper = response.content['__certificate'];
         Object.setPrototypeOf(certificate, certificates.CertificateWrapper.prototype);
-        console.debug("Domain certificate ", certificate);
+        // console.debug("Domain certificate ", certificate);
         let corePkiFingerprint = certificate.getPublicKey();
-        console.debug("Fingerprint: ", corePkiFingerprint);
+        // console.debug("Fingerprint: ", corePkiFingerprint);
         let publicKey = multiencoding.decodeHex(corePkiFingerprint);
         encryptedKeys = await workers.encryption.encryptMessageMgs4ToBase64(contentToEncrypt, [domain]);
         // Re-encrypt the key for the CorePki certificate
@@ -202,88 +203,6 @@ async function loadDomainBackupKeys(workers: AppWorkers, domain: string, masterK
     }
 
     return [encryptedKeys, decryptedKeys];
-}
-
-type KeyProgress = {
-    total: number,
-    current: number,
-    done: boolean,
-}
-
-function MaitreDesClesProgress(props: {value: KeyProgress | null}) {
-    let { value } = props;
-
-    let currentPct = useMemo(()=>{
-        if(!value) return null;
-        let { current, total, done } = value;
-        if(done) return 100;
-        return Math.floor(current / total * 100.0);
-    }, [value]);
-
-    if(!value) return <></>;
-
-    return (
-        <p>Maitre des cles progress: {currentPct}%</p>
-    )
-}
-
-async function decryptNonDecryptableKeys(workers: AppWorkers, masterKey: Uint8Array, progressCallback: (e: KeyProgress)=>void) {
-    let countResponse = await workers.connection.getNonDecryptableKeyCount();
-
-    // @ts-ignore
-    const keyCount = countResponse.compte;
-
-    let keyCounter = 0;
-    let serverIdx = 0;
-    let batchCount = 0;
-    progressCallback({total: keyCount, current: keyCounter, done: false});
-    while(keyCounter < keyCount) {
-        let response = await workers.connection.getNonDecryptableKeyBatch(serverIdx, 100);
-        let keys = response.cles;
-        if(!keys) throw new Error("out of sync, no keys received");
-        if(!response.idx) throw new Error("out of sync, no server idx counter received");
-
-        if(keys.length === 0) {
-            // Out of sync but done
-            break;
-        }
-
-        keyCounter += keys.length;
-        serverIdx = response.idx;
-
-        // Keep all information indexed by keyId for later reconciliation
-        let keyDict = {} as {[key: string]: any};
-
-        // Structure keys as string: DomaineSignature
-        let keySignatureDict = {} as {[key: string]: keymaster.DomainSignature};
-        for(let key of keys) {
-            let keyId = key.cle_id;
-            keySignatureDict[keyId] = key.signature;
-            keyDict[keyId] = key;
-        }
-
-        // Decrypt keys
-        let decryptedKeys = await workers.encryption.decryptCaKeysToBase64Nopad(masterKey, keySignatureDict);
-
-        // Insert all key information with each decrypted key
-        for await (let keyId of Object.keys(decryptedKeys)) {
-            let decryptedKey = decryptedKeys[keyId];
-            let keyInfo = keyDict[keyId];
-            keyInfo.cle_secrete = decryptedKey;
-        }
-
-        // Encrypted command content
-        let commandToEncrypt = {cles: keyDict};
-        let reEncryptedKeys = await workers.encryption.encryptMessageMgs4ToBase64(commandToEncrypt, ['MaitreDesCles']);
-
-        let nowait = batchCount % 10 !== 0;  // Sync every n batch. Avoids overloading the Q.
-        await workers.connection.sendEncryptedKeyBatch(reEncryptedKeys, nowait);
-        batchCount++;
-
-        progressCallback({total: keyCount, current: keyCounter, done: false});
-    };
-
-    progressCallback({total: keyCount, current: keyCounter, done: true});
 }
 
 function DomainListRegeneration(props: {masterKey: MasterKeyInformation | null}) {
