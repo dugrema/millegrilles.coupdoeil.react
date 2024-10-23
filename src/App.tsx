@@ -52,11 +52,7 @@ const Install1Public = React.lazy(()=>import('./installer/Install1Public'));
 const InstallationStatus = React.lazy(()=>import('./installer/InstallationStatus'));
 
 const router = createBrowserRouter([
-	{
-	  	path: "/coupdoeil2",
-	  	element: <LandingPage />,
-		  errorElement: <ErrorPage />
-	},
+	{ path: "/coupdoeil2", element: <LandingPage />, errorElement: <ErrorPage /> },
 	{
 		path: "/coupdoeil2/instances",
 		element: <Instances />,
