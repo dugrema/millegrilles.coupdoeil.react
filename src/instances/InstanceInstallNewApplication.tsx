@@ -56,7 +56,7 @@ function InstallNewApplication() {
         if(!currentPackages) return [];
 
         let security = instance.securite;
-        if(!security) throw new Error("Instance with no security level");
+        if(!security) return [];  // No security level
 
         let currentApps = prepareApps(instance);
 
