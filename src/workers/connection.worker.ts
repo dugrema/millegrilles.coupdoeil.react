@@ -315,7 +315,23 @@ export class AppsConnectionWorker extends ConnectionWorker {
             configuration: applicationPackage,
             instance_id: instanceId,
         };
-        return this.connection.sendCommand(command, DOMAINE_INSTANCE, 'installerApplication', {partition: instanceId, exchange, role: 'instance'});
+        return this.connection.sendCommand(
+            command, DOMAINE_INSTANCE, 'installerApplication', 
+            {partition: instanceId, exchange, role: 'instance', timeout: 300_000}
+        );
+    }
+
+    async upgradeApplication(name: string, instanceId: string, exchange: string, applicationPackage: any) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        let command = {
+            nom_application: name,
+            configuration: applicationPackage,
+            instance_id: instanceId,
+        };
+        return this.connection.sendCommand(
+            command, DOMAINE_INSTANCE, 'upgradeApplication', 
+            {partition: instanceId, exchange, role: 'instance', timeout: 300_000}
+        );
     }
 
     async removeApplication(name: string, instanceId: string, exchange: string) {

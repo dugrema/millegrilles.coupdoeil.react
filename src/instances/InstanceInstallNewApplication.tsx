@@ -14,8 +14,6 @@ function InstallNewApplication() {
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
 
     let currentPackages = useInstanceStore(state=>state.applicationCurrentPackages);
-    let addInstallingApp = useInstanceStore(state=>state.addInstallingApp);
-    let addErrorApp = useInstanceStore(state=>state.addErrorApp);
     let setApplicationCurrentPackages = useInstanceStore(state=>state.setApplicationCurrentPackages);
     let { instanceId } = useParams();
     let { instance } = useOutletContext() as {instance: ServerInstance};
@@ -25,15 +23,18 @@ function InstallNewApplication() {
         if(!instanceId) throw new Error("InstanceId null");
         if(!instance || !instance.securite) throw new Error("Missing instance security level");
         let value = e.currentTarget.value;
-        try {
-            await installApplication(workers, instanceId, value, instance.securite)
-            console.debug("Installing app %s", value);
-            addInstallingApp(value);
-        } catch(err) {
-            addErrorApp(value);
-            throw err;
-        }
-    }, [workers, ready, addInstallingApp, instanceId, instance, addErrorApp]);
+        let response = await installApplication(workers, instanceId, value, instance.securite);
+        if(response.ok !== true) throw new Error("Error installing application: " + response.err);
+    }, [workers, ready, instanceId, instance]);
+
+    let upgradeHandler = useCallback(async (e: MouseEvent<HTMLButtonElement>) => {
+        if(!ready || !workers) throw new Error('workers not initialized');
+        if(!instanceId) throw new Error("InstanceId null");
+        if(!instance || !instance.securite) throw new Error("Missing instance security level");
+        let value = e.currentTarget.value;
+        let response = await upgradeApplication(workers, instanceId, value, instance.securite);
+        if(response.ok !== true) throw new Error("Error upgrading application: " + response.err);
+    }, [workers, ready, instanceId, instance]);
 
     let refreshPackagesHandler = useCallback(async () => {
         if(!workers || !ready) throw new Error('workers not initialized');
@@ -89,13 +90,8 @@ function InstallNewApplication() {
                         <p className={'col-span-3 md:col-span-4 ' + nameClassname}>{item.nom}</p>
                         <p className={'col-span-1 md:col-span-2 ' + versionClassname}>{item.version}</p>
                         <div className='col-span-6 pb-2 sm:pb-0'>
-                            <ActionButton value={item.nom} onClick={installHandler} disabled={!ready}>
-                                Install
-                            </ActionButton>
-                            <button value={item.nom} disabled={!ready || !upgradeable}
-                                className="varbtn w-20 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
-                                    Upgrade
-                            </button>
+                            <ActionButton value={item.nom} onClick={installHandler} disabled={!ready}>Install</ActionButton>
+                            <ActionButton value={item.nom} onClick={upgradeHandler} disabled={!ready || !upgradeable}>Upgrade</ActionButton>
                         </div>
                 </li>
             )
@@ -138,6 +134,14 @@ async function installApplication(workers: AppWorkers, instanceId: string, appli
     let installationPackage = {...installationPackageResponse}; // .content['__original'];
     // @ts-ignore
     delete installationPackage.content;
-    let response = await workers.connection.installApplication(applicationName, instanceId, security, installationPackage);
-    console.debug("installApplication response: ", response);
+    return await workers.connection.installApplication(applicationName, instanceId, security, installationPackage);
+}
+
+async function upgradeApplication(workers: AppWorkers, instanceId: string, applicationName: string, security: string) {
+    let installationPackageResponse = await workers.connection.getPackageContent(applicationName);
+    console.debug("Package content ", installationPackageResponse);
+    let installationPackage = {...installationPackageResponse}; // .content['__original'];
+    // @ts-ignore
+    delete installationPackage.content;
+    return await workers.connection.upgradeApplication(applicationName, instanceId, security, installationPackage);
 }

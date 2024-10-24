@@ -36,6 +36,7 @@
         {"domain": "instance", "action": "supprimerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},
         {"domain": "instance", "action": "demarrerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},
         {"domain": "instance", "action": "arreterApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},
+        {"domain": "instance", "action": "upgradeApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},
         {"domain": "instance", "action": "transmettreCatalogues"}
     ],
     "subscriptions": {
