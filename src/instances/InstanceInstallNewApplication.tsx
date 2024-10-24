@@ -87,10 +87,10 @@ function InstallNewApplication() {
 
             return (
                 <li key={item.nom}
-                    className='grid grid-cols-6 sm:grid-cols-12 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40'>
-                        <p className={'col-span-3 ' + nameClassname}>{item.nom}</p>
-                        <p className={'col-span-2 ' + versionClassname}>{item.version}</p>
-                        <div className='col-span-7 pb-2 sm:pb-0'>
+                    className='grid grid-cols-4 md:grid-cols-12 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40'>
+                        <p className={'col-span-3 md:col-span-4 ' + nameClassname}>{item.nom}</p>
+                        <p className={'col-span-1 md:col-span-2 ' + versionClassname}>{item.version}</p>
+                        <div className='col-span-6 pb-2 sm:pb-0'>
                             <button value={item.nom} onClick={installHandler} disabled={!ready}
                                 className="varbtn w-20 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
                                     Install
@@ -118,9 +118,9 @@ function InstallNewApplication() {
                 <ActionButton onClick={refreshPackagesHandler} disabled={!ready}>Refresh packages</ActionButton>
 
                 <div className='grid grid-cols-4 md:grid-cols-12'>
-                    <p className='font-bold pt-4 pb-2 col-span-3'>Name</p>
-                    <p className='font-bold pt-4 pb-2 col-span-2'>Version</p>
-                    <p className='font-bold pt-4 pb-2 col-span-7'>Actions</p>
+                    <p className='font-bold pt-4 pb-2 col-span-3 md:col-span-4'>Name</p>
+                    <p className='font-bold pt-4 pb-2 col-span-1 md:col-span-2'>Version</p>
+                    <p className='font-bold pt-4 pb-2 col-span-6 hidden md:block'>Actions</p>
                 </div>
                 <ul>{applications}</ul>
             </section>

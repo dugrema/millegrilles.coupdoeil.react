@@ -43,17 +43,17 @@ function InstanceApplications() {
         return services.map(item=>{
             return (
                 <li key={item.name} 
-                    className='grid grid-cols-6 sm:grid-cols-12 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40'>
-                        <p className='col-span-3'>{item.name}</p>
+                    className='grid grid-cols-4 md:grid-cols-12 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40'>
+                        <p className='col-span-2 md:col-span-4'>{item.name}</p>
                         <p className='col-span-2'>{item.version}</p>
-                        <div>
+                        <div className='col-span-2 md:col-span-3'>
                             {item.docker?
                                 <ToggleSwitch checked={item.docker?.running || false} onChange={(checked)=>toggleApplication(item.name, checked)} />
                             :
                                 <>Nginx</>
                             }
                         </div>
-                        <div className='col-span-6 pb-2 md:pb-0'>
+                        <div className='col-span-2 md:col-span-3 pb-2 md:pb-0'>
                             <button onClick={removeHandler} disabled={!ready} value={item.name}
                                 className="varbtn w-20 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
                                     Remove
@@ -89,11 +89,11 @@ function InstanceApplications() {
                     <p>Loading</p>
                 }
 
-                <div className='grid grid-cols-6 sm:grid-cols-12'>
-                    <p className='font-bold pt-4 pb-2 col-span-3 break-words'>Name</p>
-                    <p className='font-bold pt-4 pb-2 col-span-2 break-words'>Version</p>
-                    <p className='font-bold pt-4 pb-2 col-span-1'>Status</p>
-                    <p className='font-bold pt-4 pb-2 col-span-6'>Actions</p>
+                <div className='grid grid-cols-4 md:grid-cols-12'>
+                    <p className='font-bold pt-4 pb-2 col-span-2 md:col-span-4'>Name</p>
+                    <p className='font-bold pt-4 pb-2 col-span-2'>Version</p>
+                    <p className='font-bold pt-4 pb-2 col-span-3 hidden md:block'>Status</p>
+                    <p className='font-bold pt-4 pb-2 col-span-3 hidden md:block'>Actions</p>
                 </div>
                 <ul>
                     {applications}
