@@ -44,9 +44,9 @@ function InstanceApplications() {
             return (
                 <li key={item.name} 
                     className='grid grid-cols-4 md:grid-cols-12 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40'>
-                        <p className='col-span-2 md:col-span-4'>{item.name}</p>
-                        <p className='col-span-2'>{item.version}</p>
-                        <div className='col-span-2 md:col-span-3'>
+                        <p className='col-span-2 md:col-span-5'>{item.name}</p>
+                        <p className='col-span-2 md:col-span-3'>{item.version}</p>
+                        <div className='col-span-2 md:col-span-1'>
                             {item.docker?
                                 <ToggleSwitch checked={item.docker?.running || false} onChange={(checked)=>toggleApplication(item.name, checked)} />
                             :
@@ -90,9 +90,9 @@ function InstanceApplications() {
                 }
 
                 <div className='grid grid-cols-4 md:grid-cols-12'>
-                    <p className='font-bold pt-4 pb-2 col-span-2 md:col-span-4'>Name</p>
-                    <p className='font-bold pt-4 pb-2 col-span-2'>Version</p>
-                    <p className='font-bold pt-4 pb-2 col-span-3 hidden md:block'>Status</p>
+                    <p className='font-bold pt-4 pb-2 col-span-2 md:col-span-5'>Name</p>
+                    <p className='font-bold pt-4 pb-2 col-span-3'>Version</p>
+                    <p className='font-bold pt-4 pb-2 col-span-1 hidden md:block'>Status</p>
                     <p className='font-bold pt-4 pb-2 col-span-3 hidden md:block'>Actions</p>
                 </div>
                 <ul>
