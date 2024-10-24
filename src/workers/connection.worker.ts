@@ -111,7 +111,8 @@ export type ApplicationPackage = {
     dependances?: [{
         name: string,
         image: string,
-    }]
+    }],
+    securityLabel?: string | null,
 };
 
 export type GetCurrentApplicationPackagesResponse = MessageResponse & { resultats?: ApplicationPackage[] };
@@ -307,6 +308,11 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async getPackageContent(name: string): Promise<GetCurrentApplicationPackagesResponse> {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendRequest({nom: name}, DOMAINE_CORECATALOGUES, 'infoApplication');
+    }
+
+    async getPackageVersions(name: string): Promise<GetCurrentApplicationPackagesResponse> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({nom: name}, DOMAINE_CORECATALOGUES, 'listeVersionsApplication');
     }
 
     async installApplication(name: string, instanceId: string, exchange: string, applicationPackage: any) {

@@ -10,6 +10,7 @@ import 'font-awesome/css/font-awesome.min.css';
 import 'react-datetime/css/react-datetime.css';
 import './App.css';
 import { InstanceEventHandler } from './instances/Instances';
+import ApplicationPackageList from './utilities/ApplicationPackageList';
 
 
 const LandingPage = React.lazy(()=>import('./LandingPage'));
@@ -43,6 +44,7 @@ const KeyManagement = React.lazy(()=>import('./utilities/KeyManagement'));
 const KeyManagementOptions = React.lazy(()=>import('./utilities/KeyManagementOptions'));
 const DecryptKeys = React.lazy(()=>import('./utilities/DecryptKeys'));
 const ApplicationPackages = React.lazy(()=>import('./utilities/ApplicationPackages'));
+const ApplicationPackageDetail = React.lazy(()=>import('./utilities/ApplicationPackageDetail'));
 const Installer = React.lazy(()=>import('./installer/Installer'));
 const InstallSelect = React.lazy(()=>import('./installer/InstallSelect'));
 const Install4Secure = React.lazy(()=>import('./installer/Install4Secure'));
@@ -106,7 +108,8 @@ const router = createBrowserRouter([
 		element: <ApplicationPackages />,
         errorElement: <ErrorPage />,
         children: [
-            // { path: "/apps/aichat", element: <ChatSummaryHistory /> },
+            { path: "/coupdoeil2/applicationPackages", element: <ApplicationPackageList /> },
+            { path: "/coupdoeil2/applicationPackages/:packageName", element: <ApplicationPackageDetail /> },
         ]
   	},
     {
