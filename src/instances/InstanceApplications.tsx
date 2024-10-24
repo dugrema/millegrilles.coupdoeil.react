@@ -40,7 +40,10 @@ function InstanceApplications() {
 
     let applications = useMemo(()=>{
         let services = prepareApps(instance);
+
         return services.map(item=>{
+            let noremove = item.labels?item.labels['noremove']==='true':false;
+
             return (
                 <li key={item.name} 
                     className='grid grid-cols-4 md:grid-cols-12 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40'>
@@ -54,7 +57,7 @@ function InstanceApplications() {
                             }
                         </div>
                         <div className='col-span-2 md:col-span-3 pb-2 md:pb-0'>
-                            <ActionButton onClick={removeHandler} disabled={!ready} value={item.name}>Remove</ActionButton>
+                            <ActionButton onClick={removeHandler} disabled={!ready||noremove} value={item.name}>Remove</ActionButton>
                         </div>
                 </li>
             )
@@ -110,7 +113,8 @@ export type InstanceApp = {
         running: boolean,
         preparing: boolean,
         replicas?: number,
-    }
+    },
+    labels?: {[key: string]: string} | null | undefined,
 };
 
 export function prepareApps(instance: ServerInstance): InstanceApp[] {
@@ -127,7 +131,9 @@ export function prepareApps(instance: ServerInstance): InstanceApp[] {
                     running: service.etat==='running', 
                     preparing: service.etat==='preparing',
                     replicas: service.replicas,
-                }}
+                },
+                labels: service.labels,
+            }
         }
     }
 
