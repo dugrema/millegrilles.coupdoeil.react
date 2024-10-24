@@ -107,6 +107,7 @@ export type ApplicationPackage = {
     nom: string,
     version: string,
     securite?: string,
+    securityLevels?: string[],
     dependances?: [{
         name: string,
         image: string,

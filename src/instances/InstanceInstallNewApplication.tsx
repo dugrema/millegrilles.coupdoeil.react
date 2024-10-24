@@ -55,7 +55,11 @@ function InstallNewApplication() {
     let applications = useMemo(()=>{
         if(!currentPackages) return [];
 
+        let security = instance.securite;
+        if(!security) throw new Error("Instance with no security level");
+
         let currentApps = prepareApps(instance);
+
         // let currentAppNames = new Set(currentApps.map(item=>item.name));
         let currentAppsByName = {} as {[key: string]: InstanceApp};
         for(let app of currentApps) {
@@ -65,8 +69,13 @@ function InstallNewApplication() {
 
         // Filter out applications currently installed
         // let packageCopy = currentPackages.filter(item=>!currentAppNames.has(item.nom));
-        let packageCopy = [...currentPackages];
+        let packageCopy = currentPackages.filter(item=>{
+            let levels = item.securityLevels || [];
+            if(item.securite) levels.push(item.securite);
+            if(security) return levels.includes(security);
+        });
         packageCopy.sort(sortPackages);
+        // Filter by security level
         return packageCopy.map(item=>{
             let upgradeable = false;
             let currentApp = currentAppsByName[item.nom];
