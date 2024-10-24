@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useOutletContext, useParams } from "react-router-dom";
 import useWorkers from "../workers/workers";
 import useConnectionStore from "../connectionStore";
@@ -39,6 +39,22 @@ function ApplicationPasswords(props: {instance: ServerInstance | null}) {
     let workers = useWorkers();
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
 
+    let [secretCopied, setSecretCopied] = useState(null as string | null);
+
+    let copyClipboard = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
+        let {name, value} = e.currentTarget;
+        navigator.clipboard.writeText(value);
+        setSecretCopied(name);
+    }, [setSecretCopied]);
+
+    useEffect(()=>{
+        if(!secretCopied) return;
+        let timeout = setTimeout(()=>setSecretCopied(null), 3_000);
+        return () => {
+            clearTimeout(timeout);
+        }
+    }, [secretCopied, setSecretCopied]);
+
     let [secrets, setSecrets] = useState(null as PasswordDict | null);
 
     let secretList = useMemo(()=>{
@@ -51,22 +67,37 @@ function ApplicationPasswords(props: {instance: ServerInstance | null}) {
             let secretValue = secrets[filename] || 'N/A';
             let multiline = secretValue.indexOf('\n') > 0;
 
-            if(multiline ){
+            let buttonClassname = '';
+            if(filename === secretCopied) {
+                buttonClassname = 'bg-amber-700';
+            }
+
+            if(multiline){
                 return (
-                    <React.Fragment key={filename}>
-                        <p className='col-span-6'>{filename}</p>
-                        <pre className='col-span-6 pt-2 pb-6'>{secretValue}</pre>
-                    </React.Fragment>
+                    <li key={filename} 
+                        className='grid grid-cols-6 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40'>
+                            <p className='col-span-6'>{filename}</p>
+                            <button onClick={copyClipboard} name={filename} value={secretValue}
+                                className={'col-span-6 pt-2 pb-6 text-left ' + buttonClassname}>
+                                    <pre>{secretValue}</pre>
+                            </button>
+                    </li>
                 )
             }
             return (
-                <React.Fragment key={filename}>
+                <li key={filename}
+                    className='grid grid-cols-6 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40'>
                     <p className='col-span-2'>{filename}</p>
-                    <p className='col-span-4'>{secretValue}</p>
-                </React.Fragment>
+                    <p className='col-span-4'>
+                        <button onClick={copyClipboard} name={filename} value={secretValue}
+                            className={buttonClassname}>
+                                {secretValue}
+                        </button>
+                    </p>
+                </li>
             )
         });
-    }, [secrets])
+    }, [secrets, secretCopied])
 
     useEffect(()=>{
         if(!workers || !ready || !instance?.securite) return // Workers not initialized;
@@ -84,9 +115,9 @@ function ApplicationPasswords(props: {instance: ServerInstance | null}) {
     }, [workers, ready, instance, setSecrets]);
 
     return (
-        <div className='grid grid-cols-6'>
+        <ul>
             {secretList}
-        </div>
+        </ul>
     );
 }
 
