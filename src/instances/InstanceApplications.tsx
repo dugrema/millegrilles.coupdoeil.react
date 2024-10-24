@@ -1,6 +1,6 @@
 import { Link, useOutletContext, useParams } from "react-router-dom";
 import { ServerInstance } from "../workers/connection.worker";
-import React, { MouseEvent, useCallback, useMemo } from "react";
+import { MouseEvent, useCallback, useMemo } from "react";
 import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
 import { ToggleSwitch } from "flowbite-react";
@@ -72,20 +72,12 @@ function InstanceApplications() {
 
                 <Link to={`/coupdoeil2/instances/${instanceId}/newApplication`}
                     className='btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900'>
-                        Install new
+                        Install
                 </Link>
                 <Link to={`/coupdoeil2/instances/${instanceId}/passwords`}
                     className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
                         Passwords
                 </Link>
-                <button
-                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                        Refresh packages
-                </button>
-                <button
-                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                        Upgrade all
-                </button>
             </section>
 
             <section>
@@ -114,7 +106,7 @@ function InstanceApplications() {
 
 export default InstanceApplications;
 
-type InstanceApp = {
+export type InstanceApp = {
     name: string,
     image?: string,
     version?: string,
