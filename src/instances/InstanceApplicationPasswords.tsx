@@ -86,7 +86,7 @@ function ApplicationPasswords(props: {instance: ServerInstance | null}) {
             }
             return (
                 <li key={filename}
-                    className='grid grid-cols-6 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40'>
+                    className='grid grid-cols-1 md:grid-cols-6 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40'>
                     <p className='col-span-2'>{filename}</p>
                     <p className='col-span-4'>
                         <button onClick={copyClipboard} name={filename} value={secretValue}
