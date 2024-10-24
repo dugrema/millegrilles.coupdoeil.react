@@ -97,7 +97,7 @@ function ApplicationPasswords(props: {instance: ServerInstance | null}) {
                 </li>
             )
         });
-    }, [secrets, secretCopied])
+    }, [secrets, secretCopied, copyClipboard]);
 
     useEffect(()=>{
         if(!workers || !ready || !instance?.securite) return // Workers not initialized;

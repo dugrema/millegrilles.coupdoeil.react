@@ -1,4 +1,4 @@
-import React, { MouseEvent, useCallback, useMemo, useState } from "react";
+import { MouseEvent, useCallback, useMemo } from "react";
 import useInstanceStore from "./instanceStore";
 import { ApplicationPackage, ServerInstance } from "../workers/connection.worker";
 import { useOutletContext, useParams, Link } from "react-router-dom";
@@ -73,6 +73,7 @@ function InstallNewApplication() {
             let levels = item.securityLevels || [];
             if(item.securite) levels.push(item.securite);
             if(security) return levels.includes(security);
+            return false;
         });
         packageCopy.sort(sortPackages);
         // Filter by security level
@@ -105,7 +106,7 @@ function InstallNewApplication() {
                 </li>
             )
         })
-    }, [ready, instance, currentPackages, installHandler]);
+    }, [ready, instance, currentPackages, installHandler, upgradeHandler]);
 
     return (
         <>

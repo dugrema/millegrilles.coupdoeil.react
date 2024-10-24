@@ -1,4 +1,4 @@
-import { ChangeEvent, MouseEvent, useCallback, useMemo, useState } from "react";
+import { MouseEvent, useCallback, useMemo, useState } from "react";
 import { IconCheckSvg, IconCompactDiscSvg, IconXSvg } from "./Icons";
 
 type ActionButtonProps = {
