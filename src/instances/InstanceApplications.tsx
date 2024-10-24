@@ -4,6 +4,7 @@ import { MouseEvent, useCallback, useMemo } from "react";
 import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
 import { ToggleSwitch } from "flowbite-react";
+import ActionButton from "../components/ActionButton";
 
 function InstanceApplications() {
 
@@ -12,16 +13,15 @@ function InstanceApplications() {
     let workers = useWorkers();
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
 
-    let removeHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
+    let removeHandler = useCallback(async (e: MouseEvent<HTMLButtonElement>) => {
         if(!workers || !ready) throw new Error("Workers not initialized");
         let value = e.currentTarget.value;
         let securite = instance.securite;
         if(!securite) throw new Error("Instance without security level information");
-        workers.connection.removeApplication(value, instance.instance_id, securite)
-            .then(response=>{
-                console.debug("Application removed response: ", response);
-            })
-            .catch(err=>console.error("Error removing application: ", err));
+        let response = await workers.connection.removeApplication(value, instance.instance_id, securite);
+        if(response.ok !== true) {
+            throw new Error('Error removing application: ' + response.err);
+        }
     }, [workers, ready, instance]);
 
     let toggleApplication = useCallback((name: string, running: boolean)=>{
@@ -54,11 +54,7 @@ function InstanceApplications() {
                             }
                         </div>
                         <div className='col-span-2 md:col-span-3 pb-2 md:pb-0'>
-                            <button onClick={removeHandler} disabled={!ready} value={item.name}
-                                className="varbtn w-20 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
-                                    Remove
-                            </button>
-
+                            <ActionButton onClick={removeHandler} disabled={!ready} value={item.name}>Remove</ActionButton>
                         </div>
                 </li>
             )

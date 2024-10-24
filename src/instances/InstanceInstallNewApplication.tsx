@@ -20,21 +20,19 @@ function InstallNewApplication() {
     let { instanceId } = useParams();
     let { instance } = useOutletContext() as {instance: ServerInstance};
 
-    let installHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
+    let installHandler = useCallback(async (e: MouseEvent<HTMLButtonElement>) => {
         if(!ready || !workers) throw new Error('workers not initialized');
         if(!instanceId) throw new Error("InstanceId null");
         if(!instance || !instance.securite) throw new Error("Missing instance security level");
         let value = e.currentTarget.value;
-        installApplication(workers, instanceId, value, instance.securite)
-            .then(()=>{
-                console.debug("Installing app %s", value);
-                addInstallingApp(value);
-                // navigate(`/coupdoeil2/instances/${instanceId}`);
-            })
-            .catch(err=>{
-                console.error("Error installation application", err);
-                addErrorApp(value);
-            });
+        try {
+            await installApplication(workers, instanceId, value, instance.securite)
+            console.debug("Installing app %s", value);
+            addInstallingApp(value);
+        } catch(err) {
+            addErrorApp(value);
+            throw err;
+        }
     }, [workers, ready, addInstallingApp, instanceId, instance, addErrorApp]);
 
     let refreshPackagesHandler = useCallback(async () => {
@@ -91,10 +89,9 @@ function InstallNewApplication() {
                         <p className={'col-span-3 md:col-span-4 ' + nameClassname}>{item.nom}</p>
                         <p className={'col-span-1 md:col-span-2 ' + versionClassname}>{item.version}</p>
                         <div className='col-span-6 pb-2 sm:pb-0'>
-                            <button value={item.nom} onClick={installHandler} disabled={!ready}
-                                className="varbtn w-20 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
-                                    Install
-                            </button>
+                            <ActionButton value={item.nom} onClick={installHandler} disabled={!ready}>
+                                Install
+                            </ActionButton>
                             <button value={item.nom} disabled={!ready || !upgradeable}
                                 className="varbtn w-20 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
                                     Upgrade

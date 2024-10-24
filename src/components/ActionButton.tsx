@@ -1,9 +1,19 @@
-import { useCallback, useMemo, useState } from "react";
+import { ChangeEvent, MouseEvent, useCallback, useMemo, useState } from "react";
 import { IconCheckSvg, IconCompactDiscSvg, IconXSvg } from "./Icons";
 
-function ActionButton(props: {onClick: ()=>Promise<void>, disabled?: boolean | null, mainButton?: boolean, forceErrorStatus?: boolean, children: string}) {
+type ActionButtonProps = {
+    onClick: (e: MouseEvent<HTMLButtonElement>)=>Promise<void>, 
+    disabled?: boolean | null, 
+    mainButton?: boolean, 
+    forceErrorStatus?: boolean, 
+    children: string,
+    name?: string | undefined,
+    value?: string | undefined,
+};
 
-    let { onClick, disabled, mainButton, forceErrorStatus } = props;
+function ActionButton(props: ActionButtonProps) {
+
+    let { onClick, disabled, mainButton, forceErrorStatus, name, value } = props;
 
     let [success, setSuccess] = useState(false);
     let [waiting, setWaiting] = useState(false);
@@ -28,13 +38,13 @@ function ActionButton(props: {onClick: ()=>Promise<void>, disabled?: boolean | n
         ];
     }, [error, forceErrorStatus, success, mainButton, waiting]);
 
-    let clickHandler = useCallback(()=>{
+    let clickHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
         // Reset
         setSuccess(false);
         setWaiting(true);
         setError('');
 
-        onClick()
+        onClick(e)
             .then(()=>{
                 setSuccess(true);
                 setError('');
@@ -49,7 +59,7 @@ function ActionButton(props: {onClick: ()=>Promise<void>, disabled?: boolean | n
     }, [setSuccess, setWaiting, setError, onClick]);
 
     return (
-        <button onClick={clickHandler} disabled={!!disabled || waiting}
+        <button onClick={clickHandler} disabled={!!disabled || waiting} name={name} value={value}
             className={buttonClassName}>
                 {props.children}
                 {' '}
