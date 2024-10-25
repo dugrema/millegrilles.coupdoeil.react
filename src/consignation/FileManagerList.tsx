@@ -19,22 +19,20 @@ function FileManagerList() {
         if(!response.ok) { throw new Error(response.err || 'Error'); }
     }, [workers, ready]);
 
-    let reindexHandler = useCallback(()=>{
+    let reindexHandler = useCallback(async () => {
         if(!workers || !ready) throw new Error('workers not initialized');
-        workers.connection.reindexFileManagers()
-            .then(response=>{
-                console.debug("reindexFileManagers Response", response);
-            })
-            .catch(err=>console.error("reindexFileManagers Error", err));
+        let response = await workers.connection.reindexFileManagers()
+        if(response.ok !== true) {
+            throw new Error("Error triggering re-indexing: " + response.err)
+        }
     }, [workers, ready]);
 
-    let resetTransfersHandler = useCallback(()=>{
+    let resetTransfersHandler = useCallback(async () => {
         if(!workers || !ready) throw new Error('workers not initialized');
-        workers.connection.resetTransfersFileManagers()
-            .then(response=>{
-                console.debug("resetTransfersFileManagers Response", response);
-            })
-            .catch(err=>console.error("resetTransfersFileManagers Error", err));
+        let response = await workers.connection.resetTransfersFileManagers()
+        if(response.ok !== true) {
+            throw new Error("Error resetting file transfers: " + response.err)
+        }
     }, [workers, ready]);
 
     return (
@@ -51,16 +49,8 @@ function FileManagerList() {
                 <h2 className='text-lg font-bold pt-4 pb-2'>Utilities</h2>
 
                 <ActionButton onClick={syncHandler} disabled={!ready} mainButton={true}>Synchronize</ActionButton>
-
-                <button onClick={reindexHandler} disabled={!ready}
-                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                        Reindex
-                </button>
-
-                <button onClick={resetTransfersHandler} disabled={!ready}
-                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                        Reset transfers
-                </button>
+                <ActionButton onClick={reindexHandler} disabled={!ready}>Reindex</ActionButton>
+                <ActionButton onClick={resetTransfersHandler} disabled={!ready}>Reset transfers</ActionButton>
 
             </section>
 

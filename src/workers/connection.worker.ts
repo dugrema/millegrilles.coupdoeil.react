@@ -11,6 +11,7 @@ const DOMAINE_MAITREDESCLES = 'MaitreDesCles';
 const DOMAINE_FICHIERS = 'fichiers';
 const DOMAINE_INSTANCE = 'instance';
 const DOMAINE_COREMAITREDESCOMPTES = 'CoreMaitreDesComptes';
+const DOMAINE_GROSFICHIERS = 'GrosFichiers';
 
 export type Domain = {
     domaine: string,
@@ -429,14 +430,12 @@ export class AppsConnectionWorker extends ConnectionWorker {
 
     async reindexFileManagers() {
         if(!this.connection) throw new Error("Connection is not initialized");
-        throw new Error('todo')
-        // return this.connection.sendCommand({}, DOMAINE_COREMAITREDESCOMPTES, 'resetWebauthnUsager');
+        return this.connection.sendCommand({}, DOMAINE_GROSFICHIERS, 'reindexerConsignation');
     }
 
     async resetTransfersFileManagers() {
         if(!this.connection) throw new Error("Connection is not initialized");
-        throw new Error('todo')
-        //return this.connection.sendCommand({}, DOMAINE_COREMAITREDESCOMPTES, 'resetWebauthnUsager');
+        return this.connection.sendCommand({}, DOMAINE_FICHIERS, 'resetTransfertsSecondaires', {role: 'fichiers'});
     }
 
     async removeFileManager(instanceId: string) {
