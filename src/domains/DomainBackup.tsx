@@ -18,9 +18,19 @@ function DomainBackup() {
 
             <h1 className='text-xl font-bold pt-4'>Domain backup files</h1>
 
+            <p className='pb-2'>
+                This list is taken from the file server. It acts as a backup server for each domain databases. 
+                An incremental backup is done every 30 minutes but with transfers the files can be over an hour old.
+                If you need the latest backup files, trigger a complete backup (previous screen) and come back here when completed.
+            </p>
+
             <section>
-                <h2 className='text-lg font-bold pt-4 pb-2'>Backup list for each domain</h2>
-                <p className='pb-4'>This is taken from the file server. It acts as a backup server for the domain databases.</p>
+                <h2 className='text-lg font-bold pt-4 pb-2'>Backup files for each domain</h2>
+                <p className='pb-4'>
+                    You can download an archive for each domain by clicking on the domain name. 
+                    Each domain tar file contains .mgbak encrypted archives. These archives
+                    can only be used with the system's master key.
+                </p>
                 <DomainBackupList />
             </section>
         </>
@@ -60,7 +70,12 @@ export function DomainBackupList() {
         return listCopy.map(item=>{
             return (
                 <React.Fragment key={item.domaine}>
-                    <p>{item.domaine}</p>
+                    <p>
+                        <a href={`/fichiers/backup_v2/tar/${item.domaine}`} download 
+                            className='underline font-bold'>
+                                {item.domaine}
+                        </a>
+                    </p>
                     <Formatters.FormatterDate value={item.concatene?.date} />
                     <p><Formatters.FormatterDate value={item.transaction_plus_recente} /></p>
                     <p>{item.nombre_transactions}</p>
