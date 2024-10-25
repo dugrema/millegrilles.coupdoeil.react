@@ -80,7 +80,7 @@ function InstallNewApplication() {
         return packageCopy.map(item=>{
             let upgradeable = false;
             let currentApp = currentAppsByName[item.nom];
-            if(currentApp && currentApp.version !== item.version) {
+            if(currentApp && currentApp.version && currentApp.version !== item.version) {
                 // Assume a different version always means a newer is available
                 upgradeable = true;
             }
@@ -98,7 +98,10 @@ function InstallNewApplication() {
                 <li key={item.nom}
                     className='grid grid-cols-4 md:grid-cols-12 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40'>
                         <p className={'col-span-3 md:col-span-4 ' + nameClassname}>{item.nom}</p>
-                        <p className={'col-span-1 md:col-span-2 ' + versionClassname}>{item.version}</p>
+                        <p className={'col-span-1 md:col-span-2'} title={'Current version: ' + currentApp?.version}>
+                            <span className={versionClassname}>{item.version}</span>
+                            {upgradeable?<div>Current: {currentApp?.version}</div>:<></>}
+                        </p>
                         <div className='col-span-6 pb-2 sm:pb-0'>
                             <ActionButton value={item.nom} onClick={installHandler} disabled={!ready}>Install</ActionButton>
                             <ActionButton value={item.nom} onClick={upgradeHandler} disabled={!ready || !upgradeable}>Upgrade</ActionButton>
