@@ -94,7 +94,7 @@ function FileHostList() {
         if(!filehosts) return null;
 
         // Create label and sort
-        let filehostCopy = filehosts.map(item=>{
+        let filehostCopy = filehosts.filter(item=>!item.deleted).map(item=>{
             let label = item.url_external || item.filehost_id;
             return {...item, label};
         }) as FilehostListItem[];

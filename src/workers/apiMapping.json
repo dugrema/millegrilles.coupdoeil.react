@@ -73,11 +73,12 @@
             "evenement.filecontroler.presence",
             "evenement.filecontroler.filehostStatus",
             "evenement.CoreTopologie.filehostAdd",
+            "evenement.CoreTopologie.filehostRestore",
             "evenement.CoreTopologie.filehostUpdate",
-            "evenement.CoreTopologie.filehostRemove",
+            "evenement.CoreTopologie.filehostDelete",
             "evenement.CoreTopologie.filecontrolerAdd",
             "evenement.CoreTopologie.filecontrolerUpdate",
-            "evenement.CoreTopologie.filecontrolerRemove"
+            "evenement.CoreTopologie.filecontrolerDelete"
         ]}
     }
 }

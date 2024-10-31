@@ -27,19 +27,22 @@ const useFilehostStore = create<FilehostingStoreState>()(
             updateFilehosts: (filehost) => set(state=>{
                 let filehosts = state.filehosts;
                 if(!filehosts) return {filehosts: [filehost]};  // New
-                let filehostItem = filehosts.filter(item=>item.instance_id === filehost.instance_id).pop() || {};
+                let filehostItem = filehosts.filter(item=>item.filehost_id === filehost.filehost_id).pop();
+                if(!filehostItem) return {filehosts: [...filehosts, filehost]};
                 let filehostUpdate = {...filehostItem, ...filehost};
                 let filehostsUpdate = filehosts.map(item=>{
-                    if(item.instance_id === filehostUpdate.instance_id) { return filehostUpdate };
+                    if(item.filehost_id === filehostUpdate.filehost_id) { return filehostUpdate };
                     return item;
                 })
+                console.debug("filecontrolersHostsUpdate ", filehostsUpdate);
                 return {filehosts: filehostsUpdate};
             }),
             setFilecontrolers: (filecontrolers) => set(() => ({ filecontrolers })),
             updateFilecontrolers: (filecontroler) => set(state=>{
                 let filecontrolers = state.filecontrolers;
                 if(!filecontrolers) return {filecontrolers: [filecontroler]};  // New
-                let filecontrolerItem = filecontrolers.filter(item=>item.instance_id === filecontroler.instance_id).pop() || {};
+                let filecontrolerItem = filecontrolers.filter(item=>item.instance_id === filecontroler.instance_id).pop();
+                if(!filecontrolerItem) return {filecontrolers: [...filecontrolers, filecontroler]};
                 let filecontrolerUpdate = {...filecontrolerItem, ...filecontroler};
                 let filecontrolersUpdate = filecontrolers.map(item=>{
                     if(item.instance_id === filecontrolerUpdate.instance_id) { return filecontrolerUpdate };

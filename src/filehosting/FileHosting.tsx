@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { SubscriptionMessage } from "millegrilles.reactdeps.typescript";
+import { MessageResponse, SubscriptionMessage } from "millegrilles.reactdeps.typescript";
 import { Outlet } from "react-router-dom";
 import { proxy } from 'comlink';
 
@@ -8,6 +8,7 @@ import Footer from "../Footer";
 import useWorkers, { AppWorkers } from "../workers/workers";
 import useConnectionStore from "../connectionStore";
 import useFilehostStore, { FilecontrolerStoreItem, FilehostStoreItem } from "./filehostingStore";
+import { FileHost } from "../workers/connection.worker";
 
 function FileHosting() {
 
@@ -76,8 +77,48 @@ function FileHosting() {
 
 export default FileHosting;
 
+type FilehostItemEvent = MessageResponse & FileHost;
+type FilehostDeleteEvent = MessageResponse & {filehost_id: string};
+
 async function processEvent(workers: AppWorkers | null, event: SubscriptionMessage, 
     updateFilehosts: (e: FilehostStoreItem)=>void, updateFilecontrolers: (e: FilecontrolerStoreItem)=>void) 
 {
-    throw new Error('todo');
+    console.debug("processEvent Received ", event);
+    let rkSplit = event.routingKey.split('.');
+    let domain = rkSplit[1];
+    let action = rkSplit.pop();
+
+    if(domain === 'CoreTopologie') {
+        if(action === 'filehostAdd' || action === 'filehostUpdate') {
+            let message = event.message as FilehostItemEvent;
+            delete message.content
+            updateFilehosts(message);
+        } else if(action === 'filehostDelete') {
+            let message = event.message as FilehostDeleteEvent;
+            let filehostId = message.filehost_id;
+            updateFilehosts({filehost_id: filehostId, deleted: true});
+        } else if(action === 'filehostRestore') {
+            let message = event.message as FilehostDeleteEvent;
+            let filehostId = message.filehost_id;
+            updateFilehosts({filehost_id: filehostId, deleted: false});
+        } else if(action === 'filecontrolerAdd') {
+                        
+        } else if(action === 'filecontrolerUpdate') {
+            
+        } else if(action === 'filecontrolerDelete') {
+            
+        } else {
+            console.warn("Event received from CoreTopologie for unhandled action %s - DROPPED", action);
+        }
+    } else if(domain === 'filecontroler') {
+        if(action === 'presence') {
+
+        } else if(action === 'filehostStatus') {
+            
+        } else {
+            console.warn("Event received from filecontroler for unhandled action %s - DROPPED", action);
+        }
+    } else {
+        console.warn("Event received from unhandled domain %s - DROPPED", domain);
+    }
 }
