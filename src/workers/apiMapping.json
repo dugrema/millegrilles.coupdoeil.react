@@ -14,6 +14,8 @@
         {"domain": "CoreTopologie", "action": "listeDomaines"},
         {"domain": "CoreTopologie", "action": "listeNoeuds"},
         {"domain": "CoreTopologie", "action": "getConfigurationFichiers"},
+        {"domain": "CoreTopologie", "action": "getFilehosts", "exchange": "1.public"},
+        {"domain": "CoreTopologie", "action": "getFilecontrolers", "exchange": "1.public"},
         {"domain": "fichiers", "action": "domainesBackupV2", "exchange": "2.prive"},
         {"domain": "instance", "action": "getPasswords", "exchanges": ["1.public", "2.prive", "3.protege"]},
         {"domain": "MaitreDesCles", "action": "compterClesNonDechiffrables"},
@@ -31,6 +33,9 @@
         {"domain": "CoreTopologie", "action": "configurerConsignation"},
         {"domain": "CoreTopologie", "action": "setConsignationInstance"},
         {"domain": "CoreTopologie", "action": "setConsignationInstance"},
+        {"domain": "CoreTopologie", "action": "filehostAdd", "exchange": "1.public"},
+        {"domain": "CoreTopologie", "action": "filehostUpdate", "exchange": "1.public"},
+        {"domain": "CoreTopologie", "action": "filehostDelete", "exchange": "1.public"},
         {"domain": "GrosFichiers", "action": "reindexerConsignation"},
         {"domain": "MaitreDesCles", "action": "rechiffrerBatch"},
         {"domain": "MaitreDesCles", "action": "ajouterCleDomaines", "exchange": "1.public"},
@@ -63,6 +68,16 @@
             "evenement.fichiers.syncDownload",
             "evenement.CoreTopologie.changementConsignationPrimaire",
             "evenement.CoreTopologie.instanceConsignationSupprimee"
+        ]},
+        "filehostingEvents": {"exchanges": ["1.public"], "routingKeys": [
+            "evenement.filecontroler.presence",
+            "evenement.filecontroler.filehostStatus",
+            "evenement.CoreTopologie.filehostAdd",
+            "evenement.CoreTopologie.filehostUpdate",
+            "evenement.CoreTopologie.filehostRemove",
+            "evenement.CoreTopologie.filecontrolerAdd",
+            "evenement.CoreTopologie.filecontrolerUpdate",
+            "evenement.CoreTopologie.filecontrolerRemove"
         ]}
     }
 }

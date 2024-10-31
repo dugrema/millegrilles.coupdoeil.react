@@ -39,6 +39,10 @@ const FileManagerList = React.lazy(()=>import('./consignation/FileManagerList'))
 const FileManagerDetail = React.lazy(()=>import('./consignation/FileManagerInformation'));
 const FileManagerConfiguration = React.lazy(()=>import('./consignation/FileManagerConfiguration'));
 // const FileManagerSftpConfiguration = React.lazy(()=>import('./consignation/FileManagerSftpConfiguration'));
+const FileHosting = React.lazy(()=>import('./filehosting/FileHosting'));
+const FileHostingList = React.lazy(()=>import('./filehosting/FileHostingList'));
+const FileHostingAdd = React.lazy(()=>import('./filehosting/FileHostingAdd'));
+const FileHostingEdit = React.lazy(()=>import('./filehosting/FileHostingEdit'));
 
 const KeyManagement = React.lazy(()=>import('./utilities/KeyManagement'));
 const KeyManagementOptions = React.lazy(()=>import('./utilities/KeyManagementOptions'));
@@ -120,6 +124,16 @@ const router = createBrowserRouter([
             { path: "/coupdoeil2/fileManagement", element: <FileManagerList /> },
             { path: "/coupdoeil2/fileManagement/:instanceId", element: <FileManagerDetail /> },
             { path: "/coupdoeil2/fileManagement/:instanceId/configure", element: <FileManagerConfiguration /> },
+        ]
+  	},
+    {
+		path: "/coupdoeil2/filehosting",
+		element: <FileHosting />,
+        errorElement: <ErrorPage />,
+        children: [
+            { path: "/coupdoeil2/filehosting", element: <FileHostingList /> },
+            { path: "/coupdoeil2/filehosting/add", element: <FileHostingAdd /> },
+            { path: "/coupdoeil2/filehosting/filehost/:filehostId", element: <FileHostingEdit /> },
         ]
   	},
     {

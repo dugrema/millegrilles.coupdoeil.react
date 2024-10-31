@@ -203,6 +203,28 @@ export type GenerateCertificateInstanceResponse = MessageResponse & { certificat
 
 export type GetNonDecryptableKeyCount = MessageResponse & { compte?: number };
 
+export type FileHost = {
+    filehost_id?: string,
+    instance_id?: string,
+    url_external?: string | null,
+    url_internal?: string | null,
+    deleted?: boolean | null,
+    sync_active?: boolean | null,
+};
+
+export type FileControler = {
+    instance_id: string,
+    primary?: boolean,
+};
+
+export type GetFilehostListResponse = MessageResponse & {
+    list?: FileHost[],
+};
+
+export type GetFilecontrolerListResponse = MessageResponse & {
+    list?: FileControler[],
+};
+
 export class AppsConnectionWorker extends ConnectionWorker {
 
     async authenticate(reconnect?: boolean) {
@@ -456,6 +478,43 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async unsubscribeFileManagerEvents(cb: SubscriptionCallback): Promise<void> {
         if(!this.connection) throw new Error("Connection is not initialized");
         return await this.connection.unsubscribe('fileManagerEvents', cb);
+    }
+
+    // File hosting
+
+    async addFileHost(url: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({url_external: url}, DOMAINE_CORETOPOLOGIE, 'filehostAdd');
+    }
+
+    async updateFileHost(filehost: FileHost) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand(filehost, DOMAINE_CORETOPOLOGIE, 'filehostUpdate');
+    }
+
+    async deleteFileHost(filehostId: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({filehost_id: filehostId}, DOMAINE_CORETOPOLOGIE, 'filehostDelete');
+    }
+
+    async getFilehostList() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'getFilehosts') as Promise<GetFilehostListResponse>;
+    }
+
+    async getFilecontrolersList() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'getFilecontrolers') as Promise<GetFilecontrolerListResponse>;
+    }
+
+    async subscribeFilehostingEvents(cb: SubscriptionCallback): Promise<void> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return await this.connection.subscribe('filehostingEvents', cb);
+    }
+
+    async unsubscribeFilehostingEvents(cb: SubscriptionCallback): Promise<void> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return await this.connection.unsubscribe('filehostingEvents', cb);
     }
 
     // Generic
