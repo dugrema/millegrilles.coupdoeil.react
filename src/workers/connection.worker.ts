@@ -210,6 +210,7 @@ export type FileHost = {
     url_internal?: string | null,
     deleted?: boolean | null,
     sync_active?: boolean | null,
+    tls_external?: string | null,
 };
 
 export type FileControler = {
@@ -482,9 +483,9 @@ export class AppsConnectionWorker extends ConnectionWorker {
 
     // File hosting
 
-    async addFileHost(url: string) {
+    async addFileHost(url: string, tls_external: string) {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendCommand({url_external: url}, DOMAINE_CORETOPOLOGIE, 'filehostAdd');
+        return this.connection.sendCommand({url_external: url, tls_external}, DOMAINE_CORETOPOLOGIE, 'filehostAdd');
     }
 
     async updateFileHost(filehost: FileHost) {

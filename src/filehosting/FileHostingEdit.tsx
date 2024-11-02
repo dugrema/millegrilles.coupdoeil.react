@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, Dispatch, useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ToggleSwitch } from "flowbite-react";
 
@@ -16,10 +16,10 @@ function FileHostingAdd() {
     let {filehostId} = useParams()
     let filehosts = useFilehostStore(state=>state.filehosts);
     
-    let [error, setError] = useState('');
     let [urlExternal, setUrlExternal] = useState('');
-    let [urlInternal, setUrlInternal] = useState('');
     let urlExternalOnChange = useCallback((e: ChangeEvent<HTMLInputElement>)=>setUrlExternal(e.currentTarget.value), [setUrlExternal]);
+    let [externalTlsSecurity, setExternalTlsSecurity] = useState('external');
+    let [urlInternal, setUrlInternal] = useState('');
     let urlInternalOnChange = useCallback((e: ChangeEvent<HTMLInputElement>)=>setUrlInternal(e.currentTarget.value), [setUrlInternal]);
     let [syncActive, setSyncActive] = useState(true);
     let syncActiveOnChange = useCallback((checked: boolean)=>setSyncActive(checked), [setSyncActive]);
@@ -35,6 +35,7 @@ function FileHostingAdd() {
             url_external: urlExternalParsed?urlExternalParsed.href:null,
             url_internal: urlInternalParsed?urlInternalParsed.href:null,
             sync_active: syncActive,
+            tls_external: externalTlsSecurity,
         } as FileHost;
 
         let response = await workers.connection.updateFileHost(fileHost);
@@ -44,7 +45,7 @@ function FileHostingAdd() {
         }
 
         navigate('/coupdoeil2/fileHosting');
-    }, [workers, ready, filehostId, navigate, urlExternal, urlInternal, syncActive]);
+    }, [workers, ready, filehostId, navigate, urlExternal, urlInternal, syncActive, externalTlsSecurity]);
 
     let testUrlHandler = useCallback(async ()=>{
     }, []);
@@ -65,16 +66,16 @@ function FileHostingAdd() {
 
         let filehost = filehosts.filter(item=>item.filehost_id === filehostId).pop();
         if(!filehost) {
-            setError('Unknown file host');
             return  // No locking, gives a chance to reload the list
         };
 
         setUrlExternal(filehost.url_external?filehost.url_external:'');
         setUrlInternal(filehost.url_internal?filehost.url_internal:'');
         setSyncActive(!!filehost.sync_active);
+        setExternalTlsSecurity(filehost.tls_external?filehost.tls_external:'external');
 
         setLocked(true);  // Prevent external change while editing
-    }, [ready, locked, filehostId, filehosts, setLocked, setError, setUrlExternal, setUrlInternal, setSyncActive]);
+    }, [ready, locked, filehostId, filehosts, setLocked, setUrlExternal, setUrlInternal, setSyncActive, setExternalTlsSecurity]);
 
     return (
         <>
@@ -87,15 +88,26 @@ function FileHostingAdd() {
 
             <section>
                 <div className='grid grid-cols-1 lg:grid-cols-12'>
+                    <label className='col-span-2'>Filehost Id</label>
+                    <p className='col-span-10'>{filehostId}</p>
                     <label htmlFor='urlInternalId' className='lg:col-span-2'>Url (external)</label>
                     <input id='urlInternalId' placeholder="E.g.: https://myhost.com" value={urlExternal} onChange={urlExternalOnChange}
                         className='col-span-10 text-black'/>
+                    
+                    <label className='col-span-2'>TLS security check</label>
+                    <ExternalUrlTypeDropdown value={externalTlsSecurity} onChange={setExternalTlsSecurity} 
+                        className='col-span-10 lg:col-span-5' />
+                    <p className='hidden lg:block lg:col-span-5'></p>
+
                     <label htmlFor='urlExternalId' className='lg:col-span-2'>Url (internal)</label>
                     <input id='urlExternalId' placeholder="E.g.: https://myhost.com" value={urlInternal} onChange={urlInternalOnChange}
                         className='col-span-10 text-black'/>
                     <label htmlFor='syncActiveId' className='lg:col-span-2'>Synchronisation active</label>
                     <ToggleSwitch id='syncActiveId' checked={syncActive} onChange={syncActiveOnChange} className='grid-cols-10 pt-1 pb-1'/>
                 </div>
+
+                <SecurityDescription />
+
                 <div className='text-center pt-4'>
                     <ActionButton onClick={saveHandler} disabled={!ready||!workers} mainButton={true}>Save</ActionButton>
                     <ActionButton onClick={testUrlHandler}>Test</ActionButton>
@@ -116,3 +128,46 @@ function FileHostingAdd() {
 }
 
 export default FileHostingAdd;
+
+export function ExternalUrlTypeDropdown(props: {value: string, onChange: Dispatch<string>, className?: string}) {
+
+    let {value, onChange, className} = props;
+
+    let onChangeHandler = useCallback((e: ChangeEvent<HTMLSelectElement>)=>{
+        onChange(e.currentTarget.value);
+    }, [onChange]);
+
+    return (
+        <select value={value} onChange={onChangeHandler}
+            className={'text-black ' + className}>
+                <option value="external">External TLS certificate</option>
+                <option value="millegrille">MilleGrille client TLS certificate</option>
+                <option value="nocheck">No check</option>
+        </select>
+    )    
+}
+
+
+export function SecurityDescription() {
+    return (
+        <>
+            <p className='pt-4 pb-1'>
+                Notes about the external TLS security check: 
+            </p>
+
+            <ol className='list-inside list-disc'>
+                <li>
+                    The most secure is the MilleGrille client TLS certificate. This requires a filehost
+                    installed on a MilleGrille instance and usage of the port 444.
+                </li>
+                <li>
+                    External requires that a TLS certificate be installed and valid on the host (e.g. from 
+                    Let's Encrypt, ZeroSSL, Verisign, etc.).
+                </li>
+                <li>
+                    No check is inherently insecure and allows man in the middle attacks. 
+                </li>
+            </ol>
+        </>
+    )
+}
