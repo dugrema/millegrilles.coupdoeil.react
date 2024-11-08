@@ -36,6 +36,7 @@
         {"domain": "CoreTopologie", "action": "filehostAdd", "exchange": "1.public"},
         {"domain": "CoreTopologie", "action": "filehostUpdate", "exchange": "1.public"},
         {"domain": "CoreTopologie", "action": "filehostDelete", "exchange": "1.public"},
+        {"domain": "CoreTopologie", "action": "resetVisitsClaims"},
         {"domain": "GrosFichiers", "action": "reindexerConsignation"},
         {"domain": "MaitreDesCles", "action": "rechiffrerBatch"},
         {"domain": "MaitreDesCles", "action": "ajouterCleDomaines", "exchange": "1.public"},

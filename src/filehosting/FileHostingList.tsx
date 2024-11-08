@@ -22,6 +22,12 @@ function FileHostingList() {
         if(!ready || !workers) throw new Error("Workers not initialized");
     }, [ready, workers]);
 
+    let resetVisitsHandler = useCallback(async ()=>{
+        if(!ready || !workers) throw new Error("Workers not initialized");
+        let response = await workers.connection.resetVisitsClaims();
+        if(response.ok !== true) throw new Error('Error resetting visits: ' + response.err);
+    }, [ready, workers]);
+
     return (
         <>
             <Link to='/coupdoeil2'
@@ -38,6 +44,7 @@ function FileHostingList() {
                 <ActionButton onClick={syncHandler} disabled={!ready} mainButton={true}>Synchronize</ActionButton>
                 <ActionButton onClick={reindexHandler} disabled={!ready}>Reindex</ActionButton>
                 <ActionButton onClick={resetTransfersHandler} disabled={!ready}>Reset transfers</ActionButton>
+                <ActionButton onClick={resetVisitsHandler} disabled={!ready}>Reset visits/claims</ActionButton>
 
             </section>
 

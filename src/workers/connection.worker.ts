@@ -508,6 +508,11 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'getFilecontrolers') as Promise<GetFilecontrolerListResponse>;
     }
 
+    async resetVisitsClaims() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({}, DOMAINE_CORETOPOLOGIE, 'resetVisitsClaims');
+    }
+
     async subscribeFilehostingEvents(cb: SubscriptionCallback): Promise<void> {
         if(!this.connection) throw new Error("Connection is not initialized");
         return await this.connection.subscribe('filehostingEvents', cb);
