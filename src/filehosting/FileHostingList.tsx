@@ -21,6 +21,8 @@ function FileHostingList() {
 
     let resetTransfersHandler = useCallback(async ()=>{
         if(!ready || !workers) throw new Error("Workers not initialized");
+        let response = await workers.connection.resetTransfers();
+        if(!response.ok) throw new Error('Error resetting transfers: ' + response.err);
     }, [ready, workers]);
 
     let resetVisitsHandler = useCallback(async ()=>{
