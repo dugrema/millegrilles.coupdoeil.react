@@ -237,6 +237,10 @@ export type FilehostStatus = {filehost_id: string, connected: boolean, transfer_
 
 export type FilecontrolerStatusMessage = { filecontroler_id: string, filehosts: FilehostStatus[] };
 
+export type GetFilehostConfigurationResponse = MessageResponse & {
+    configuration?: {[key: string]: string}
+};
+
 export class AppsConnectionWorker extends ConnectionWorker {
 
     async authenticate(reconnect?: boolean) {
@@ -527,6 +531,16 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async resetVisitsClaims() {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendCommand({}, DOMAINE_CORETOPOLOGIE, 'resetVisitsClaims');
+    }
+
+    async getFilehostConfiguration() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'getFilehostConfiguration') as Promise<GetFilehostConfigurationResponse>;
+    }
+
+    async setDefaultFilehost(filehostId: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({filehost_id: filehostId}, DOMAINE_CORETOPOLOGIE, 'setDefaultFilehost');
     }
 
     async subscribeFilehostingEvents(cb: SubscriptionCallback): Promise<void> {

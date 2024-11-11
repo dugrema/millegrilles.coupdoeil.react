@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import ActionButton from "../components/ActionButton";
 import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
-import { useCallback, useMemo } from "react";
+import { ChangeEvent, Dispatch, useCallback, useEffect, useMemo, useState } from "react";
 import useFilehostStore, { FilehostStoreItem } from "./filehostingStore";
 import { ConditionalFormatters, Formatters } from "millegrilles.reactdeps.typescript";
 
@@ -47,6 +47,11 @@ function FileHostingList() {
                 <ActionButton onClick={resetTransfersHandler} disabled={!ready}>Reset transfers</ActionButton>
                 <ActionButton onClick={resetVisitsHandler} disabled={!ready}>Reset visits/claims</ActionButton>
 
+            </section>
+
+            <section>
+                <h2 className='text-lg font-bold pt-4 pb-2'>Configuration</h2>
+                <FilehostConfiguration />
             </section>
 
             <section>
@@ -160,4 +165,78 @@ function FileControlerList() {
 
 
     return <>{filecontrolersElems}</>;
+}
+
+export function FilehostDropdown(props: {value: string, onChange: Dispatch<string>, className?: string}) {
+
+    let {value, onChange, className} = props;
+
+    let filehosts = useFilehostStore(state=>state.filehosts);
+
+    let onChangeHandler = useCallback((e: ChangeEvent<HTMLSelectElement>)=>{
+        onChange(e.currentTarget.value);
+    }, [onChange]);
+
+    let filehostElems = useMemo(()=>{
+        if(!filehosts) return null;
+        // Create label and sort
+        let filehostCopy = filehosts.filter(item=>!item.deleted).map(item=>{
+            let label = item.url_external || item.filehost_id;
+            return {...item, label};
+        }) as FilehostListItem[];
+        filehostCopy.sort((a, b)=>a.label.localeCompare(b.label));
+
+        return filehostCopy.map(item=>{
+            let label = item.url_external || item.filehost_id;
+            return (
+                <option key={item.filehost_id} value={item.filehost_id}>{label}</option>
+            )
+        })
+    }, [filehosts]);
+
+    return (
+        <select value={value} onChange={onChangeHandler} className={'text-black ' + className}>
+            <option>Pick one</option>
+            {filehostElems}
+        </select>
+    )    
+}
+
+function FilehostConfiguration() {
+    let workers = useWorkers();
+    let ready = useConnectionStore(state=>state.connectionAuthenticated);
+
+    let [defaultFilehost, setDefaultFilehost] = useState('');
+
+    let saveConfigurationHandler = useCallback(async ()=>{
+        if(!workers) throw new Error('workers not initialized');
+        if(!defaultFilehost) throw new Error('No filehost value provided')
+        let response = await workers.connection.setDefaultFilehost(defaultFilehost);
+        if(response.ok !== true) throw new Error('Error saving default filehost: ' + response.err);
+    }, [workers, defaultFilehost]);
+
+    useEffect(()=>{
+        if(!ready || !workers) return;
+
+        workers.connection.getFilehostConfiguration()
+            .then(response=>{
+                console.debug("Filehost configuration response", response);
+                if(response.configuration) {
+                    let defaultFilehost = response.configuration['filehost.default']
+                    console.debug("Default filehost : %O", defaultFilehost)
+                    setDefaultFilehost(defaultFilehost);
+                }
+            })
+            .catch(err=>console.error("Error loading filehost configuration", err));
+    }, [workers, ready, setDefaultFilehost])
+
+    return (
+        <>
+            <div className='grid grid-cols-1: lg:grid-cols-4'>
+            <label>Default file host</label>
+                <FilehostDropdown value={defaultFilehost} onChange={setDefaultFilehost} className='lg:col-span-2' />
+            </div>
+            <ActionButton onClick={saveConfigurationHandler}>Save</ActionButton>
+        </>
+    )
 }
