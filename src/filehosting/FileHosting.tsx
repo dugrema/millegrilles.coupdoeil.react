@@ -106,7 +106,7 @@ async function processEvent(workers: AppWorkers | null, event: SubscriptionMessa
         }
     } else if(domain === 'filecontroler') {
         if(action === 'status') {
-            console.debug("!!! TODO Filehost status %O", event.message)
+            console.debug("Filehost status %O", event.message);
             let message = event.message as FilecontrolerStatusMessage;
             for(let fh of message.filehosts) {
                 let status = {filehost_id: fh.filehost_id, connected: fh.connected, transfer_q_len: fh.transfer_q_len };
@@ -118,10 +118,10 @@ async function processEvent(workers: AppWorkers | null, event: SubscriptionMessa
             let filehostId = message.filehost_id;
             let fuuid = message.fuuid;
             if(fuuid) updateFilehosts({filehost_id: filehostId, fuuid});
-        } else if(action === 'filehostNewFuuid') {
-            console.debug("!!! TODO Filehost new fuuid %O", event.message)
-        } else if(action === 'transferUpdate') {
-            console.debug("!!! TODO Filehost transferUpdate %O", event.message)
+        // } else if(action === 'filehostNewFuuid') {
+        //     console.debug("!!! TODO Filehost new fuuid %O", event.message)
+        // } else if(action === 'transferUpdate') {
+        //     console.debug("!!! TODO Filehost transferUpdate %O", event.message)
         } else {
             console.warn("Event received from filecontroler for unhandled action %s - DROPPED", action);
         }

@@ -71,18 +71,12 @@
             "evenement.CoreTopologie.instanceConsignationSupprimee"
         ]},
         "filehostingEvents": {"exchanges": ["1.public"], "routingKeys": [
-            "evenement.filecontroler.presence",
             "evenement.filecontroler.status",
             "evenement.filecontroler.filehostUsage",
-            "evenement.filecontroler.filehostNewFuuid",
-            "evenement.filecontroler.transferUpdate",
             "evenement.CoreTopologie.filehostAdd",
             "evenement.CoreTopologie.filehostRestore",
             "evenement.CoreTopologie.filehostUpdate",
-            "evenement.CoreTopologie.filehostDelete",
-            "evenement.CoreTopologie.filecontrolerAdd",
-            "evenement.CoreTopologie.filecontrolerUpdate",
-            "evenement.CoreTopologie.filecontrolerDelete"
+            "evenement.CoreTopologie.filehostDelete"
         ]}
     }
 }

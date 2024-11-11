@@ -221,6 +221,7 @@ export type FileHostUsageEventMessage = { fuuid: FileHostCount, date: number, fi
 export type FileControler = {
     instance_id: string,
     primary?: boolean,
+    lastUpdate?: number,
 };
 
 export type GetFilehostListResponse = MessageResponse & {
