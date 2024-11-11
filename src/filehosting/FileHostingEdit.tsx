@@ -15,7 +15,13 @@ function FileHostingAdd() {
     let navigate = useNavigate();
     let {filehostId} = useParams()
     let filehosts = useFilehostStore(state=>state.filehosts);
-    
+
+    // Note : this is the reference filehost - can change from external event.
+    let filehostFromStore = useMemo(()=>{
+        if(!filehosts || !filehostId) return null;
+        return filehosts.filter(item=>item.filehost_id === filehostId).pop()
+    }, [filehosts, filehostId]);
+
     let [urlExternal, setUrlExternal] = useState('');
     let urlExternalOnChange = useCallback((e: ChangeEvent<HTMLInputElement>)=>setUrlExternal(e.currentTarget.value), [setUrlExternal]);
     let [externalTlsSecurity, setExternalTlsSecurity] = useState('external');
@@ -23,6 +29,11 @@ function FileHostingAdd() {
     let urlInternalOnChange = useCallback((e: ChangeEvent<HTMLInputElement>)=>setUrlInternal(e.currentTarget.value), [setUrlInternal]);
     let [syncActive, setSyncActive] = useState(true);
     let syncActiveOnChange = useCallback((checked: boolean)=>setSyncActive(checked), [setSyncActive]);
+
+    let instanceId = useMemo(()=>{
+        if(!filehostFromStore) return null;
+        return filehostFromStore.instance_id;
+    }, [filehostFromStore]);
 
     let saveHandler = useCallback(async ()=>{
         if(!ready || !workers) throw new Error('workers not initialized');
@@ -90,6 +101,8 @@ function FileHostingAdd() {
                 <div className='grid grid-cols-1 lg:grid-cols-12'>
                     <label className='col-span-2'>Filehost Id</label>
                     <p className='col-span-10'>{filehostId}</p>
+                    <label className='col-span-2'>Instance Id</label>
+                    <p className='col-span-10'>{instanceId?instanceId:'N/A'}</p>
                     <label htmlFor='urlInternalId' className='lg:col-span-2'>Url (external)</label>
                     <input id='urlInternalId' placeholder="E.g.: https://myhost.com" value={urlExternal} onChange={urlExternalOnChange}
                         className='col-span-10 text-black'/>
@@ -99,10 +112,14 @@ function FileHostingAdd() {
                         className='col-span-10 lg:col-span-5' />
                     <p className='hidden lg:block lg:col-span-5'></p>
 
-                    <label htmlFor='urlExternalId' className='lg:col-span-2'>Url (internal)</label>
-                    <input id='urlExternalId' placeholder="E.g.: https://myhost.com" value={urlInternal} onChange={urlInternalOnChange}
-                        className='col-span-10 text-black'/>
-                    <label htmlFor='syncActiveId' className='lg:col-span-2'>Synchronisation active</label>
+                    {instanceId?  // Only active for filehosts that are auto-detected
+                        <>
+                            <label htmlFor='urlExternalId' className='lg:col-span-2'>Url (internal)</label>
+                            <input id='urlExternalId' placeholder="E.g.: https://myhost.com" value={urlInternal} onChange={urlInternalOnChange}
+                                className='col-span-10 text-black'/>
+                            <label htmlFor='syncActiveId' className='lg:col-span-2'>Synchronisation active</label>
+                        </>
+                    :<></>}
                     <ToggleSwitch id='syncActiveId' checked={syncActive} onChange={syncActiveOnChange} className='grid-cols-10 pt-1 pb-1'/>
                 </div>
 

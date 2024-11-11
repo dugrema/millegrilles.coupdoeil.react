@@ -4,6 +4,7 @@ import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
 import { useCallback, useMemo } from "react";
 import useFilehostStore, { FilehostStoreItem } from "./filehostingStore";
+import { Formatters } from "millegrilles.reactdeps.typescript";
 
 function FileHostingList() {
 
@@ -60,11 +61,10 @@ function FileHostingList() {
 
                 <div className='grid grid-cols-12'>
                     <p className='font-bold col-span-12 lg:col-span-4'>Url / Instance</p>
-                    <p className='font-bold col-span-6 lg:col-span-3'>Presence</p>
+                    <p className='font-bold col-span-6 lg:col-span-3'>Status</p>
                     <p className='font-bold col-span-3 lg:col-span-1'>Files</p>
                     <p className='font-bold col-span-2 lg:col-span-2'>Size</p>
-                    <p className='font-bold hidden lg:block'>Orphans</p>
-                    <p className='font-bold hidden lg:block'>Missing</p>
+                    <p className='font-bold hidden lg:block col-span-2'>Queue</p>
                 </div>
                 <FileHostList />
             </section>
@@ -78,18 +78,13 @@ function FileHostingList() {
                 <FileControlerList />
             </section>
 
-            <section>
-                <h2 className='text-lg font-bold pt-4 pb-2'>Current transfers between servers</h2>
-                <CurrentTransfers />
-            </section>
-
         </>
     )
 }
 
 export default FileHostingList;
 
-const CONST_CLASSNAME_FILEHOST_ROW = '';
+const CONST_CLASSNAME_FILEHOST_ROW = 'grid grid-cols-12';
 
 type FilehostListItem = FilehostStoreItem & {label: string};
 
@@ -109,12 +104,30 @@ function FileHostList() {
 
         console.debug("Filehosts ", filehosts);
         return filehostCopy.map(item=>{
+
+            let count = '' as number | string;
+            if(typeof(item.fuuid?.count) === 'number') count = item.fuuid.count;
+            let size = undefined as number | undefined;
+            if(typeof(item.fuuid?.size) === 'number') size = item.fuuid.size;
+
+            let status = '...';
+            if(!item.sync_active) status = 'disabled';
+            else if(item.connected) status = 'connected';
+            else if(item.connected === false) status = 'not connected';
+
+            let transferQueueLength = 'N/A' as number | string;
+            if(typeof(item.transfer_q_len) === 'number') transferQueueLength = item.transfer_q_len;
+
             return (
                 <div key={item.filehost_id} className={CONST_CLASSNAME_FILEHOST_ROW}>
                     <Link to={`/coupdoeil2/fileHosting/filehost/${item.filehost_id}`}
-                        className='underline'>
+                        className='underline col-span-12 lg:col-span-4'>
                             {item.url_external || item.filehost_id}
                     </Link>
+                    <p className='col-span-6 lg:col-span-3'>{status}</p>
+                    <p className='col-span-3 lg:col-span-1'>{count}</p>
+                    <p className='col-span-2 lg:col-span-2'><Formatters.FormatteurTaille value={size} /></p>
+                    <p className='hidden lg:block col-span-2'>{transferQueueLength}</p>
                 </div>
             )
         })
@@ -126,8 +139,4 @@ function FileHostList() {
 
 function FileControlerList() {
     return <>None</>
-}
-
-function CurrentTransfers() {
-    return <></>;
 }

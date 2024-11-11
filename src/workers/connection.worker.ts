@@ -203,6 +203,8 @@ export type GenerateCertificateInstanceResponse = MessageResponse & { certificat
 
 export type GetNonDecryptableKeyCount = MessageResponse & { compte?: number };
 
+export type FileHostCount = {count?: number, size?: number};
+
 export type FileHost = {
     filehost_id?: string,
     instance_id?: string,
@@ -211,7 +213,10 @@ export type FileHost = {
     deleted?: boolean | null,
     sync_active?: boolean | null,
     tls_external?: string | null,
+    fuuid?: FileHostCount | null,
 };
+
+export type FileHostUsageEventMessage = { fuuid: FileHostCount, date: number, filehost_id: string };
 
 export type FileControler = {
     instance_id: string,
@@ -225,6 +230,10 @@ export type GetFilehostListResponse = MessageResponse & {
 export type GetFilecontrolerListResponse = MessageResponse & {
     list?: FileControler[],
 };
+
+export type FilehostStatus = {filehost_id: string, connected: boolean, transfer_q_len: number}
+
+export type FilecontrolerStatusMessage = { filecontroler_id: string, filehosts: FilehostStatus[] };
 
 export class AppsConnectionWorker extends ConnectionWorker {
 

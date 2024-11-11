@@ -8,7 +8,7 @@ import Footer from "../Footer";
 import useWorkers, { AppWorkers } from "../workers/workers";
 import useConnectionStore from "../connectionStore";
 import useFilehostStore, { FilecontrolerStoreItem, FilehostStoreItem } from "./filehostingStore";
-import { FileHost } from "../workers/connection.worker";
+import { FilecontrolerStatusMessage, FileHost, FileHostUsageEventMessage } from "../workers/connection.worker";
 
 function FileHosting() {
 
@@ -101,20 +101,27 @@ async function processEvent(workers: AppWorkers | null, event: SubscriptionMessa
             let message = event.message as FilehostDeleteEvent;
             let filehostId = message.filehost_id;
             updateFilehosts({filehost_id: filehostId, deleted: false});
-        } else if(action === 'filecontrolerAdd') {
-                        
-        } else if(action === 'filecontrolerUpdate') {
-            
-        } else if(action === 'filecontrolerDelete') {
-            
         } else {
             console.warn("Event received from CoreTopologie for unhandled action %s - DROPPED", action);
         }
     } else if(domain === 'filecontroler') {
-        if(action === 'presence') {
-
-        } else if(action === 'filehostStatus') {
-            
+        if(action === 'status') {
+            console.debug("!!! TODO Filehost status %O", event.message)
+            let message = event.message as FilecontrolerStatusMessage;
+            for(let fh of message.filehosts) {
+                let status = {filehost_id: fh.filehost_id, connected: fh.connected, transfer_q_len: fh.transfer_q_len };
+                updateFilehosts(status);
+            }
+        } else if(action === 'filehostUsage') {
+            console.debug("Event filehost usage %O", event.message)
+            let message = event.message as FileHostUsageEventMessage;
+            let filehostId = message.filehost_id;
+            let fuuid = message.fuuid;
+            if(fuuid) updateFilehosts({filehost_id: filehostId, fuuid});
+        } else if(action === 'filehostNewFuuid') {
+            console.debug("!!! TODO Filehost new fuuid %O", event.message)
+        } else if(action === 'transferUpdate') {
+            console.debug("!!! TODO Filehost transferUpdate %O", event.message)
         } else {
             console.warn("Event received from filecontroler for unhandled action %s - DROPPED", action);
         }

@@ -72,7 +72,10 @@
         ]},
         "filehostingEvents": {"exchanges": ["1.public"], "routingKeys": [
             "evenement.filecontroler.presence",
-            "evenement.filecontroler.filehostStatus",
+            "evenement.filecontroler.status",
+            "evenement.filecontroler.filehostUsage",
+            "evenement.filecontroler.filehostNewFuuid",
+            "evenement.filecontroler.transferUpdate",
             "evenement.CoreTopologie.filehostAdd",
             "evenement.CoreTopologie.filehostRestore",
             "evenement.CoreTopologie.filehostUpdate",

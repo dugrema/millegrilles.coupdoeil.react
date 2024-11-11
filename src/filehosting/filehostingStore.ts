@@ -3,6 +3,8 @@ import { devtools } from 'zustand/middleware';
 import { FileHost, FileControler } from '../workers/connection.worker';
 
 export type FilehostStoreItem = FileHost & {
+    connected?: boolean,
+    transfer_q_len?: number,
 };
 
 export type FilecontrolerStoreItem = FileControler & {
