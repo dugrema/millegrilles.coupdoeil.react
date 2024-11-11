@@ -4,7 +4,7 @@ import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
 import { useCallback, useMemo } from "react";
 import useFilehostStore, { FilehostStoreItem } from "./filehostingStore";
-import { Formatters } from "millegrilles.reactdeps.typescript";
+import { ConditionalFormatters, Formatters } from "millegrilles.reactdeps.typescript";
 
 function FileHostingList() {
 
@@ -151,7 +151,8 @@ function FileControlerList() {
             return (
                 <div key={item.instance_id} className={CONST_CLASSNAME_FILECONTROLER_ROW}>
                     <p className='col-span-7 lg:col-span-5'>{item.instance_id}</p>
-                    <Formatters.FormatterDate value={item.lastUpdate} className='col-span-5 lg:col-span-7'/>
+                    <ConditionalFormatters.FormatterConditionalDate 
+                        value={item.lastUpdate} warn={360} error={1800} className='col-span-5 lg:col-span-7' />
                 </div>
             )
         });
