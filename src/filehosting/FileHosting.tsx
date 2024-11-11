@@ -48,7 +48,15 @@ function FileHosting() {
                 return;
             }
             setFilehosts(filehostResponse.list);
-            setFilecontrolers(filecontrolersResponse.list);
+
+            let filecontrolers = filecontrolersResponse.list;
+            let filecontrolerPrimaryId = filecontrolersResponse.filecontroler_primary;
+            if((!filecontrolers || filecontrolers.length === 0) && filecontrolerPrimaryId) {
+                let filecontrolers = [{instance_id: filecontrolerPrimaryId}]
+                setFilecontrolers(filecontrolers);
+            } else {
+                setFilecontrolers(filecontrolers);
+            }
         })
         .catch(err=>console.error("Error loading file hosting", err));
 
@@ -112,6 +120,13 @@ async function processEvent(workers: AppWorkers | null, event: SubscriptionMessa
                 let status = {filehost_id: fh.filehost_id, connected: fh.connected, transfer_q_len: fh.transfer_q_len };
                 updateFilehosts(status);
             }
+            // @ts-ignore
+            let timestamp = message.content['__original']?.estampille;
+            let fileControlerUpdate = {
+                instance_id: message.filecontroler_id,
+                lastUpdate: timestamp,
+            }
+            updateFilecontrolers(fileControlerUpdate);
         } else if(action === 'filehostUsage') {
             console.debug("Event filehost usage %O", event.message)
             let message = event.message as FileHostUsageEventMessage;

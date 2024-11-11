@@ -59,21 +59,23 @@ function FileHostingList() {
                     </Link>
                 </div>
 
-                <div className='grid grid-cols-12'>
-                    <p className='font-bold col-span-12 lg:col-span-4'>Url / Instance</p>
-                    <p className='font-bold col-span-6 lg:col-span-3'>Status</p>
-                    <p className='font-bold col-span-3 lg:col-span-1'>Files</p>
-                    <p className='font-bold col-span-2 lg:col-span-2'>Size</p>
-                    <p className='font-bold hidden lg:block col-span-2'>Queue</p>
+                <div>
+                    <div className='grid grid-cols-12'>
+                        <p className='font-bold col-span-12 lg:col-span-4'>Url / Instance</p>
+                        <p className='font-bold col-span-6 lg:col-span-3'>Status</p>
+                        <p className='font-bold col-span-3 lg:col-span-1'>Files</p>
+                        <p className='font-bold col-span-2 lg:col-span-2'>Size</p>
+                        <p className='font-bold hidden lg:block col-span-2'>Queue</p>
+                    </div>
+                    <FileHostList />
                 </div>
-                <FileHostList />
             </section>
 
             <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>File controlers list</h2>
                 <div className='grid grid-cols-12'>
-                    <p className='font-bold col-span-7'>Instance</p>
-                    <p className='font-bold col-span-3'>Type</p>
+                    <p className='font-bold col-span-7 lg:col-span-5'>Instance</p>
+                    <p className='font-bold col-span-3 lg:col-span-7'>Presence</p>
                 </div>
                 <FileControlerList />
             </section>
@@ -84,7 +86,7 @@ function FileHostingList() {
 
 export default FileHostingList;
 
-const CONST_CLASSNAME_FILEHOST_ROW = 'grid grid-cols-12';
+const CONST_CLASSNAME_FILEHOST_ROW = 'grid grid-cols-12 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40';
 
 type FilehostListItem = FilehostStoreItem & {label: string};
 
@@ -137,6 +139,24 @@ function FileHostList() {
     return <>{filehostElems}</>;
 }
 
+const CONST_CLASSNAME_FILECONTROLER_ROW = 'grid grid-cols-12 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40';
+
 function FileControlerList() {
-    return <>None</>
+
+    let filecontrolers = useFilehostStore(state=>state.filecontrolers);
+
+    let filecontrolersElems = useMemo(()=>{
+        if(!filecontrolers) return <p>Loading ...</p>;
+        return filecontrolers.map(item=>{
+            return (
+                <div key={item.instance_id} className={CONST_CLASSNAME_FILECONTROLER_ROW}>
+                    <p className='col-span-7 lg:col-span-5'>{item.instance_id}</p>
+                    <Formatters.FormatterDate value={item.lastUpdate} className='col-span-5 lg:col-span-7'/>
+                </div>
+            )
+        });
+    }, [filecontrolers]);
+
+
+    return <>{filecontrolersElems}</>;
 }

@@ -230,6 +230,7 @@ export type GetFilehostListResponse = MessageResponse & {
 
 export type GetFilecontrolerListResponse = MessageResponse & {
     list?: FileControler[],
+    filecontroler_primary?: string,
 };
 
 export type FilehostStatus = {filehost_id: string, connected: boolean, transfer_q_len: number}
