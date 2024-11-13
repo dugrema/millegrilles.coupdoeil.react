@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import MasterKeyLoader, { MasterKeyInformation } from '../utilities/MasterKeyLoader';
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
-import { DomainBackupList } from './DomainBackup';
+import { FilehostBackupList } from './DomainBackup';
 import UploadButton from '../components/UploadButton';
 import useWorkers, { AppWorkers } from '../workers/workers';
 import { certificates, keymaster, multiencoding, x25519 } from 'millegrilles.cryptography';
@@ -60,7 +60,7 @@ function BackupFileSection() {
         <>
             <p className='pb-2'>The following domains are already available from a consignation file server.</p>
             
-            <DomainBackupList />
+            <FilehostBackupList />
 
             <p className="pt-4">You can upload additional files for domains to restore here.</p>
             <UploadButton id="backupUpload" onChange={uploadHandler} 
@@ -136,57 +136,58 @@ function InitialDomainsSection(props: {masterKey: MasterKeyInformation | null, m
 }
 
 async function restoreInitialDomain(workers: AppWorkers, domain: string, masterKey: Uint8Array, resubmitKeys: boolean) {
-    let [caEncryptedKeys, decryptedKeys] = await loadDomainBackupKeys(workers, domain, masterKey);
-    let contentToEncrypt = { cles: decryptedKeys };
-    // console.debug("CA Keys: %O. Decrypted rebuild command %O", caEncryptedKeys, contentToEncrypt);
+    throw new Error('todo - fix')
+    // let [caEncryptedKeys, decryptedKeys] = await loadDomainBackupKeys(workers, domain, masterKey);
+    // let contentToEncrypt = { cles: decryptedKeys };
+    // // console.debug("CA Keys: %O. Decrypted rebuild command %O", caEncryptedKeys, contentToEncrypt);
 
-    if(resubmitKeys) {
-        // console.debug("Resubmitting CA encrypted keys to ensure they exist on KeyMaster: ", caEncryptedKeys);
-        for await (let keyId of Object.keys(decryptedKeys)) {
-            let decrytpedKey = decryptedKeys[keyId];
-            if(typeof(decrytpedKey) !== 'string') {
-                console.warn("Wrong decrypted key type, skipping: ", keyId);
-                continue;
-            }
-            let decryptedKeyBytes = multiencoding.decodeBase64Nopad(decrytpedKey);
-            let caKey = caEncryptedKeys[keyId] as keymaster.DomainSignature;
-            let encryptedKey = await workers.encryption.encryptSecretKey(decryptedKeyBytes);
-            // console.debug("Submit re-encrypted key Signature: %O, Key: %O", caKey, encryptedKey);
-            await workers.connection.saveKeyToKeyMaster(encryptedKey, caKey);
-        }
-    }
+    // if(resubmitKeys) {
+    //     // console.debug("Resubmitting CA encrypted keys to ensure they exist on KeyMaster: ", caEncryptedKeys);
+    //     for await (let keyId of Object.keys(decryptedKeys)) {
+    //         let decrytpedKey = decryptedKeys[keyId];
+    //         if(typeof(decrytpedKey) !== 'string') {
+    //             console.warn("Wrong decrypted key type, skipping: ", keyId);
+    //             continue;
+    //         }
+    //         let decryptedKeyBytes = multiencoding.decodeBase64Nopad(decrytpedKey);
+    //         let caKey = caEncryptedKeys[keyId] as keymaster.DomainSignature;
+    //         let encryptedKey = await workers.encryption.encryptSecretKey(decryptedKeyBytes);
+    //         // console.debug("Submit re-encrypted key Signature: %O, Key: %O", caKey, encryptedKey);
+    //         await workers.connection.saveKeyToKeyMaster(encryptedKey, caKey);
+    //     }
+    // }
 
-    // Encrypt the command for the domain
-    let encryptedKeys = null as keymaster.EncryptionBase64Result | null;
-    if(domain === 'MaitreDesCles') {
-        // Use the currently loaded keymaster certificate to encrypt the keys.
-        encryptedKeys = await workers.encryption.encryptMessageMgs4ToBase64(contentToEncrypt, [domain]);
-    } else {
-        // Make dummy request for a certificate, this returns the domain's certificate in the response
-        let response = await workers.connection.pingDomain(domain)
-        // console.debug("Ping response ", response);
-        // @ts-ignore
-        let certificate: certificates.CertificateWrapper = response.content['__certificate'];
-        Object.setPrototypeOf(certificate, certificates.CertificateWrapper.prototype);
-        // console.debug("Domain certificate ", certificate);
-        let corePkiFingerprint = certificate.getPublicKey();
-        // console.debug("Fingerprint: ", corePkiFingerprint);
-        let publicKey = multiencoding.decodeHex(corePkiFingerprint);
-        encryptedKeys = await workers.encryption.encryptMessageMgs4ToBase64(contentToEncrypt, [domain]);
-        // Re-encrypt the key for the CorePki certificate
-        let secretKey = encryptedKeys.cleSecrete;
-        let cles = encryptedKeys.cle?.cles;
-        if(!cles || !secretKey) throw new Error("Secret key not provided by cipher");
-        let keyForCorePki = await x25519.encryptEd25519(secretKey, publicKey);
-        cles[corePkiFingerprint] = keyForCorePki;
-    }
+    // // Encrypt the command for the domain
+    // let encryptedKeys = null as keymaster.EncryptionBase64Result | null;
+    // if(domain === 'MaitreDesCles') {
+    //     // Use the currently loaded keymaster certificate to encrypt the keys.
+    //     encryptedKeys = await workers.encryption.encryptMessageMgs4ToBase64(contentToEncrypt, [domain]);
+    // } else {
+    //     // Make dummy request for a certificate, this returns the domain's certificate in the response
+    //     let response = await workers.connection.pingDomain(domain)
+    //     // console.debug("Ping response ", response);
+    //     // @ts-ignore
+    //     let certificate: certificates.CertificateWrapper = response.content['__certificate'];
+    //     Object.setPrototypeOf(certificate, certificates.CertificateWrapper.prototype);
+    //     // console.debug("Domain certificate ", certificate);
+    //     let corePkiFingerprint = certificate.getPublicKey();
+    //     // console.debug("Fingerprint: ", corePkiFingerprint);
+    //     let publicKey = multiencoding.decodeHex(corePkiFingerprint);
+    //     encryptedKeys = await workers.encryption.encryptMessageMgs4ToBase64(contentToEncrypt, [domain]);
+    //     // Re-encrypt the key for the CorePki certificate
+    //     let secretKey = encryptedKeys.cleSecrete;
+    //     let cles = encryptedKeys.cle?.cles;
+    //     if(!cles || !secretKey) throw new Error("Secret key not provided by cipher");
+    //     let keyForCorePki = await x25519.encryptEd25519(secretKey, publicKey);
+    //     cles[corePkiFingerprint] = keyForCorePki;
+    // }
 
-    if(!encryptedKeys) throw new Error("Keys not encrypted");
-    // Remove unused values
-    delete encryptedKeys.cleSecrete;
-    delete encryptedKeys.digest;
+    // if(!encryptedKeys) throw new Error("Keys not encrypted");
+    // // Remove unused values
+    // delete encryptedKeys.cleSecrete;
+    // delete encryptedKeys.digest;
 
-    return await workers.connection.rebuildDomain(domain, encryptedKeys);
+    // return await workers.connection.rebuildDomain(domain, encryptedKeys);
 }
 
 async function loadDomainBackupKeys(workers: AppWorkers, domain: string, masterKey: Uint8Array) {
@@ -194,15 +195,16 @@ async function loadDomainBackupKeys(workers: AppWorkers, domain: string, masterK
 
     let encryptedKeys = {} as {[key: string]: keymaster.DomainSignature};
     let decryptedKeys = {} as {[key: string]: string};
-    for await (let backup of response.backups) {
-        if(backup.domaine !== domain) continue;  // Wrong domain
-        if(!backup.cles) continue;  // No keys
-        Object.assign(encryptedKeys, backup.cles);  // Copy encrypted keys
-        let domainKeys = await workers.encryption.decryptCaKeysToBase64Nopad(masterKey, backup.cles, domain);
-        decryptedKeys = {...decryptedKeys, ...domainKeys};
-    }
+    throw new Error("todo - fix with filehosts")
+    // for await (let backup of response.list) {
+    //     if(backup.domaine !== domain) continue;  // Wrong domain
+    //     if(!backup.cles) continue;  // No keys
+    //     Object.assign(encryptedKeys, backup.cles);  // Copy encrypted keys
+    //     let domainKeys = await workers.encryption.decryptCaKeysToBase64Nopad(masterKey, backup.cles, domain);
+    //     decryptedKeys = {...decryptedKeys, ...domainKeys};
+    // }
 
-    return [encryptedKeys, decryptedKeys];
+    // return [encryptedKeys, decryptedKeys];
 }
 
 function DomainListRegeneration(props: {masterKey: MasterKeyInformation | null}) {
@@ -218,7 +220,8 @@ function DomainListRegeneration(props: {masterKey: MasterKeyInformation | null})
 
         if(masterKey) {
             let response = await restoreInitialDomain(workers, domain, masterKey.key, true);
-            if(response.ok !== true) throw new Error('Error restoring initial domain' + response.err);
+            throw new Error("todo - fix")
+            //if(response.ok !== true) throw new Error('Error restoring initial domain' + response.err);
         } else {
             let response = await workers.connection.rebuildDomain(domain)
             if(response.ok !== true) throw new Error('Error restoring domain' + response.err);

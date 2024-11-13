@@ -1,5 +1,6 @@
 import '@solana/webcrypto-ed25519-polyfill';
 import { expose } from 'comlink';
+import axios from 'axios';
 import { ConnectionWorker, MessageResponse, SubscriptionCallback, SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
 import apiMapping from './apiMapping.json';
 import { messageStruct, keymaster, encryption } from 'millegrilles.cryptography';
@@ -8,10 +9,11 @@ const DOMAINE_CORETOPOLOGIE = 'CoreTopologie';
 const DOMAINE_CORECATALOGUES = 'CoreCatalogues';
 const DOMAINE_CORE_PKI = 'CorePki';
 const DOMAINE_MAITREDESCLES = 'MaitreDesCles';
-const DOMAINE_FICHIERS = 'fichiers';
+// const DOMAINE_FICHIERS = 'fichiers';
 const DOMAINE_INSTANCE = 'instance';
 const DOMAINE_COREMAITREDESCOMPTES = 'CoreMaitreDesComptes';
 const DOMAINE_GROSFICHIERS = 'GrosFichiers';
+const DOMAINE_FILECONTROLER = 'filecontroler';
 
 export type Domain = {
     domaine: string,
@@ -48,8 +50,15 @@ export type DomainBackupInformation = MessageResponse & {
     cles?: {[key: string]: keymaster.DomainSignature}
 };
 
+export type FilehostBackupInformation = {
+    ok: boolean,
+    filehost_id: string,
+    domains?: DomainBackupInformation[],
+    url?: string | null,
+}
+
 export type ResponseGetDomainBackupInformation = MessageResponse & {
-    backups: Array<DomainBackupInformation>,
+    list: Array<FilehostBackupInformation>,
 };
 
 export type ResponseGetNonDecryptableKeyBatch = MessageResponse & {
@@ -294,7 +303,10 @@ export class AppsConnectionWorker extends ConnectionWorker {
 
     async getDomainBackupInformation(stats: boolean, cles: boolean, domains?: string[]) {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendRequest({stats, cles, domaines: domains}, DOMAINE_FICHIERS, 'domainesBackupV2', {role: 'fichiers'}) as Promise<ResponseGetDomainBackupInformation>;
+        return this.connection.sendRequest(
+            {stats, cles, domaines: domains}, DOMAINE_FILECONTROLER, 'domainesBackupV2', 
+            {role: DOMAINE_FILECONTROLER}
+        ) as Promise<ResponseGetDomainBackupInformation>;
     }
 
     async rebuildDomain(domain: string, keys?: keymaster.EncryptionBase64Result) {
@@ -467,8 +479,9 @@ export class AppsConnectionWorker extends ConnectionWorker {
     }
 
     async syncFileManagers() {
-        if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendCommand({}, DOMAINE_FICHIERS, 'declencherSync', {role: 'fichiers'});
+        throw new Error("obsolete")
+        // if(!this.connection) throw new Error("Connection is not initialized");
+        // return this.connection.sendCommand({}, DOMAINE_FICHIERS, 'declencherSync', {role: 'fichiers'});
     }
 
     async reindexFileManagers() {
@@ -477,8 +490,9 @@ export class AppsConnectionWorker extends ConnectionWorker {
     }
 
     async resetTransfersFileManagers() {
-        if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendCommand({}, DOMAINE_FICHIERS, 'resetTransfertsSecondaires', {role: 'fichiers'});
+        throw new Error("obsolete")
+        // if(!this.connection) throw new Error("Connection is not initialized");
+        // return this.connection.sendCommand({}, DOMAINE_FICHIERS, 'resetTransfertsSecondaires', {role: 'fichiers'});
     }
 
     async removeFileManager(instanceId: string) {
@@ -565,6 +579,20 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendCommand({cles: encryptedKey, signature: caKey}, DOMAINE_MAITREDESCLES, 'ajouterCleDomaines');
     }
 
+    async authenticateFilehost(url: string) {
+        // Authenticate with filehost
+        let authenticateUrl = new URL(url + '/authenticate')
+        let authenticationMessage = await this.createRoutedMessage(
+            messageStruct.MessageKind.Command, {}, {domaine: 'filehost', action: 'authenticate'});
+        let cert = await this.getMessageFactoryCertificate()
+        let caPem = cert.pemMillegrille;
+        // let certCa = await workers.encryption.caCertificate;
+        // let pemCa = certCa?.pemChain.pop();
+        authenticationMessage.millegrille = caPem;
+        let response = await axios({method: 'POST', data: authenticationMessage, url: authenticateUrl.href});
+        if(response.status !== 200) throw new Error("Access denied")        
+    }
+    
 }
 
 var worker = new AppsConnectionWorker();

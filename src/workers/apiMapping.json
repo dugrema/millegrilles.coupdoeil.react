@@ -17,7 +17,7 @@
         {"domain": "CoreTopologie", "action": "getFilehosts", "exchange": "1.public"},
         {"domain": "CoreTopologie", "action": "getFilecontrolers", "exchange": "1.public"},
         {"domain": "CoreTopologie", "action": "getFilehostConfiguration"},
-        {"domain": "fichiers", "action": "domainesBackupV2", "exchange": "2.prive"},
+        {"domain": "filecontroler", "action": "domainesBackupV2", "exchange": "1.public"},
         {"domain": "instance", "action": "getPasswords", "exchanges": ["1.public", "2.prive", "3.protege"]},
         {"domain": "MaitreDesCles", "action": "compterClesNonDechiffrables"},
         {"domain": "MaitreDesCles", "action": "clesNonDechiffrablesV2"}

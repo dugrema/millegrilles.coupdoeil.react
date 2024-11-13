@@ -34,10 +34,10 @@ const Users = React.lazy(()=>import('./users/Users'));
 const UserList = React.lazy(()=>import('./users/UserList'));
 const UserDetail = React.lazy(()=>import('./users/UserDetail'));
 
-const FileManagement = React.lazy(()=>import('./consignation/FileManagement'));
-const FileManagerList = React.lazy(()=>import('./consignation/FileManagerList'));
-const FileManagerDetail = React.lazy(()=>import('./consignation/FileManagerInformation'));
-const FileManagerConfiguration = React.lazy(()=>import('./consignation/FileManagerConfiguration'));
+// const FileManagement = React.lazy(()=>import('./consignation/FileManagement'));
+// const FileManagerList = React.lazy(()=>import('./consignation/FileManagerList'));
+// const FileManagerDetail = React.lazy(()=>import('./consignation/FileManagerInformation'));
+// const FileManagerConfiguration = React.lazy(()=>import('./consignation/FileManagerConfiguration'));
 // const FileManagerSftpConfiguration = React.lazy(()=>import('./consignation/FileManagerSftpConfiguration'));
 const FileHosting = React.lazy(()=>import('./filehosting/FileHosting'));
 const FileHostingList = React.lazy(()=>import('./filehosting/FileHostingList'));
@@ -116,16 +116,16 @@ const router = createBrowserRouter([
             { path: "/coupdoeil2/applicationPackages/:packageName", element: <ApplicationPackageDetail /> },
         ]
   	},
-    {
-		path: "/coupdoeil2/fileManagement",
-		element: <FileManagement />,
-        errorElement: <ErrorPage />,
-        children: [
-            { path: "/coupdoeil2/fileManagement", element: <FileManagerList /> },
-            { path: "/coupdoeil2/fileManagement/:instanceId", element: <FileManagerDetail /> },
-            { path: "/coupdoeil2/fileManagement/:instanceId/configure", element: <FileManagerConfiguration /> },
-        ]
-  	},
+    // {
+	// 	path: "/coupdoeil2/fileManagement",
+	// 	element: <FileManagement />,
+    //     errorElement: <ErrorPage />,
+    //     children: [
+    //         { path: "/coupdoeil2/fileManagement", element: <FileManagerList /> },
+    //         { path: "/coupdoeil2/fileManagement/:instanceId", element: <FileManagerDetail /> },
+    //         { path: "/coupdoeil2/fileManagement/:instanceId/configure", element: <FileManagerConfiguration /> },
+    //     ]
+  	// },
     {
 		path: "/coupdoeil2/filehosting",
 		element: <FileHosting />,
