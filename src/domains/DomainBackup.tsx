@@ -133,7 +133,9 @@ function DomainBackupList(props: {value: DomainBackupInformation[] | null | unde
                         <Formatters.FormatterDate value={item.concatene?.date} />
                         <p><Formatters.FormatterDate value={item.transaction_plus_recente} /></p>
                         <p>{item.nombre_transactions}</p>
-                        <p>{item.concatene?.version}</p>
+                        <Link to={`/coupdoeil2/domains/restore/versions/${item.domaine}`} className='underline font-bold'>
+                            {item.concatene?.version}
+                        </Link>
                 </div>
             )
         });

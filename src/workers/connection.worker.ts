@@ -250,6 +250,34 @@ export type GetFilehostConfigurationResponse = MessageResponse & {
     configuration?: {[key: string]: string}
 };
 
+export type FilehostBackupDomainVersions = {
+    ok: boolean,
+    filehost_id: string,
+    url?: string | null | undefined,
+    versions: BackupDomainVersions[],
+}
+
+export type BackupDomainVersionResponse = MessageResponse & {
+    ok: boolean,
+    list: FilehostBackupDomainVersions[],
+}
+
+export type BackupDomainVersions = {
+    version: string,
+    date: number,
+    start_date: number,
+    end_date: number,
+    end_date_concatene: number,
+    transactions: number,
+    transactions_concatene: number,
+};
+
+export type BackupDomainVersion = {domain: string, version: string | null};
+
+export type BackupCurrentDomainsResponse = MessageResponse & {
+    domains: BackupDomainVersion[],
+}
+
 export class AppsConnectionWorker extends ConnectionWorker {
 
     async authenticate(reconnect?: boolean) {
@@ -301,17 +329,35 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'listeDomaines') as Promise<ResponseGetDomainList>;
     }
 
-    async getDomainBackupInformation(stats: boolean, cles: boolean, domains?: string[]) {
+    async getDomainBackupInformation(stats: boolean, cles: boolean, domains?: string[], version?: string | null) {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendRequest(
-            {stats, cles, domaines: domains}, DOMAINE_FILECONTROLER, 'domainesBackupV2', 
+            {stats, cles, domaines: domains, version}, DOMAINE_FILECONTROLER, 'domainesBackupV2', 
             {role: DOMAINE_FILECONTROLER}
         ) as Promise<ResponseGetDomainBackupInformation>;
     }
 
-    async rebuildDomain(domain: string, keys?: keymaster.EncryptionBase64Result) {
+    async getDomainVersionsBackupInformation(domain: string) {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendCommand({cles_chiffrees: keys}, domain, 'regenerer') as Promise<ResponseGetDomainBackupInformation>;
+        return this.connection.sendRequest(
+            {domaine: domain}, DOMAINE_FILECONTROLER, 'domaineVersionBackupV2', 
+            {role: DOMAINE_FILECONTROLER}
+        ) as Promise<BackupDomainVersionResponse>;
+    }
+
+    async getDomainBackupVersions() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'getDomainBackupVersions') as Promise<BackupCurrentDomainsResponse>;
+    }
+
+    async setDomainBackupVersion(domain: string, version: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({domaine: domain, version}, DOMAINE_CORETOPOLOGIE, 'setBackupDomainVersion');
+    }
+
+    async rebuildDomain(domain: string, keys?: keymaster.EncryptionBase64Result, version?: string | null) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({cles_chiffrees: keys, version}, domain, 'regenerer') as Promise<ResponseGetDomainBackupInformation>;
     }
 
     async pingDomain(domain: string) {

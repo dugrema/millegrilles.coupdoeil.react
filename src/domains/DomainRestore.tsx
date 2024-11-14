@@ -8,11 +8,34 @@ import { certificates, keymaster, multiencoding, x25519 } from 'millegrilles.cry
 import { DomainListSection } from './DomainList';
 import useConnectionStore from '../connectionStore';
 import { decryptNonDecryptableKeys, KeyProgress, MaitreDesClesProgress } from '../utilities/DecryptKeys';
+import { BackupDomainVersion } from '../workers/connection.worker';
 
 
 function DomainRestore() {
 
+    let workers = useWorkers();
+    let ready = useConnectionStore(state=>state.connectionAuthenticated);
+
     let [masterKey, setMasterKey] = useState(null as MasterKeyInformation | null);
+    let [domainBackupVersionList, setDomainBackupVersionList] = useState(null as {[key: string]: BackupDomainVersion} | null);
+
+    useEffect(()=>{
+        if(!workers || !ready) return;
+        workers.connection.getDomainBackupVersions()
+            .then(response=>{
+                console.debug("Domain backup versions", response);
+                if(response.ok && response.domains) {
+                    // Map domains
+                    let mappedDomains = response.domains.reduce((acc, item)=>{
+                        return {...acc, [item.domain]: item};
+                    }, {});
+                    setDomainBackupVersionList(mappedDomains);
+                } else {
+                    console.error("Error loading domain backup version from CoreTopologie", response.err);
+                }
+            })
+            .catch(err=>console.error("Error getting domain backup versions from CoreTopologie", err));
+    }, [workers, ready, setDomainBackupVersionList]);
 
     return (
         <>
@@ -37,12 +60,12 @@ function DomainRestore() {
                     the backup decryption keys for other domains.
                 </p>
 
-                <InitialDomainsSection masterKey={masterKey} masterKeyOnChange={setMasterKey} />
+                <InitialDomainsSection masterKey={masterKey} masterKeyOnChange={setMasterKey} backupVersions={domainBackupVersionList} />
             </section>
 
             <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>Restore the rest of the system</h2>
-                <DomainListRegeneration masterKey={masterKey} />
+                <DomainListRegeneration masterKey={masterKey} backupVersions={domainBackupVersionList} />
             </section>
         </>
     );
@@ -71,9 +94,15 @@ function BackupFileSection() {
     );
 }
 
-function InitialDomainsSection(props: {masterKey: MasterKeyInformation | null, masterKeyOnChange: (e: MasterKeyInformation | null)=>void}) {
+type InitialDomainSectionProps = {
+    masterKey: MasterKeyInformation | null, 
+    masterKeyOnChange: (e: MasterKeyInformation | null)=>void, 
+    backupVersions: {[key: string]: BackupDomainVersion} | null
+};
+
+function InitialDomainsSection(props: InitialDomainSectionProps) {
  
-    let { masterKey, masterKeyOnChange } = props;
+    let { masterKey, masterKeyOnChange, backupVersions } = props;
 
     let workers = useWorkers();
 
@@ -82,10 +111,12 @@ function InitialDomainsSection(props: {masterKey: MasterKeyInformation | null, m
     let restoreDomaineCallback = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
         if(!workers) throw new Error("workers not initialized");
         if(!masterKey) throw new Error("Master key not loaded");
+        if(!backupVersions) throw new Error("Backup versions not provided")
         let domain = e.currentTarget.value;
-        restoreInitialDomain(workers, domain, masterKey.key, false)
+        let version = backupVersions[domain].version;
+        restoreInitialDomain(workers, domain, masterKey.key, false, version)
             .catch(err=>console.error("Error restoring domain %s: %O", domain, err));
-    }, [workers, masterKey]);
+    }, [workers, masterKey, backupVersions]);
 
     let decryptKeysHandler = useCallback(() => {
         if(!workers) throw new Error("workers not initialized");
@@ -135,10 +166,10 @@ function InitialDomainsSection(props: {masterKey: MasterKeyInformation | null, m
 
 }
 
-async function restoreInitialDomain(workers: AppWorkers, domain: string, masterKey: Uint8Array, resubmitKeys: boolean) {
-    let [caEncryptedKeys, decryptedKeys] = await loadDomainBackupKeys(workers, domain, masterKey);
+async function restoreInitialDomain(workers: AppWorkers, domain: string, masterKey: Uint8Array, resubmitKeys: boolean, version: string | null) {
+    let [caEncryptedKeys, decryptedKeys] = await loadDomainBackupKeys(workers, domain, masterKey, version);
     let contentToEncrypt = { cles: decryptedKeys };
-    // console.debug("CA Keys: %O. Decrypted rebuild command %O", caEncryptedKeys, contentToEncrypt);
+    console.debug("CA Keys: %O. Decrypted rebuild command %O", caEncryptedKeys, contentToEncrypt);
 
     if(resubmitKeys) {
         // console.debug("Resubmitting CA encrypted keys to ensure they exist on KeyMaster: ", caEncryptedKeys);
@@ -186,11 +217,12 @@ async function restoreInitialDomain(workers: AppWorkers, domain: string, masterK
     delete encryptedKeys.cleSecrete;
     delete encryptedKeys.digest;
 
-    return await workers.connection.rebuildDomain(domain, encryptedKeys);
+    return await workers.connection.rebuildDomain(domain, encryptedKeys, version);
 }
 
-async function loadDomainBackupKeys(workers: AppWorkers, domain: string, masterKey: Uint8Array) {
-    let response = await workers.connection.getDomainBackupInformation(true, true, [domain]);
+async function loadDomainBackupKeys(workers: AppWorkers, domain: string, masterKey: Uint8Array, version: string | null) {
+    let response = await workers.connection.getDomainBackupInformation(true, true, [domain], version);
+    console.debug("loadDomainBackupKeys response", response);
 
     let encryptedKeys = {} as {[key: string]: keymaster.DomainSignature};
     let decryptedKeys = {} as {[key: string]: string};
@@ -209,9 +241,14 @@ async function loadDomainBackupKeys(workers: AppWorkers, domain: string, masterK
     return [encryptedKeys, decryptedKeys];
 }
 
-function DomainListRegeneration(props: {masterKey: MasterKeyInformation | null}) {
+type DomainListRegenerationProps = {
+    masterKey: MasterKeyInformation | null,
+    backupVersions: {[key: string]: BackupDomainVersion} | null,
+}
 
-    let { masterKey } = props;
+function DomainListRegeneration(props: DomainListRegenerationProps) {
+
+    let { masterKey, backupVersions } = props;
 
     let workers = useWorkers();
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
@@ -219,16 +256,19 @@ function DomainListRegeneration(props: {masterKey: MasterKeyInformation | null})
     let rebuildHandler = useCallback(async (domain: string ) => {
         if(!ready) throw new Error("not authenticated");
         if(!workers) throw new Error("workers not initialized");
+        if(!backupVersions) throw new Error("Backup versions not provided");
+        let version = backupVersions[domain]?.version;
+        console.debug("Restoring domain %s version %s", domain, version);
 
         if(masterKey) {
-            let response = await restoreInitialDomain(workers, domain, masterKey.key, true);
+            let response = await restoreInitialDomain(workers, domain, masterKey.key, true, version);
             throw new Error("todo - fix")
             //if(response.ok !== true) throw new Error('Error restoring initial domain' + response.err);
         } else {
             let response = await workers.connection.rebuildDomain(domain)
             if(response.ok !== true) throw new Error('Error restoring domain' + response.err);
         }
-    }, [workers, ready, masterKey]);
+    }, [workers, ready, masterKey, backupVersions]);
 
     return (
         <DomainListSection rebuild={rebuildHandler} />

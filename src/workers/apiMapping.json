@@ -17,7 +17,9 @@
         {"domain": "CoreTopologie", "action": "getFilehosts", "exchange": "1.public"},
         {"domain": "CoreTopologie", "action": "getFilecontrolers", "exchange": "1.public"},
         {"domain": "CoreTopologie", "action": "getFilehostConfiguration"},
+        {"domain": "CoreTopologie", "action": "getDomainBackupVersions", "exchange": "1.public"},
         {"domain": "filecontroler", "action": "domainesBackupV2", "exchange": "1.public"},
+        {"domain": "filecontroler", "action": "domaineVersionBackupV2", "exchange": "1.public"},
         {"domain": "instance", "action": "getPasswords", "exchanges": ["1.public", "2.prive", "3.protege"]},
         {"domain": "MaitreDesCles", "action": "compterClesNonDechiffrables"},
         {"domain": "MaitreDesCles", "action": "clesNonDechiffrablesV2"}
@@ -39,6 +41,7 @@
         {"domain": "CoreTopologie", "action": "filehostDelete", "exchange": "1.public"},
         {"domain": "CoreTopologie", "action": "resetVisitsClaims"},
         {"domain": "CoreTopologie", "action": "resetTransfers"},
+        {"domain": "CoreTopologie", "action": "setBackupDomainVersion"},
         {"domain": "GrosFichiers", "action": "reindexerConsignation"},
         {"domain": "MaitreDesCles", "action": "rechiffrerBatch"},
         {"domain": "MaitreDesCles", "action": "ajouterCleDomaines", "exchange": "1.public"},

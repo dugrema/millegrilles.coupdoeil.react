@@ -29,6 +29,7 @@ const Domains = React.lazy(()=>import('./domains/Domains'));
 const DomainBackup = React.lazy(()=>import('./domains/DomainBackup'));
 const DomainList = React.lazy(()=>import('./domains/DomainList'));
 const DomainRestore = React.lazy(()=>import('./domains/DomainRestore'));
+const DomainBackupVersions = React.lazy(()=>import('./domains/DomainBackupVersions'));
 
 const Users = React.lazy(()=>import('./users/Users'));
 const UserList = React.lazy(()=>import('./users/UserList'));
@@ -87,6 +88,7 @@ const router = createBrowserRouter([
             { path: "/coupdoeil2/domains", element: <DomainList /> },
             { path: "/coupdoeil2/domains/backup", element: <DomainBackup /> },
             { path: "/coupdoeil2/domains/restore", element: <DomainRestore /> },
+            { path: "/coupdoeil2/domains/restore/versions/:domainName", element: <DomainBackupVersions back='/coupdoeil2/domains/restore' /> },
         ]
   	},
     {
