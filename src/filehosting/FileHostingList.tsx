@@ -17,6 +17,8 @@ function FileHostingList() {
 
     let reindexHandler = useCallback(async ()=>{
         if(!ready || !workers) throw new Error("Workers not initialized");
+        let result = await workers.connection.reindexFileManagers();
+        if(!result.ok) throw new Error("Error resetting indexes");
     }, [ready, workers]);
 
     let resetTransfersHandler = useCallback(async ()=>{

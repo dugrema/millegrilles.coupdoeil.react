@@ -532,7 +532,7 @@ export class AppsConnectionWorker extends ConnectionWorker {
 
     async reindexFileManagers() {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendCommand({}, DOMAINE_GROSFICHIERS, 'reindexerConsignation');
+        return this.connection.sendCommand({}, DOMAINE_GROSFICHIERS, 'reindexerFichiers', {timeout: 60_000});
     }
 
     async resetTransfersFileManagers() {
