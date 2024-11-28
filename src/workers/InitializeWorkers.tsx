@@ -14,6 +14,8 @@ import { userStoreIdb, CommonTypes } from 'millegrilles.reactdeps.typescript';
 function InitializeWorkers() {
     let installationMode = useConnectionStore(state=>state.installationMode);
     let setInstallationMode = useConnectionStore(state=>state.setInstallationMode);
+    let recoveryMode = useConnectionStore(state=>state.recoveryMode);
+    let setRecoveryMode = useConnectionStore(state=>state.setRecoveryMode);
     let workersReady = useConnectionStore((state) => state.workersReady);
     let workersRetry = useConnectionStore((state) => state.workersRetry);
     let incrementWorkersRetry = useConnectionStore(
@@ -53,7 +55,7 @@ function InitializeWorkers() {
     // Load the workers with a useMemo that returns a Promise. Allows throwing the promise
     // and catching it with the <React.Suspense> element in index.tsx.
     let workerLoadingPromise = useMemo(() => {
-        if(installationMode === true) {
+        if(installationMode === true || recoveryMode === true) {
             return;  // Done, the workers can't be setup until the initial setup is completed
         } else if(installationMode === null) {
             // Determine if this is a new instance in installation mode
@@ -64,8 +66,11 @@ function InitializeWorkers() {
                     // console.debug("Response content ", content);
                     if(!content.idmg) {
                         setInstallationMode(true);  // This is a new instance
+                    } else if(content.runlevel === 2) {
+                        setRecoveryMode(true);  // Recovery mode
                     } else if(content.ca) {
                         setInstallationMode(false);  // The system initial setup is done
+                        setRecoveryMode(false);      // Not in recovery mode
                     }
                 })
                 .catch(err=>{
@@ -132,6 +137,7 @@ function InitializeWorkers() {
             });
         }, [
             installationMode, setInstallationMode,
+            recoveryMode, setRecoveryMode,
             workersReady, setWorkersReady,
             workersRetry,
             setFiche,
@@ -272,6 +278,7 @@ async function authenticateConnectionWorker(workers: AppWorkers, username: strin
 
 type ServerInstallationStatus = {
     instance_id: string,
+    runlevel: number,
     securite?: string,
     idmg?: string,
     ca?: string,

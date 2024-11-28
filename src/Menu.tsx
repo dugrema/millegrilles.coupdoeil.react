@@ -11,11 +11,12 @@ type MenuProps = {
 export default function HeaderMenu(props: MenuProps) {
 
     let installationMode = useConnectionStore(state=>state.installationMode);
+    let recoveryMode = useConnectionStore(state=>state.recoveryMode);
     let connectionReady = useConnectionStore(state=>state.connectionAuthenticated);
 
     let cssDisconnected = useMemo(()=>{
         if(connectionReady) return '';
-        if(installationMode === true) return ' bg-amber-700';
+        if(installationMode === true || recoveryMode === true) return ' bg-amber-700';
         return ' bg-red-500';
     }, [connectionReady, installationMode]);
 
@@ -31,6 +32,9 @@ export default function HeaderMenu(props: MenuProps) {
             <div className='hidden md:block text-center'>
                 {installationMode?
                     <p className='font-bold'>Installation mode</p>
+                :<></>}
+                {recoveryMode?
+                    <p className='font-bold'>Recovery mode</p>
                 :<></>}
             </div>
             <div className='text-right text-lg font-bold underline'>

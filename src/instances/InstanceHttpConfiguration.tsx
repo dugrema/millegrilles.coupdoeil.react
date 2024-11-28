@@ -5,6 +5,7 @@ import { Dispatch, useCallback, useEffect, useMemo, useState } from "react";
 import MasterKeyLoader, { MasterKeyInformation } from "../utilities/MasterKeyLoader";
 import ActionButton from "../components/ActionButton";
 import { installIntermediateCertificate } from "../installer/GenerateCertificates";
+import useConnectionStore from "../connectionStore";
 
 type HttpsProps = {
     url: URL,
@@ -73,6 +74,8 @@ export function HttpsRenewSigningCertificate(props: HttpsProps) {
 
     let { url, server } = props;
 
+    let recoveryMode = useConnectionStore(state=>state.recoveryMode);
+
     let [masterKey, setMasterKey] = useState(null as MasterKeyInformation | null)
 
     let [signingCertificate, setSigningCertificate] = useState(null as certificates.CertificateWrapper | null);
@@ -105,11 +108,15 @@ export function HttpsRenewSigningCertificate(props: HttpsProps) {
         }
     }, [url, featureAvailable, server]);
 
-    if(!signingCertificate ||  !featureAvailable) return <></>;  // Not applicable
+    if(!recoveryMode && (!signingCertificate || !featureAvailable)) return <></>;  // Not applicable
 
     return (
         <>
             <ShowSigningCertificateInformation value={signingCertificate} />
+
+            {recoveryMode?
+                <p className='pb-1'>The server certificate is expired.</p>
+            :<></>}
 
             <p className='pb-1'>To renew the signing certificate, load the system's Master Key and click on Renew.</p>
 
