@@ -27,6 +27,11 @@ function KeyManagementOptions() {
                 </p>
                 <DecryptKeys onChange={doneOnChange} />
             </section>
+
+            <section>
+                <h2 className='text-lg font-bold pt-4 pb-2'>Keymaster recovery</h2>
+                <KeymasterRecovery />
+            </section>
         </>
     );
 }
@@ -67,6 +72,18 @@ function KeyInformation(props: {trigger: number}) {
                 </p>
             </div>
 
+        </section>
+    )
+}
+
+export function KeymasterRecovery() {
+
+    
+
+    return (
+        <section>
+            <p>This Allows recovering the keymaster's decryption key if fails during a certificate rotation.</p>
+            <p>Any eligible keymaster will pop-up in the list below.</p>
         </section>
     )
 }

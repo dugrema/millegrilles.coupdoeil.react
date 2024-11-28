@@ -278,6 +278,12 @@ export type BackupCurrentDomainsResponse = MessageResponse & {
     domains: BackupDomainVersion[],
 }
 
+export type KeymasterRecoveryRequest = MessageResponse & {cle_symmetrique_ca: string};
+
+export type KeymasterRecoveryRequestCallback = SubscriptionMessage & {
+    message: messageStruct.MilleGrillesMessage & KeymasterRecoveryRequest
+};
+
 export class AppsConnectionWorker extends ConnectionWorker {
 
     async authenticate(reconnect?: boolean) {
@@ -320,6 +326,16 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async unsubscribeInstanceEvents(cb: SubscriptionCallback): Promise<void> {
         if(!this.connection) throw new Error("Connection is not initialized");
         return await this.connection.unsubscribe('instanceEvents', cb);
+    }
+
+    async subscribeKeymasterEvents(cb: SubscriptionCallback): Promise<void> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return await this.connection.subscribe('keymasterRecoveryEvents', cb);
+    }
+
+    async unsubscribeKeymasterEvents(cb: SubscriptionCallback): Promise<void> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return await this.connection.unsubscribe('keymasterRecoveryEvents', cb);
     }
 
     // Domains
