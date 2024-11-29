@@ -174,7 +174,7 @@ export class AppsEncryptionWorker {
     }
 
     /**
-     * Encrytps a secret key for all currently loaded KeyMaster public keys.
+     * Encrypts a secret key for all currently loaded KeyMaster public keys.
      * @param secretKey Secret key to encrypt.
      * @returns Dict of encrypted keys.
      */
@@ -187,6 +187,14 @@ export class AppsEncryptionWorker {
             cles[fingerprint] = newEncryptedKey;
         }
         return cles;
+    }
+
+    async decryptCaEncryptedKey(masterKey: Uint8Array, caEncryptedKey: string | Uint8Array) {
+        return await keymaster.decryptKey(caEncryptedKey, masterKey);
+    }
+
+    async encryptKeyForPublicKey(secretKey: Uint8Array, pkBytes: Uint8Array) {
+        return await x25519.encryptEd25519(secretKey, pkBytes);
     }
 
     async decryptMessage(format: string, key: string | Uint8Array, nonce: string | Uint8Array, ciphertext: string | Uint8Array, compression?: string | null) {

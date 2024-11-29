@@ -47,7 +47,7 @@ const FileHostingEdit = React.lazy(()=>import('./filehosting/FileHostingEdit'));
 
 const KeyManagement = React.lazy(()=>import('./utilities/KeyManagement'));
 const KeyManagementOptions = React.lazy(()=>import('./utilities/KeyManagementOptions'));
-const DecryptKeys = React.lazy(()=>import('./utilities/DecryptKeys'));
+// const DecryptKeys = React.lazy(()=>import('./utilities/DecryptKeys'));
 const ApplicationPackages = React.lazy(()=>import('./utilities/ApplicationPackages'));
 const ApplicationPackageDetail = React.lazy(()=>import('./utilities/ApplicationPackageDetail'));
 const Installer = React.lazy(()=>import('./installer/Installer'));
@@ -106,7 +106,7 @@ const router = createBrowserRouter([
         errorElement: <ErrorPage />,
         children: [
             { path: "/coupdoeil2/keys", element: <KeyManagementOptions /> },
-            { path: "/coupdoeil2/keys/decrypt", element: <DecryptKeys /> },
+            // { path: "/coupdoeil2/keys/decrypt", element: <DecryptKeys /> },
         ]
   	},
     {

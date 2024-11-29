@@ -69,20 +69,13 @@ async function processEvent(workers: AppWorkers | null, event: SubscriptionMessa
     let action = event.routingKey.split('.').pop();
     console.debug("Keymaster recovery event", request);
     if(action === 'demandeCleSymmetrique') {
-        // processEventPresenceDomaine(eventInstance, updateRequests);
-        throw new Error('todo')
+        let message = request.message as KeymasterRecoveryRequest;
+        let cleSymmetriqueCa = message.cle_symmetrique_ca;
+        let certificate = message.content?.__certificate;
+        let certificatePem = message.content?.__original?.certificat;
+        let instanceId = certificate?.extensions?.commonName;
+        let requestStore = {instance_id: instanceId, cle_symmetrique_ca: cleSymmetriqueCa, certificate, certificatePem, ...request} as KeymasterRecoveryRequestStore;
+        console.debug("processEvent demandeCleSymmetrique: ", requestStore)
+        updateRequests(requestStore);
     }
 }
-
-// async function processEventPresenceDomaine(eventInstance: InstanceEventCallback, updateInstance: (update: ServerInstance)=>void) {
-//     // @ts-ignore
-//     let message = eventInstance.message as ServerInstance;
-//     // @ts-ignore
-//     let presence = message.content['__original'].estampille;
-//     // @ts-ignore
-//     message.date_presence = presence;
-//     // @ts-ignore
-//     delete message.content;
-//     console.debug("Instance update ", message)
-//     updateInstance(message);
-// }

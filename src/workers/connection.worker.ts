@@ -318,6 +318,16 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendCommand({instance_id: instanceId, consignation_id: fileManagerId}, DOMAINE_CORETOPOLOGIE, 'setConsignationInstance') as Promise<GenerateCertificateInstanceResponse>;
     }
 
+    async requestKeymasterRecovery() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({}, DOMAINE_MAITREDESCLES, 'querySymmetricKeyRepair', {nowait: true});
+    }
+
+    async sendKeymasterRecoveryKey(fingerprint: string, encryptedKey: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({fingerprint, cle: encryptedKey}, DOMAINE_MAITREDESCLES, 'cleSymmetrique', {partition: fingerprint});
+    }
+
     async subscribeInstanceEvents(cb: SubscriptionCallback): Promise<void> {
         if(!this.connection) throw new Error("Connection is not initialized");
         return await this.connection.subscribe('instanceEvents', cb);

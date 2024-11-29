@@ -1,18 +1,16 @@
-import { Link } from 'react-router-dom';
 import useWorkers, { AppWorkers } from '../workers/workers';
 import { keymaster } from 'millegrilles.cryptography';
 import { useCallback, useMemo, useState } from 'react';
 import useConnectionStore from '../connectionStore';
-import MasterKeyLoader, { MasterKeyInformation } from './MasterKeyLoader';
+import { MasterKeyInformation } from './MasterKeyLoader';
 import ActionButton from '../components/ActionButton';
 
-function DecryptKeys(props: {onChange?: ()=>void}) {
+function DecryptKeys(props: {onChange?: ()=>void, masterKey: MasterKeyInformation | null}) {
 
-    let { onChange } = props;
+    let { onChange, masterKey } = props;
 
     let workers = useWorkers();
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
-    let [masterKey, setMasterKey] = useState(null as MasterKeyInformation | null);
     let [keyProgress, setKeyProgress] = useState(null as KeyProgress | null);
 
     let decryptKeysHandler = useCallback(async () => {
@@ -24,8 +22,6 @@ function DecryptKeys(props: {onChange?: ()=>void}) {
 
     return (
         <>
-            <MasterKeyLoader onChange={setMasterKey} />
-
             <ActionButton onClick={decryptKeysHandler} disabled={!ready || !masterKey} mainButton={true}>
                 Start
             </ActionButton>

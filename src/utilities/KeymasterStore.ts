@@ -16,12 +16,16 @@ const useKeymasterStore = create<KeymasterStoreState>()(
             keymasterRecoveryRequests: [],
             updateKeymasterRecoveryRequests: (request) => set(state=>{
                 let requests = state.keymasterRecoveryRequests;
-                // Update
-                let instanceItems = requests.filter(item=>item.instance_id === request.instance_id).pop() || {};
+                let instanceItems = requests.filter(item=>item.instance_id === request.instance_id).pop();
+
+                // New item
+                if(!instanceItems) {return {keymasterRecoveryRequests: [...requests, request]}};
+                
+                // Update item
                 let requestUpdate = {...instanceItems, ...request};
                 let requestsUpdate = requests.map(item=>{
                     if(item.instance_id === requestUpdate.instance_id) { return requestUpdate };
-                    return item;
+                    return requestUpdate;
                 })
                 return {keymasterRecoveryRequests: requestsUpdate};
             }),
