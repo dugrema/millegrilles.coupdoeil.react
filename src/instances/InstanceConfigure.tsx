@@ -54,6 +54,18 @@ function ConfigureFileManager() {
     let [selected, setSelected] = useState(null as string | null);
     let onChangeHandler = useCallback((e: ChangeEvent<HTMLSelectElement>)=>setSelected(e.currentTarget.value), [setSelected]);
 
+    useEffect(()=>{
+        if(!workers || !ready || !instanceId) return;
+        workers.connection.getInstanceConfigurationList(instanceId)
+            .then(response=>{
+                console.debug("Configuration", response);
+                if(response.ok !== true) console.error("Error loading server instance configuration: %O", response)
+                let filehostConfigId = response.configuration['filehost_id'];
+                setSelected(filehostConfigId)
+            })
+            .catch(err=>console.error("Error loading server instance configuration", err));
+    }, [workers, ready, instanceId, setSelected]);
+
     let filehostsOptions = useMemo(()=>{
         let filehostsOpts = [<option key='default' value=''>Default</option>];
         if(filehosts) {
@@ -63,8 +75,7 @@ function ConfigureFileManager() {
                 if(!label) {
                     let instance = instances?.filter(innerItem=>innerItem.instance_id === item.instance_id).pop();
                     if(instance) {
-                        throw new Error('fix me')
-                        // label = instance.domaine || label;
+                        label = instance.hostname || label;
                     } else {
                         label = item.filehost_id;
                     }
@@ -110,11 +121,11 @@ function ConfigureFileManager() {
         if(!currentInstance) return;
         if(selected !== null) return;
         // Init
-        throw new Error('fix me')
+        // TODO - fixme
         // if(currentInstance.filehost_id) {
         //     setSelected(currentInstance.filehost_id);
         // } else {
-        //     setSelected('');
+            setSelected('');
         // }
     }, [currentInstance, instances, selected, setSelected]);
 

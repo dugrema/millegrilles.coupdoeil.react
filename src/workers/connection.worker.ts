@@ -135,6 +135,8 @@ export type ServerInstanceApplicationInformation = {
     webapps: ServerInstanceWebapp[],
 }
 
+export type ServerInstanceConfigurationMessage = MessageResponse & {configuration: {[key: string]: string}};
+
 export type ServerInstanceApplicationMessage = MessageResponse & ServerInstanceApplicationInformation & {
     instance_id: string,
 };
@@ -365,6 +367,11 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async getInstanceApplicationsList(instanceId: string) {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendRequest({instance_id: instanceId}, DOMAINE_CORETOPOLOGIE, 'requestServerInstanceApplications') as Promise<ServerInstanceApplicationMessage>;
+    }
+
+    async getInstanceConfigurationList(instanceId: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({instance_id: instanceId}, DOMAINE_CORETOPOLOGIE, 'requestServerInstanceConfiguration') as Promise<ServerInstanceConfigurationMessage>;
     }
 
     async generateSatelliteInstanceCertificate(command: GenerateCertificateInstanceCommand) {
