@@ -262,8 +262,7 @@ function DomainListRegeneration(props: DomainListRegenerationProps) {
 
         if(masterKey) {
             let response = await restoreInitialDomain(workers, domain, masterKey.key, true, version);
-            throw new Error("todo - fix")
-            //if(response.ok !== true) throw new Error('Error restoring initial domain' + response.err);
+            if(response.ok !== true) throw new Error('Error restoring initial domain' + response.err);
         } else {
             let response = await workers.connection.rebuildDomain(domain)
             if(response.ok !== true) throw new Error('Error restoring domain' + response.err);

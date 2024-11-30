@@ -108,7 +108,6 @@ function ConfigureFileManager() {
         if(!ready || !workers) return;
         workers.connection.getFilehostList()
             .then(result=>{
-                console.debug("File managers", result);
                 if(result.list) {
                     let filehosts = result.list.filter(item=>!item.deleted);
                     setFilehosts(filehosts);
@@ -116,18 +115,6 @@ function ConfigureFileManager() {
             })
             .catch(err=>console.error("Error loading file managers", err));
     }, [workers, ready, setFilehosts]);
-
-    useEffect(()=>{
-        if(!currentInstance) return;
-        if(selected !== null) return;
-        // Init
-        // TODO - fixme
-        // if(currentInstance.filehost_id) {
-        //     setSelected(currentInstance.filehost_id);
-        // } else {
-            setSelected('');
-        // }
-    }, [currentInstance, instances, selected, setSelected]);
 
     return (
         <section>

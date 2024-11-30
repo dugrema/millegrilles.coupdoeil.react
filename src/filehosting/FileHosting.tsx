@@ -133,10 +133,6 @@ async function processEvent(workers: AppWorkers | null, event: SubscriptionMessa
             let filehostId = message.filehost_id;
             let fuuid = message.fuuid;
             if(fuuid) updateFilehosts({filehost_id: filehostId, fuuid});
-        // } else if(action === 'filehostNewFuuid') {
-        //     console.debug("!!! TODO Filehost new fuuid %O", event.message)
-        // } else if(action === 'transferUpdate') {
-        //     console.debug("!!! TODO Filehost transferUpdate %O", event.message)
         } else {
             console.warn("Event received from filecontroler for unhandled action %s - DROPPED", action);
         }
