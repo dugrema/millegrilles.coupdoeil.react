@@ -36,7 +36,6 @@ const useFilehostStore = create<FilehostingStoreState>()(
                     if(item.filehost_id === filehostUpdate.filehost_id) { return filehostUpdate };
                     return item;
                 })
-                console.debug("filecontrolersHostsUpdate ", filehostsUpdate);
                 return {filehosts: filehostsUpdate};
             }),
             setFilecontrolers: (filecontrolers) => set(() => ({ filecontrolers })),

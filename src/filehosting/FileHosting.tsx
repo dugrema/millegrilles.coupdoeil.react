@@ -36,13 +36,11 @@ function FileHosting() {
         Promise.resolve().then(async ()=>{
             if(!workers) throw new Error('workers not initialized');
             let filehostResponse = await workers.connection.getFilehostList();
-            console.debug("filehost Response %O", filehostResponse);
             if(filehostResponse.ok !== true || !filehostResponse.list) {
                 console.error("Error loading filehosts: %O", filehostResponse.err);
                 return;
             }
             let filecontrolersResponse = await workers.connection.getFilecontrolersList();
-            console.debug("filecontrolers Response: %O", filecontrolersResponse);
             if(filecontrolersResponse.ok !== true || !filecontrolersResponse.list) {
                 console.error("Error loading filecontrolers: %O", filecontrolersResponse.err);
                 return;
@@ -91,7 +89,6 @@ type FilehostDeleteEvent = MessageResponse & {filehost_id: string};
 async function processEvent(workers: AppWorkers | null, event: SubscriptionMessage, 
     updateFilehosts: (e: FilehostStoreItem)=>void, updateFilecontrolers: (e: FilecontrolerStoreItem)=>void) 
 {
-    console.debug("processEvent Received ", event);
     let rkSplit = event.routingKey.split('.');
     let domain = rkSplit[1];
     let action = rkSplit.pop();
@@ -114,7 +111,6 @@ async function processEvent(workers: AppWorkers | null, event: SubscriptionMessa
         }
     } else if(domain === 'filecontroler') {
         if(action === 'status') {
-            console.debug("Filehost status %O", event.message);
             let message = event.message as FilecontrolerStatusMessage;
             for(let fh of message.filehosts) {
                 let status = {filehost_id: fh.filehost_id, connected: fh.connected, transfer_q_len: fh.transfer_q_len };
@@ -128,7 +124,6 @@ async function processEvent(workers: AppWorkers | null, event: SubscriptionMessa
             }
             updateFilecontrolers(fileControlerUpdate);
         } else if(action === 'filehostUsage') {
-            console.debug("Event filehost usage %O", event.message)
             let message = event.message as FileHostUsageEventMessage;
             let filehostId = message.filehost_id;
             let fuuid = message.fuuid;

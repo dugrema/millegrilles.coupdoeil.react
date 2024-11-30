@@ -5,6 +5,7 @@ import useWorkers from "../workers/workers";
 import { ChangeEvent, Dispatch, useCallback, useEffect, useMemo, useState } from "react";
 import useFilehostStore, { FilehostStoreItem } from "./filehostingStore";
 import { ConditionalFormatters, Formatters } from "millegrilles.reactdeps.typescript";
+import useInstanceStore from "../instances/instanceStore";
 
 function FileHostingList() {
 
@@ -102,18 +103,25 @@ type FilehostListItem = FilehostStoreItem & {label: string};
 function FileHostList() {
 
     let filehosts = useFilehostStore(state=>state.filehosts);
+    let instances = useInstanceStore(state=>state.instances);
 
     let filehostElems = useMemo(()=>{
         if(!filehosts) return null;
 
         // Create label and sort
         let filehostCopy = filehosts.filter(item=>!item.deleted).map(item=>{
-            let label = item.url_external || item.filehost_id;
+            let label = item.url_external;
+            if(!label) {
+                if(instances) {
+                    let instance = instances.filter(instance=>instance.instance_id === item.instance_id).pop();
+                    if(instance) label = instance.hostname;
+                }
+            }
+            if(!label) label = item.filehost_id;  // Fallback
             return {...item, label};
         }) as FilehostListItem[];
         filehostCopy.sort((a, b)=>a.label.localeCompare(b.label));
 
-        console.debug("Filehosts ", filehosts);
         return filehostCopy.map(item=>{
 
             let count = '' as number | string;
@@ -133,7 +141,7 @@ function FileHostList() {
                 <div key={item.filehost_id} className={CONST_CLASSNAME_FILEHOST_ROW}>
                     <Link to={`/coupdoeil2/fileHosting/filehost/${item.filehost_id}`}
                         className='underline col-span-12 lg:col-span-4'>
-                            {item.url_external || item.filehost_id}
+                            {item.label}
                     </Link>
                     <p className='col-span-6 lg:col-span-3'>{status}</p>
                     <p className='col-span-3 lg:col-span-1'>{count}</p>
@@ -142,7 +150,7 @@ function FileHostList() {
                 </div>
             )
         })
-    }, [filehosts]);
+    }, [filehosts, instances]);
 
     if(!filehostElems) return <p>Loading ...</p>;
     return <>{filehostElems}</>;
@@ -153,13 +161,23 @@ const CONST_CLASSNAME_FILECONTROLER_ROW = 'grid grid-cols-12 odd:bg-amber-600 od
 function FileControlerList() {
 
     let filecontrolers = useFilehostStore(state=>state.filecontrolers);
+    let instances = useInstanceStore(state=>state.instances);
 
     let filecontrolersElems = useMemo(()=>{
         if(!filecontrolers) return <p>Loading ...</p>;
         return filecontrolers.map(item=>{
+            let label = null;
+            if(!label) {
+                if(instances) {
+                    let instance = instances.filter(instance=>instance.instance_id === item.instance_id).pop();
+                    if(instance) label = instance.hostname;
+                }
+            }
+            if(!label) label = item.instance_id;  // Fallback
+
             return (
                 <div key={item.instance_id} className={CONST_CLASSNAME_FILECONTROLER_ROW}>
-                    <p className='col-span-7 lg:col-span-5'>{item.instance_id}</p>
+                    <p className='col-span-7 lg:col-span-5'>{label}</p>
                     <ConditionalFormatters.FormatterConditionalDate 
                         value={item.lastUpdate} warn={360} error={1800} className='col-span-5 lg:col-span-7' />
                 </div>
@@ -176,6 +194,7 @@ export function FilehostDropdown(props: {value: string, onChange: Dispatch<strin
     let {value, onChange, className} = props;
 
     let filehosts = useFilehostStore(state=>state.filehosts);
+    let instances = useInstanceStore(state=>state.instances);
 
     let onChangeHandler = useCallback((e: ChangeEvent<HTMLSelectElement>)=>{
         onChange(e.currentTarget.value);
@@ -185,18 +204,25 @@ export function FilehostDropdown(props: {value: string, onChange: Dispatch<strin
         if(!filehosts) return null;
         // Create label and sort
         let filehostCopy = filehosts.filter(item=>!item.deleted).map(item=>{
-            let label = item.url_external || item.filehost_id;
+            let label = item.url_external;
+            if(!label) {
+                if(instances) {
+                    let instance = instances.filter(instance=>instance.instance_id === item.instance_id).pop();
+                    if(instance) label = instance.hostname;
+                }
+            }
+            if(!label) label = item.filehost_id;  // Fallback
             return {...item, label};
         }) as FilehostListItem[];
         filehostCopy.sort((a, b)=>a.label.localeCompare(b.label));
 
         return filehostCopy.map(item=>{
-            let label = item.url_external || item.filehost_id;
+            let label = item.label;
             return (
                 <option key={item.filehost_id} value={item.filehost_id}>{label}</option>
             )
         })
-    }, [filehosts]);
+    }, [filehosts, instances]);
 
     return (
         <select value={value} onChange={onChangeHandler} className={'text-black ' + className}>
@@ -224,10 +250,8 @@ function FilehostConfiguration() {
 
         workers.connection.getFilehostConfiguration()
             .then(response=>{
-                console.debug("Filehost configuration response", response);
                 if(response.configuration) {
                     let defaultFilehost = response.configuration['filehost.default']
-                    console.debug("Default filehost : %O", defaultFilehost)
                     setDefaultFilehost(defaultFilehost);
                 }
             })
