@@ -1,10 +1,11 @@
 import { Link, useOutletContext, useParams } from "react-router-dom";
-import { ServerInstance } from "../workers/connection.worker";
+import { ServerInstance, ServerInstanceApplicationInformation } from "../workers/connection.worker";
 import { MouseEvent, useCallback, useMemo } from "react";
 import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
 import { ToggleSwitch } from "flowbite-react";
 import ActionButton from "../components/ActionButton";
+import useInstanceApplicationStore from "./instanceApplicationsStore";
 
 function InstanceApplications() {
 
@@ -12,6 +13,7 @@ function InstanceApplications() {
     let { instance } = useOutletContext() as {instance: ServerInstance};
     let workers = useWorkers();
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
+    let serverInstanceApplications = useInstanceApplicationStore(state=>state.applications);
 
     let removeHandler = useCallback(async (e: MouseEvent<HTMLButtonElement>) => {
         if(!workers || !ready) throw new Error("Workers not initialized");
@@ -39,7 +41,8 @@ function InstanceApplications() {
     }, [workers, ready, instance]);
 
     let applications = useMemo(()=>{
-        let services = prepareApps(instance);
+        if(!serverInstanceApplications) return [];
+        let services = prepareApps(instance, serverInstanceApplications);
 
         return services.map(item=>{
             let noremove = item.labels?item.labels['noremove']==='true':false;
@@ -62,7 +65,7 @@ function InstanceApplications() {
                 </li>
             )
         })
-    }, [instance, ready, removeHandler, toggleApplication]);
+    }, [instance, serverInstanceApplications, ready, removeHandler, toggleApplication]);
 
     return (
         <>
@@ -82,7 +85,7 @@ function InstanceApplications() {
             <section>
                 <h2 className='text-lg font-bold pt-4'>Applications</h2>
 
-                {(ready && instance)?
+                {(ready && instance && serverInstanceApplications)?
                     <p>{applications.length} applications deployed</p>
                 :
                     <p>Loading</p>
@@ -117,50 +120,42 @@ export type InstanceApp = {
     labels?: {[key: string]: string} | null | undefined,
 };
 
-export function prepareApps(instance: ServerInstance): InstanceApp[] {
+export function prepareApps(instance: ServerInstance, applications: ServerInstanceApplicationInformation): InstanceApp[] {
     let apps = {} as {[name: string]: InstanceApp};
 
-    console.error("FIX ME");
-    return [];
-    // throw new Error('fix me')
-    // if(instance.services) {
-    //     for(let appName of Object.keys(instance.services)) {
-    //         let service = instance.services[appName];
-    //         apps[appName] = {
-    //             name: appName, 
-    //             image: service.image,
-    //             version: service.version,
-    //             docker: {
-    //                 running: service.etat==='running', 
-    //                 preparing: service.etat==='preparing',
-    //                 replicas: service.replicas,
-    //             },
-    //             labels: service.labels,
-    //         }
-    //     }
-    // }
 
-    // if(instance.applications_configurees) {
-    //     for(let app of instance.applications_configurees) {
-    //         let existing = apps[app.nom] || {name: app.nom};
-    //         apps[app.nom] = {...existing, version: app.version};
-    //     }
-    // }
+    for(let appName of Object.keys(applications.services)) {
+        let service = applications.services[appName];
+        apps[appName] = {
+            name: appName, 
+            image: service.image,
+            version: service.version,
+            docker: {
+                running: service.etat==='running', 
+                preparing: service.etat==='preparing',
+                replicas: service.replicas,
+            },
+            labels: service.labels,
+        }
+    }
 
-    // if(instance.webapps) {
-    //     for(let app of instance.webapps) {
-    //         let name = app.name;
-    //         if(name) {
-    //             let existing = apps[name] || {name};
-    //             apps[name] = existing;
-    //         }
-    //     }
-    // }
+    for(let app of applications.configured_applications) {
+        let existing = apps[app.name] || {name: app.name};
+        apps[app.name] = {...existing, version: app.version};
+    }
 
-    // let servicesCopy = [...Object.values(apps)];
-    // servicesCopy.sort((a: InstanceApp, b: InstanceApp)=>{
-    //     return a.name.localeCompare(b.name)
-    // })
+    for(let app of applications.webapps) {
+        let name = app.name;
+        if(name) {
+            let existing = apps[name] || {name};
+            apps[name] = existing;
+        }
+    }
 
-    // return servicesCopy;
+    let servicesCopy = [...Object.values(apps)];
+    servicesCopy.sort((a: InstanceApp, b: InstanceApp)=>{
+        return a.name.localeCompare(b.name)
+    })
+
+    return servicesCopy;
 }

@@ -6,6 +6,7 @@ import { InstanceApp, prepareApps } from "./InstanceApplications";
 import useWorkers, { AppWorkers } from "../workers/workers";
 import useConnectionStore from "../connectionStore";
 import ActionButton from "../components/ActionButton";
+import useInstanceApplicationStore from "./instanceApplicationsStore";
 
 function InstallNewApplication() {
 
@@ -15,6 +16,8 @@ function InstallNewApplication() {
 
     let currentPackages = useInstanceStore(state=>state.applicationCurrentPackages);
     let setApplicationCurrentPackages = useInstanceStore(state=>state.setApplicationCurrentPackages);
+    let serverInstanceApplications = useInstanceApplicationStore(state=>state.applications);
+
     let { instanceId } = useParams();
     let { instance } = useOutletContext() as {instance: ServerInstance};
 
@@ -53,12 +56,12 @@ function InstallNewApplication() {
     },[workers, ready, setApplicationCurrentPackages]);
 
     let applications = useMemo(()=>{
-        if(!currentPackages) return [];
+        if(!currentPackages || !serverInstanceApplications) return [];
 
         let security = instance.security;
         if(!security) return [];  // No security level
 
-        let currentApps = prepareApps(instance);
+        let currentApps = prepareApps(instance, serverInstanceApplications);
 
         // let currentAppNames = new Set(currentApps.map(item=>item.name));
         let currentAppsByName = {} as {[key: string]: InstanceApp};
@@ -109,7 +112,7 @@ function InstallNewApplication() {
                 </li>
             )
         })
-    }, [ready, instance, currentPackages, installHandler, upgradeHandler]);
+    }, [ready, instance, serverInstanceApplications, currentPackages, installHandler, upgradeHandler]);
 
     return (
         <>
