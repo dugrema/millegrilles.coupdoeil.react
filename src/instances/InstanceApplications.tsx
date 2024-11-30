@@ -16,9 +16,9 @@ function InstanceApplications() {
     let removeHandler = useCallback(async (e: MouseEvent<HTMLButtonElement>) => {
         if(!workers || !ready) throw new Error("Workers not initialized");
         let value = e.currentTarget.value;
-        let securite = instance.securite;
-        if(!securite) throw new Error("Instance without security level information");
-        let response = await workers.connection.removeApplication(value, instance.instance_id, securite);
+        let security = instance.security;
+        if(!security) throw new Error("Instance without security level information");
+        let response = await workers.connection.removeApplication(value, instance.instance_id, security);
         if(response.ok !== true) {
             throw new Error('Error removing application: ' + response.err);
         }
@@ -26,7 +26,7 @@ function InstanceApplications() {
 
     let toggleApplication = useCallback((name: string, running: boolean)=>{
         if(!workers || !ready) throw new Error("workers not initialized");
-        let security = instance.securite;
+        let security = instance.security;
         if(!security) throw new Error("No security level on instance");
         // console.debug("Toggle application %s to running?%s", name, running);
         let action = workers.connection.startApplication;
@@ -120,44 +120,47 @@ export type InstanceApp = {
 export function prepareApps(instance: ServerInstance): InstanceApp[] {
     let apps = {} as {[name: string]: InstanceApp};
 
-    if(instance.services) {
-        for(let appName of Object.keys(instance.services)) {
-            let service = instance.services[appName];
-            apps[appName] = {
-                name: appName, 
-                image: service.image,
-                version: service.version,
-                docker: {
-                    running: service.etat==='running', 
-                    preparing: service.etat==='preparing',
-                    replicas: service.replicas,
-                },
-                labels: service.labels,
-            }
-        }
-    }
+    console.error("FIX ME");
+    return [];
+    // throw new Error('fix me')
+    // if(instance.services) {
+    //     for(let appName of Object.keys(instance.services)) {
+    //         let service = instance.services[appName];
+    //         apps[appName] = {
+    //             name: appName, 
+    //             image: service.image,
+    //             version: service.version,
+    //             docker: {
+    //                 running: service.etat==='running', 
+    //                 preparing: service.etat==='preparing',
+    //                 replicas: service.replicas,
+    //             },
+    //             labels: service.labels,
+    //         }
+    //     }
+    // }
 
-    if(instance.applications_configurees) {
-        for(let app of instance.applications_configurees) {
-            let existing = apps[app.nom] || {name: app.nom};
-            apps[app.nom] = {...existing, version: app.version};
-        }
-    }
+    // if(instance.applications_configurees) {
+    //     for(let app of instance.applications_configurees) {
+    //         let existing = apps[app.nom] || {name: app.nom};
+    //         apps[app.nom] = {...existing, version: app.version};
+    //     }
+    // }
 
-    if(instance.webapps) {
-        for(let app of instance.webapps) {
-            let name = app.name;
-            if(name) {
-                let existing = apps[name] || {name};
-                apps[name] = existing;
-            }
-        }
-    }
+    // if(instance.webapps) {
+    //     for(let app of instance.webapps) {
+    //         let name = app.name;
+    //         if(name) {
+    //             let existing = apps[name] || {name};
+    //             apps[name] = existing;
+    //         }
+    //     }
+    // }
 
-    let servicesCopy = [...Object.values(apps)];
-    servicesCopy.sort((a: InstanceApp, b: InstanceApp)=>{
-        return a.name.localeCompare(b.name)
-    })
+    // let servicesCopy = [...Object.values(apps)];
+    // servicesCopy.sort((a: InstanceApp, b: InstanceApp)=>{
+    //     return a.name.localeCompare(b.name)
+    // })
 
-    return servicesCopy;
+    // return servicesCopy;
 }

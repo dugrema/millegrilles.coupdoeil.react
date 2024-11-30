@@ -73,26 +73,47 @@ export type DiskInformation = {
     free: number,
 }
 
-export type ServerInstance = {
-    instance_id: string,
-    applications_configurees: ApplicationConfiguree[],
-    date_presence: number,
-    containers: any,
+// export type ServerInstance = {
+//     instance_id: string,
+//     // applications_configurees: ApplicationConfiguree[],
+//     date_presence: number,
+//     containers: any,
+//     disk?: DiskInformation[],
+//     hostname?: string,
+//     hostnames?: string[],
+//     // fqdn_detecte?: string,
+//     // hostname: string,
+//     // info?: any,
+//     ip?: string,
+//     load_average: number[],
+//     securite?: string,
+//     // services?: any,
+//     system_battery?: any,
+//     system_fans?: any,
+//     system_temperature?: any,
+//     // webapps?: InstanceWebApp[],
+//     filehost_id?: string,
+// }
+
+export type ServerInstancePresenceStatus = {
     disk?: DiskInformation[],
-    domaine?: string,
-    domaines?: string[],
-    fqdn_detecte?: string,
     hostname: string,
-    info?: any,
-    ip_detectee?: string,
-    load_average: number[],
-    securite?: string,
-    services?: any,
+    hostnames?: string[],
+    ip?: string,
+    load_average?: number[],
+    security: string,
     system_battery?: any,
     system_fans?: any,
     system_temperature?: any,
-    webapps?: InstanceWebApp[],
-    filehost_id?: string,
+}
+
+export type ServerInstancePresenceEventSubscriptionMessage = SubscriptionMessage & {
+    message: messageStruct.MilleGrillesMessage & {timestamp: number, status: ServerInstancePresenceStatus},
+};
+
+export type ServerInstance = ServerInstancePresenceStatus & {
+    instance_id: string,
+    timestamp: number,
 }
 
 export type ApplicationConfiguree = {
@@ -293,9 +314,14 @@ export class AppsConnectionWorker extends ConnectionWorker {
 
     // Instances
 
+    // async getInstanceList() {
+    //     if(!this.connection) throw new Error("Connection is not initialized");
+    //     return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'listeNoeuds') as MessageResponse & {resultats?: ServerInstance[]};
+    // }
+
     async getInstanceList() {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'listeNoeuds') as MessageResponse & {resultats?: ServerInstance[]};
+        return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'requestServerInstances') as MessageResponse & {server_instances?: ServerInstance[]};
     }
 
     async deleteInstance(instanceId: string) {

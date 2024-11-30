@@ -8,7 +8,7 @@ import useInstanceStore from './instanceStore';
 import useConnectionStore from '../connectionStore';
 import useWorkers, { AppWorkers } from '../workers/workers';
 import { useEffect, useMemo } from 'react';
-import { InstanceEventCallback, ServerInstance } from '../workers/connection.worker';
+import { ServerInstance, ServerInstancePresenceEventSubscriptionMessage } from '../workers/connection.worker';
 
 
 function Instances() {
@@ -48,7 +48,11 @@ export function InstanceEventHandler() {
         // Load domains
         workers.connection.getInstanceList()
             .then(response=>{
-                if(response.resultats) setInstances(response.resultats)
+                if(response.ok !== true) {
+                    console.error("Error loading domain list: %O", response);
+                    return;
+                }
+                if(response.server_instances) setInstances(response.server_instances)
             })
             .catch(err=>console.error("Error loading domain list", err));
 
@@ -75,27 +79,25 @@ export function InstanceEventHandler() {
 }
 
 async function processEvent(workers: AppWorkers | null, event: SubscriptionMessage, updateInstance: (update: ServerInstance)=>void) {
-    let eventInstance = event as InstanceEventCallback;
+    let content = event.message.content;
+    if(!content) throw new Error("message .content is missing");
+    let instanceId = content?.__certificate?.extensions?.commonName;
+    let original = content['__original'];
+    let timestamp = original?.estampille;
+
+    if(!instanceId) return;  // No instance id
+
     let action = event.routingKey.split('.').pop();
-    console.debug("Instance event", eventInstance);
-    if(action === 'presence') {
-        processEventPresenceDomaine(eventInstance, updateInstance);
+    if(action === 'presenceInstance') {
+        if(!timestamp) throw new Error("Missing timestamp from message");
+        processEventPresenceInstance(instanceId, timestamp, event as ServerInstancePresenceEventSubscriptionMessage, updateInstance);
     }
-    // } else if(action === 'regeneration') {
-    //     processEventRebuildDomain(eventDomains, updateDomain);
-    // }
 }
 
-
-async function processEventPresenceDomaine(eventInstance: InstanceEventCallback, updateInstance: (update: ServerInstance)=>void) {
-    // @ts-ignore
-    let message = eventInstance.message as ServerInstance;
-    // @ts-ignore
-    let presence = message.content['__original'].estampille;
-    // @ts-ignore
-    message.date_presence = presence;
-    // @ts-ignore
-    delete message.content;
-    console.debug("Instance update ", message)
-    updateInstance(message);
+async function processEventPresenceInstance(instance_id: string, timestamp: number, eventInstance: ServerInstancePresenceEventSubscriptionMessage, 
+    updateInstance: (update: ServerInstance)=>void) 
+{
+    let instanceStatus = eventInstance.message.status;
+    let serverInstance = {instance_id, timestamp, ...instanceStatus};
+    updateInstance(serverInstance);
 }

@@ -100,8 +100,8 @@ function ApplicationPasswords(props: {instance: ServerInstance | null}) {
     }, [secrets, secretCopied, copyClipboard]);
 
     useEffect(()=>{
-        if(!workers || !ready || !instance?.securite) return // Workers not initialized;
-        let security = instance.securite;
+        if(!workers || !ready || !instance?.security) return // Workers not initialized;
+        let security = instance.security;
         if(!security) throw new Error("instance security is not defined");
 
         workers.connection.getApplicationPasswords(instance.instance_id, security)

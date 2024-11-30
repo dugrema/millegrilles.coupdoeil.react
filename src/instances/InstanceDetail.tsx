@@ -25,7 +25,7 @@ function InstanceDetail() {
 
             <section className='grid grid-cols-2 pt-2 pb-4'>
                 <p>Last presence</p>
-                <ConditionalFormatters.FormatterConditionalDate value={instance?.date_presence} warn={360} error={1800} />
+                <ConditionalFormatters.FormatterConditionalDate value={instance?.timestamp} warn={60} error={600} />
             </section>
 
             <nav>

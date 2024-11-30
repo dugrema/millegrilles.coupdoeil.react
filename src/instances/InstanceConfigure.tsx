@@ -63,7 +63,8 @@ function ConfigureFileManager() {
                 if(!label) {
                     let instance = instances?.filter(innerItem=>innerItem.instance_id === item.instance_id).pop();
                     if(instance) {
-                        label = instance.domaine || label;
+                        throw new Error('fix me')
+                        // label = instance.domaine || label;
                     } else {
                         label = item.filehost_id;
                     }
@@ -109,11 +110,12 @@ function ConfigureFileManager() {
         if(!currentInstance) return;
         if(selected !== null) return;
         // Init
-        if(currentInstance.filehost_id) {
-            setSelected(currentInstance.filehost_id);
-        } else {
-            setSelected('');
-        }
+        throw new Error('fix me')
+        // if(currentInstance.filehost_id) {
+        //     setSelected(currentInstance.filehost_id);
+        // } else {
+        //     setSelected('');
+        // }
     }, [currentInstance, instances, selected, setSelected]);
 
     return (

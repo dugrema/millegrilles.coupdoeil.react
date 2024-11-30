@@ -67,8 +67,8 @@ function ShowList() {
                     <Link className='sm:col-span-2 underline font-bold' to={`/coupdoeil2/instances/${item.instance_id}`}>
                         {item.hostname || item.instance_id}
                     </Link>
-                    <ConditionalFormatters.FormatterConditionalDate value={item.date_presence} warn={360} error={1800} />
-                    <p className='pb-2 sm:pb-0'>{item.securite}</p>
+                    <ConditionalFormatters.FormatterConditionalDate value={item.timestamp} warn={60} error={600} />
+                    <p className='pb-2 sm:pb-0'>{item.security}</p>
                 </React.Fragment>
             )
         });

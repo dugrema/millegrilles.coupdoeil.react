@@ -21,18 +21,18 @@ function InstallNewApplication() {
     let installHandler = useCallback(async (e: MouseEvent<HTMLButtonElement>) => {
         if(!ready || !workers) throw new Error('workers not initialized');
         if(!instanceId) throw new Error("InstanceId null");
-        if(!instance || !instance.securite) throw new Error("Missing instance security level");
+        if(!instance || !instance.security) throw new Error("Missing instance security level");
         let value = e.currentTarget.value;
-        let response = await installApplication(workers, instanceId, value, instance.securite);
+        let response = await installApplication(workers, instanceId, value, instance.security);
         if(response.ok !== true) throw new Error("Error installing application: " + response.err);
     }, [workers, ready, instanceId, instance]);
 
     let upgradeHandler = useCallback(async (e: MouseEvent<HTMLButtonElement>) => {
         if(!ready || !workers) throw new Error('workers not initialized');
         if(!instanceId) throw new Error("InstanceId null");
-        if(!instance || !instance.securite) throw new Error("Missing instance security level");
+        if(!instance || !instance.security) throw new Error("Missing instance security level");
         let value = e.currentTarget.value;
-        let response = await upgradeApplication(workers, instanceId, value, instance.securite);
+        let response = await upgradeApplication(workers, instanceId, value, instance.security);
         if(response.ok !== true) throw new Error("Error upgrading application: " + response.err);
     }, [workers, ready, instanceId, instance]);
 
@@ -55,7 +55,7 @@ function InstallNewApplication() {
     let applications = useMemo(()=>{
         if(!currentPackages) return [];
 
-        let security = instance.securite;
+        let security = instance.security;
         if(!security) return [];  // No security level
 
         let currentApps = prepareApps(instance);

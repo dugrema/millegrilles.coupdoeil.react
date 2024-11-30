@@ -136,12 +136,13 @@ function DomainItem(props: DomainItemProps) {
         if(!instances || !value.instance_id) return '';
         let instance = instances.filter(item=>item.instance_id === value.instance_id).pop();
         if(instance) {
-            let labelSplit = instance.hostname.split('.');
-            // Split the first domain value from the hostname. Allows displaying on 2 lines.
-            if(labelSplit.length > 1) {
-                return labelSplit[0] + ' .' + labelSplit.slice(1).join('.')
-            }
-            return instance.hostname;
+            throw new Error("fix me")
+            // let labelSplit = instance.hostname.split('.');
+            // // Split the first domain value from the hostname. Allows displaying on 2 lines.
+            // if(labelSplit.length > 1) {
+            //     return labelSplit[0] + ' .' + labelSplit.slice(1).join('.')
+            // }
+            // return instance.hostname;
         }
         return value.instance_id;
     }, [instances]);
