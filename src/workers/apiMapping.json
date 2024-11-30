@@ -13,6 +13,7 @@
         {"domain": "CoreMaitreDesComptes", "action": "getCsrRecoveryParcode", "exchange": "2.prive"},
         {"domain": "CoreTopologie", "action": "listeDomaines"},
         {"domain": "CoreTopologie", "action": "requestServerInstances"},
+        {"domain": "CoreTopologie", "action": "requestServerInstanceApplications"},
         {"domain": "CoreTopologie", "action": "getConfigurationFichiers"},
         {"domain": "CoreTopologie", "action": "getFilehosts", "exchange": "1.public"},
         {"domain": "CoreTopologie", "action": "getFilecontrolers", "exchange": "1.public"},

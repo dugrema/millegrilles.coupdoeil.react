@@ -73,28 +73,6 @@ export type DiskInformation = {
     free: number,
 }
 
-// export type ServerInstance = {
-//     instance_id: string,
-//     // applications_configurees: ApplicationConfiguree[],
-//     date_presence: number,
-//     containers: any,
-//     disk?: DiskInformation[],
-//     hostname?: string,
-//     hostnames?: string[],
-//     // fqdn_detecte?: string,
-//     // hostname: string,
-//     // info?: any,
-//     ip?: string,
-//     load_average: number[],
-//     securite?: string,
-//     // services?: any,
-//     system_battery?: any,
-//     system_fans?: any,
-//     system_temperature?: any,
-//     // webapps?: InstanceWebApp[],
-//     filehost_id?: string,
-// }
-
 export type ServerInstancePresenceStatus = {
     disk?: DiskInformation[],
     hostname: string,
@@ -115,6 +93,61 @@ export type ServerInstance = ServerInstancePresenceStatus & {
     instance_id: string,
     timestamp: number,
 }
+
+export type ServerInstanceConfiguredApplication = {name: string, version: string};
+
+export type ServerInstanceContainer = {
+    instance_id?: string,
+    service_name?: string,
+    creation?: string,
+    dead?: boolean,
+    etat: string,
+    finished_at: string,
+    labels?: {[key: string]: string},
+    restart_count?: number,
+    running?: boolean,
+};
+
+export type ServerInstanceService = {
+    instance_id?: string,
+    service_name?: string,
+    creation_service?: string,
+    etat: string,
+    image: string,
+    labels: {[key: string]: string},
+    maj_service?: string,
+    message_tache?: string,
+    replicas?: number,
+    version?: string,
+};
+
+export type ServerInstanceWebapp = {
+    name: string,
+    securite: string,
+    url?: string,
+    labels: {[language: string]: {[property: string]: string}}
+}
+
+export type ServerInstanceApplicationInformation = {
+    configured_applications: ServerInstanceConfiguredApplication[],
+    containers: {[name: string]: ServerInstanceContainer},
+    services: {[name: string]: ServerInstanceService},
+    webapps: ServerInstanceWebapp[],
+}
+
+export type ServerInstanceApplicationMessage = MessageResponse & ServerInstanceApplicationInformation & {
+    instance_id: string,
+};
+
+export type ServerInstanceApplicationSubscriptionMessage = SubscriptionMessage & {
+    message: {
+        complete: boolean,
+        configured_applications: ServerInstanceConfiguredApplication[],
+        containers: {[name: string]: ServerInstanceContainer},
+        services: {[name: string]: ServerInstanceService},
+        webapps: ServerInstanceWebapp[],
+    }
+};
 
 export type ApplicationConfiguree = {
     nom: string,
@@ -329,6 +362,11 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendCommand({instance_id: instanceId}, DOMAINE_CORETOPOLOGIE, 'supprimerInstance');
     }
 
+    async getInstanceApplicationsList(instanceId: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({instance_id: instanceId}, DOMAINE_CORETOPOLOGIE, 'requestServerInstanceApplications') as Promise<ServerInstanceApplicationMessage>;
+    }
+
     async generateSatelliteInstanceCertificate(command: GenerateCertificateInstanceCommand) {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendCommand(command, DOMAINE_CORE_PKI, 'signerCsr') as Promise<GenerateCertificateInstanceResponse>;
@@ -372,6 +410,16 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async unsubscribeKeymasterEvents(cb: SubscriptionCallback): Promise<void> {
         if(!this.connection) throw new Error("Connection is not initialized");
         return await this.connection.unsubscribe('keymasterRecoveryEvents', cb);
+    }
+
+    async subscribeInstanceApplicationEvents(cb: SubscriptionCallback): Promise<void> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return await this.connection.subscribe('instanceApplicationsDomainsEvents', cb);
+    }
+
+    async unsubscribeInstanceApplicationEvents(cb: SubscriptionCallback): Promise<void> {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return await this.connection.unsubscribe('instanceApplicationsDomainsEvents', cb);
     }
 
     // Domains
