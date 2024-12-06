@@ -20,9 +20,9 @@
         {"domain": "CoreTopologie", "action": "getFilecontrolers", "exchange": "1.public"},
         {"domain": "CoreTopologie", "action": "getFilehostConfiguration"},
         {"domain": "CoreTopologie", "action": "getDomainBackupVersions", "exchange": "1.public"},
-        {"domain": "filecontroler", "action": "domainesBackupV2", "exchange": "1.public"},
-        {"domain": "filecontroler", "action": "domaineVersionBackupV2", "exchange": "1.public"},
-        {"domain": "instance", "action": "getPasswords", "exchanges": ["1.public", "2.prive", "3.protege"]},
+        {"domain": "filecontroler", "action": "domainesBackupV2", "exchange": "1.public", "roles": ["filecontroler"]},
+        {"domain": "filecontroler", "action": "domaineVersionBackupV2", "exchange": "1.public", "roles": ["filecontroler"]},
+        {"domain": "instance", "action": "getPasswords", "exchanges": ["1.public", "2.prive", "3.protege"], "roles": ["instance"]},
         {"domain": "MaitreDesCles", "action": "compterClesNonDechiffrables"},
         {"domain": "MaitreDesCles", "action": "clesNonDechiffrablesV2"}
     ],
@@ -49,14 +49,12 @@
         {"domain": "MaitreDesCles", "action": "ajouterCleDomaines", "exchange": "1.public"},
         {"domain": "MaitreDesCles", "action": "querySymmetricKeyRepair"},
         {"domain": "MaitreDesCles", "action": "cleSymmetrique"},
-        {"domain": "fichiers", "action": "declencherSync", "exchange": "2.prive"},
-        {"domain": "fichiers", "action": "resetTransfertsSecondaires", "exchange": "2.prive"},
-        {"domain": "instance", "action": "installerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},
-        {"domain": "instance", "action": "supprimerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},
-        {"domain": "instance", "action": "demarrerApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},
-        {"domain": "instance", "action": "arreterApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},
-        {"domain": "instance", "action": "upgradeApplication", "exchanges": ["1.public", "2.prive", "3.protege"]},
-        {"domain": "instance", "action": "transmettreCatalogues"}
+        {"domain": "instance", "action": "installerApplication", "exchanges": ["1.public", "2.prive", "3.protege"], "roles": ["instance"]},
+        {"domain": "instance", "action": "supprimerApplication", "exchanges": ["1.public", "2.prive", "3.protege"], "roles": ["instance"]},
+        {"domain": "instance", "action": "demarrerApplication", "exchanges": ["1.public", "2.prive", "3.protege"], "roles": ["instance"]},
+        {"domain": "instance", "action": "arreterApplication", "exchanges": ["1.public", "2.prive", "3.protege"], "roles": ["instance"]},
+        {"domain": "instance", "action": "upgradeApplication", "exchanges": ["1.public", "2.prive", "3.protege"], "roles": ["instance"]},
+        {"domain": "instance", "action": "transmettreCatalogues", "roles": ["instance"]}
     ],
     "subscriptions": {
         "domainEvents": {"exchanges": ["3.protege"], "routingKeys": [
