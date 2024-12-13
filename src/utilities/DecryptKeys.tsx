@@ -89,7 +89,18 @@ export async function decryptNonDecryptableKeys(workers: AppWorkers, masterKey: 
         let reEncryptedKeys = await workers.encryption.encryptMessageMgs4ToBase64(commandToEncrypt, ['MaitreDesCles']);
 
         let nowait = batchCount % 10 !== 0;  // Sync every n batch. Avoids overloading the Q.
-        await workers.connection.sendEncryptedKeyBatch(reEncryptedKeys, nowait);
+        for(let i=0; i<3; i++) {
+            try {
+                await workers.connection.sendEncryptedKeyBatch(reEncryptedKeys, nowait);
+                break;  // Success
+            } catch(err) {
+                if(nowait) throw err;  // This is not a timeout
+                
+                // Something went wrong, likely a timeout. Retry.
+                if(i===2) { throw err; } 
+                else { console.warn("Batch error (batch: %d. attempt: %d)", batchCount, i, err); }
+            }
+        }
         batchCount++;
 
         progressCallback({total: keyCount, current: keyCounter, done: false});

@@ -489,7 +489,7 @@ export class AppsConnectionWorker extends ConnectionWorker {
 
     async sendEncryptedKeyBatch(keyBatch: encryption.EncryptedData, nowait: boolean) {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendCommand({cles: keyBatch}, DOMAINE_MAITREDESCLES, 'rechiffrerBatch', {nowait});
+        return this.connection.sendCommand({cles: keyBatch}, DOMAINE_MAITREDESCLES, 'rechiffrerBatch', {nowait, timeout: 30_000});
     }
 
     async subscribeDomainEvents(cb: SubscriptionCallback): Promise<void> {
