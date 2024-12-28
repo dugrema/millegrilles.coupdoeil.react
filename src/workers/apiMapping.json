@@ -23,6 +23,7 @@
         {"domain": "filecontroler", "action": "domainesBackupV2", "exchange": "1.public", "roles": ["filecontroler"]},
         {"domain": "filecontroler", "action": "domaineVersionBackupV2", "exchange": "1.public", "roles": ["filecontroler"]},
         {"domain": "instance", "action": "getPasswords", "exchanges": ["1.public", "2.prive", "3.protege"], "roles": ["instance"]},
+        {"domain": "instance", "action": "configurationAcme", "exchange": "1.public", "roles": ["instance"]},
         {"domain": "MaitreDesCles", "action": "compterClesNonDechiffrables"},
         {"domain": "MaitreDesCles", "action": "clesNonDechiffrablesV2"}
     ],
@@ -54,7 +55,9 @@
         {"domain": "instance", "action": "demarrerApplication", "exchanges": ["1.public", "2.prive", "3.protege"], "roles": ["instance"]},
         {"domain": "instance", "action": "arreterApplication", "exchanges": ["1.public", "2.prive", "3.protege"], "roles": ["instance"]},
         {"domain": "instance", "action": "upgradeApplication", "exchanges": ["1.public", "2.prive", "3.protege"], "roles": ["instance"]},
-        {"domain": "instance", "action": "transmettreCatalogues", "roles": ["instance"]}
+        {"domain": "instance", "action": "transmettreCatalogues", "roles": ["instance"]},
+        {"domain": "instance", "action": "updateAcmeConfiguration", "exchange": "1.public", "roles": ["instance"]},
+        {"domain": "instance", "action": "issueAcmeCertificate", "exchange": "1.public", "roles": ["instance"]}
     ],
     "subscriptions": {
         "domainEvents": {"exchanges": ["3.protege"], "routingKeys": [

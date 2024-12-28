@@ -340,6 +340,9 @@ export type KeymasterRecoveryRequestCallback = SubscriptionMessage & {
     message: messageStruct.MilleGrillesMessage & KeymasterRecoveryRequest
 };
 
+export type AcmeConfiguration = {email?: string};
+export type AcmeConfigurationResponse = MessageResponse & AcmeConfiguration;
+
 export class AppsConnectionWorker extends ConnectionWorker {
 
     async authenticate(reconnect?: boolean) {
@@ -745,7 +748,30 @@ export class AppsConnectionWorker extends ConnectionWorker {
         let response = await axios({method: 'POST', data: authenticationMessage, url: authenticateUrl.href});
         if(response.status !== 200) throw new Error("Access denied")        
     }
-    
+
+    async getAcmeConfiguration(instanceId: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest(
+            {}, DOMAINE_INSTANCE, 'configurationAcme', 
+            {partition: instanceId, role: 'instance'}
+        ) as Promise<AcmeConfigurationResponse>;
+    }
+
+    async updateAcmeConfiguration(instanceId: string, configuration: AcmeConfiguration) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand(
+            configuration, DOMAINE_INSTANCE, 'updateAcmeConfiguration', 
+            {partition: instanceId, role: 'instance'}
+        ) as Promise<AcmeConfigurationResponse>;
+    }
+
+    async issueAcmeCertificate(instanceId: string, configuration: AcmeConfiguration) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand(
+            configuration, DOMAINE_INSTANCE, 'issueAcmeCertificate', 
+            {partition: instanceId, role: 'instance', timeout: 180_000}
+        ) as Promise<AcmeConfigurationResponse>;
+    }
 }
 
 var worker = new AppsConnectionWorker();

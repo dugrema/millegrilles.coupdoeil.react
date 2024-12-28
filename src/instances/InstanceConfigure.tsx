@@ -25,10 +25,12 @@ function InstanceConfigure() {
         <>
             <ConfigureFileManager />
 
+            <WebCertificate />
+
             <section className='pt-10'>
                 <h2 className='text-lg font-bold pt-4'>Danger zone</h2>
                 <ActionButton onClick={deleteInstanceHandler} disabled={!ready || !instanceId}>
-                        Delete instance
+                    Delete instance
                 </ActionButton>
             </section>
         </>
@@ -127,7 +129,63 @@ function ConfigureFileManager() {
                     {filehostsOptions}
                 </select>
             </div>
-            <ActionButton onClick={saveInstanceFilehostHandler} disabled={!ready} mainButton={true}>Save</ActionButton>
+            <ActionButton onClick={saveInstanceFilehostHandler} disabled={!ready} mainButton={true}>Save filehost</ActionButton>
         </section>
-)
+    )
+}
+
+function WebCertificate() {
+
+    let { instanceId } = useParams();
+    let workers = useWorkers();
+    let ready = useConnectionStore(state=>state.connectionAuthenticated);
+
+    let [email, setEmail] = useState('');
+    let emailOnChange = useCallback((e: ChangeEvent<HTMLInputElement>)=>{
+        let value = e.currentTarget.value;
+        setEmail(value);
+    }, [setEmail]);
+
+    let saveEmailHandler = useCallback(async () => {
+        if(!workers || !ready || !instanceId) throw new Error('workers/instanceId not initialized');
+        let response = await workers.connection.updateAcmeConfiguration(instanceId, {email});
+        if(!response.ok) throw new Error(`Error saving acme configuration: ${response.err}`);
+    }, [workers, ready, instanceId, email]);
+
+    let renewCertificateHandler = useCallback(async () => {
+        if(!workers || !ready || !instanceId) throw new Error('workers/instanceId not initialized');
+        if(!email) throw new Error('Email must be provided');
+        let response = await workers.connection.issueAcmeCertificate(instanceId, {email});
+        if(!response.ok) throw new Error(`Error issuing new acme certificate: ${response.err}`);
+    }, [workers, ready, instanceId, email]);
+
+    useEffect(()=>{
+        if(!workers || !ready || !instanceId) return;
+        console.debug("Loading ACME account email");
+        workers.connection.getAcmeConfiguration(instanceId)
+            .then(configuration=>{
+                console.debug("ACME configuration: ", configuration);
+                if(configuration.email) setEmail(configuration.email);
+            })
+            .catch(err=>console.error("Error loading ACME configuration", err));
+    }, [workers, ready, instanceId, setEmail]);
+
+    return (
+        <section className='pt-4'>
+            <h2 className='text-lg font-bold pt-4'>Web certificate</h2>
+
+            <p>
+                The web certificate is handled by <a href="https://letsencrypt.org/" target='_blank' className="underline font-bold">Let's Encrypt</a>. 
+                It's free so pay up. The price is an email for them to spam.
+            </p>
+
+            <div className="grid grid-cols-3">
+                <label>Email</label>
+                <input type="text" value={email} onChange={emailOnChange} 
+                    className='text-black' />                    
+            </div>
+            <ActionButton onClick={renewCertificateHandler}>Get new</ActionButton>
+            <ActionButton onClick={saveEmailHandler}>Save email</ActionButton>
+        </section>
+    )
 }
