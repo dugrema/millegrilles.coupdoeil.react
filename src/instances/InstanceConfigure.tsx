@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import ActionButton from "../components/ActionButton";
@@ -47,11 +47,6 @@ function ConfigureFileManager() {
     // let [fileManagers, setFileManagers] = useState(null as FileManager[] | null);;
     let [filehosts, setFilehosts] = useState(null as FileHost[] | null);;
     let instances = useInstanceStore(state=>state.instances);
-    
-    let currentInstance = useMemo(()=>{
-        if(!instances || !instanceId) return null;
-        return instances.filter(item=>item.instance_id===instanceId).pop();
-    }, [instances, instanceId]);
 
     let [selected, setSelected] = useState(null as string | null);
     let onChangeHandler = useCallback((e: ChangeEvent<HTMLSelectElement>)=>setSelected(e.currentTarget.value), [setSelected]);
@@ -140,24 +135,53 @@ function WebCertificate() {
     let workers = useWorkers();
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
 
+    let instances = useInstanceStore(state=>state.instances);
+
+    let currentInstance = useMemo(()=>{
+        if(!instances || !instanceId) return null;
+        return instances.filter(item=>item.instance_id===instanceId).pop();
+    }, [instances, instanceId]);
+
     let [email, setEmail] = useState('');
     let emailOnChange = useCallback((e: ChangeEvent<HTMLInputElement>)=>{
         let value = e.currentTarget.value;
         setEmail(value);
     }, [setEmail]);
+    let [additionalDomains, setAdditionalDomains] = useState(null as string[] | null);
+    let [additionalDomainString, setAdditionalDomainString] = useState('');
+    let additionalDomainOnChange = useCallback((e: ChangeEvent<HTMLInputElement>)=>{
+        let value = e.currentTarget.value;
+        setAdditionalDomainString(value);
+    }, [setAdditionalDomainString]);
+    let addDomainHandler = useCallback(async ()=>{
+        console.debug("Add domain ", additionalDomainString);
+        if(!additionalDomainString) throw new Error('Invalid domain name (empty)');
+        let additionalDomainsUpdated = additionalDomains?[...additionalDomains]:[];
+        additionalDomainsUpdated.push(additionalDomainString);
+        setAdditionalDomainString('');
+        setAdditionalDomains(additionalDomainsUpdated);
+    }, [additionalDomainString, setAdditionalDomainString, additionalDomains, setAdditionalDomains])
+    let removeDomainHandler = useCallback((e: MouseEvent<HTMLButtonElement>) => {
+        if(!additionalDomains) return;  // Nothing to do
+        let value = e.currentTarget.value;
+        console.debug("Remove domain ", value);
+        let additionalDomainsUpdate = additionalDomains.filter(item=>item!==value);
+        setAdditionalDomains(additionalDomainsUpdate);
+    }, [additionalDomains, setAdditionalDomains]);
 
-    let saveEmailHandler = useCallback(async () => {
+    let saveConfigurationHandler = useCallback(async () => {
         if(!workers || !ready || !instanceId) throw new Error('workers/instanceId not initialized');
-        let response = await workers.connection.updateAcmeConfiguration(instanceId, {email});
+        let response = await workers.connection.updateAcmeConfiguration(instanceId, {email, additionalDomains});
         if(!response.ok) throw new Error(`Error saving acme configuration: ${response.err}`);
-    }, [workers, ready, instanceId, email]);
+    }, [workers, ready, instanceId, email, additionalDomains]);
 
     let renewCertificateHandler = useCallback(async () => {
         if(!workers || !ready || !instanceId) throw new Error('workers/instanceId not initialized');
         if(!email) throw new Error('Email must be provided');
-        let response = await workers.connection.issueAcmeCertificate(instanceId, {email});
+        if(additionalDomainString) throw new Error('Save additional domain first');
+        let response = await workers.connection.issueAcmeCertificate(instanceId, {email, additionalDomains});
         if(!response.ok) throw new Error(`Error issuing new acme certificate: ${response.err}`);
-    }, [workers, ready, instanceId, email]);
+    }, [additionalDomainString, workers, ready, instanceId, email, additionalDomains]);
 
     useEffect(()=>{
         if(!workers || !ready || !instanceId) return;
@@ -166,9 +190,10 @@ function WebCertificate() {
             .then(configuration=>{
                 console.debug("ACME configuration: ", configuration);
                 if(configuration.email) setEmail(configuration.email);
+                if(configuration.additionalDomains) setAdditionalDomains(configuration.additionalDomains);
             })
             .catch(err=>console.error("Error loading ACME configuration", err));
-    }, [workers, ready, instanceId, setEmail]);
+    }, [workers, ready, instanceId, setEmail, setAdditionalDomains]);
 
     return (
         <section className='pt-4'>
@@ -184,8 +209,44 @@ function WebCertificate() {
                 <input type="text" value={email} onChange={emailOnChange} 
                     className='text-black' />                    
             </div>
+            <div className="grid grid-cols-3 pt-2">
+                <p>Domain</p>
+                <p>{currentInstance?.hostname}</p>
+            </div>
+            <AdditionalDomainList domains={additionalDomains} remove={removeDomainHandler} />
+            <div className="grid grid-cols-3">
+                <label>Additional domain</label>
+                <input type="text" value={additionalDomainString} onChange={additionalDomainOnChange} 
+                    className='text-black' />
+                <div className='pl-2'>
+                    <ActionButton onClick={addDomainHandler}>Add</ActionButton>
+                </div>
+            </div>
+            <ActionButton onClick={saveConfigurationHandler}>Save</ActionButton>
             <ActionButton onClick={renewCertificateHandler}>Get new</ActionButton>
-            <ActionButton onClick={saveEmailHandler}>Save email</ActionButton>
         </section>
     )
+}
+
+function AdditionalDomainList(props: {domains: string[] | null, remove: (e: MouseEvent<HTMLButtonElement>)=>void}) {
+    if(!props.domains) return <></>;
+
+    let mappedDomains = props.domains.map(item=>{
+        return (
+            <div key={item}>
+                <div className="grid grid-cols-3 pt-2">
+                    <div></div>
+                    <p>{item}</p>
+                    <div className='pl-2'>
+                        <button onClick={props.remove} value={item}
+                            className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                                Remove
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )
+    });
+
+    return <>{mappedDomains}</>;
 }

@@ -340,7 +340,7 @@ export type KeymasterRecoveryRequestCallback = SubscriptionMessage & {
     message: messageStruct.MilleGrillesMessage & KeymasterRecoveryRequest
 };
 
-export type AcmeConfiguration = {email?: string};
+export type AcmeConfiguration = {email?: string, additionalDomains?: string[] | null};
 export type AcmeConfigurationResponse = MessageResponse & AcmeConfiguration;
 
 export class AppsConnectionWorker extends ConnectionWorker {
