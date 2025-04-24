@@ -34,6 +34,12 @@ function FileHostingList() {
         if(response.ok !== true) throw new Error('Error resetting visits: ' + response.err);
     }, [ready, workers]);
 
+    const claimAllHandler = useCallback(async () =>{
+        if(!ready || !workers) throw new Error("Workers not initialized");
+        let response = await workers.connection.claimAllFiles();
+        if(response.ok !== true) throw new Error('Error resetting visits: ' + response.err);
+    }, [ready, workers]);
+
     return (
         <>
             <Link to='/coupdoeil2'
@@ -51,6 +57,7 @@ function FileHostingList() {
                 <ActionButton onClick={reindexHandler} disabled={!ready}>Reindex</ActionButton>
                 <ActionButton onClick={resetTransfersHandler} disabled={!ready}>Reset transfers</ActionButton>
                 <ActionButton onClick={resetVisitsHandler} disabled={!ready}>Reset visits/claims</ActionButton>
+                <ActionButton onClick={claimAllHandler} disabled={!ready}>Claim all</ActionButton>
 
             </section>
 

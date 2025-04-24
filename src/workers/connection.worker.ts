@@ -703,6 +703,11 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendCommand({}, DOMAINE_CORETOPOLOGIE, 'resetVisitsClaims');
     }
 
+    async claimAllFiles() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({}, DOMAINE_GROSFICHIERS, 'claimAllFiles');
+    }
+
     async resetTransfers() {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendCommand({}, DOMAINE_CORETOPOLOGIE, 'resetTransfers');
