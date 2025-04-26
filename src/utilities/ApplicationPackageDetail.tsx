@@ -1,11 +1,10 @@
 import { Link, useParams } from "react-router-dom";
-import HeaderMenu from "../Menu";
-import Footer from "../Footer";
 import useConnectionStore from "../connectionStore";
-import { useEffect, useMemo, useState } from "react";
+import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import useWorkers from "../workers/workers";
 import { ApplicationPackage } from "../workers/connection.worker";
 import { preparePackages } from "./ApplicationPackageList";
+import ActionButton from "../components/ActionButton";
 
 function ApplicationPackageDetail() {
 
@@ -14,19 +13,33 @@ function ApplicationPackageDetail() {
     let workers = useWorkers();
     let ready = useConnectionStore(state=>state.connectionAuthenticated);
 
+    const [currentVersion, setCurrentVersion] = useState('');
     let [versions, setVersions] = useState(null as ApplicationPackage[] | null);
+
+    const changeVersionHandler = useCallback(async (e: MouseEvent<HTMLButtonElement>)=>{
+        if(!workers || !ready) throw new Error('workers not initialized');
+        if(!packageName) throw new Error("Package name not provided");
+        const version = e.currentTarget.value;
+        console.debug("Changing package version to ", version);
+        const response = await workers.connection.setPackageVersion(packageName, version);
+        if(!response.ok) throw new Error("Error changing version: " + response.err);
+    }, [workers, ready, packageName, setCurrentVersion]);
 
     useEffect(()=>{
         if(!workers || !ready || !packageName) return;
         workers.connection.getPackageVersions(packageName)
             .then(response=>{
+                console.debug("Package response", response);
                 if(response.ok !== true) console.error("Error loading package versions: ", response.err);
-                else if(response.resultats) setVersions(response.resultats);
+                else if(response.resultats) {
+                    setVersions(response.resultats);
+                    setCurrentVersion(response.current_version || '');
+                }
                 else console.error("No results received");
             })
             .catch(err=>console.error("Error loading package versions", err));
 
-    }, [workers, ready, packageName]);
+    }, [workers, ready, packageName, setVersions, setCurrentVersion]);
 
     return (
         <>
@@ -35,18 +48,20 @@ function ApplicationPackageDetail() {
                     Back
             </Link>
 
-            <h1 className='text-xl font-bold pt-4'>Application Package {packageName}</h1>
+            <h1 className='text-xl font-bold py-4'>Application Package {packageName}</h1>
 
-            <ListPackageVersions value={versions} />
+            <ListPackageVersions value={versions} version={currentVersion} onChange={changeVersionHandler} />
         </>
     )
 }
 
 export default ApplicationPackageDetail;
 
-function ListPackageVersions(props: {value: ApplicationPackage[] | null}) {
+function ListPackageVersions(props: {value: ApplicationPackage[] | null, version: string, onChange: (version: MouseEvent<HTMLButtonElement>)=>Promise<void>}) {
 
-    let { value } = props;
+    let { value, version, onChange } = props;
+
+    let ready = useConnectionStore(state=>state.connectionAuthenticated);
 
     let rows = useMemo(()=>{
         if(!value) return [];
@@ -68,11 +83,15 @@ function ListPackageVersions(props: {value: ApplicationPackage[] | null}) {
 
             return (
                 <li key={item.version} className='grid grid-cols-2 md:grid-cols-6'>
-                    <p>{item.version}</p>
+                    {version===item.version?
+                        <p className='text-green-500 font-bold text-center'>{item.version}</p>
+                    :
+                        <ActionButton onClick={onChange} value={item.version} disabled={!ready}>{item.version}</ActionButton>
+                    }
                     <p>{item.securityLabel}</p>
                     <div className='text-sm col-span-2 md:col-span-4'>
                         <ul>
-                            {images.map(item=><li>{item}</li>)}
+                            {images.map(item=><li key={item}>{item}</li>)}
                         </ul>
                     </div>
                 </li>
@@ -83,8 +102,10 @@ function ListPackageVersions(props: {value: ApplicationPackage[] | null}) {
 
     return (
         <section>
-            <div>
-                Header
+            <div className='grid grid-cols-2 md:grid-cols-6 pb-2 font-bold'>
+                <p className='text-center'>Version</p>
+                <p>Security</p>
+                <p>Content</p>
             </div>
             <ul>{rows}</ul>
         </section>
