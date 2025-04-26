@@ -529,7 +529,7 @@ export class AppsConnectionWorker extends ConnectionWorker {
 
     async setPackageVersion(name: string, version: string): Promise<MessageResponse> {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendRequest({name, version}, DOMAINE_CORECATALOGUES, 'setPackageVersion');
+        return this.connection.sendCommand({name, version}, DOMAINE_CORECATALOGUES, 'setPackageVersion');
     }
 
     async installApplication(name: string, instanceId: string, exchange: string, applicationPackage: any) {

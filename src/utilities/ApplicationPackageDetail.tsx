@@ -23,6 +23,7 @@ function ApplicationPackageDetail() {
         console.debug("Changing package version to ", version);
         const response = await workers.connection.setPackageVersion(packageName, version);
         if(!response.ok) throw new Error("Error changing version: " + response.err);
+        setCurrentVersion(version);
     }, [workers, ready, packageName, setCurrentVersion]);
 
     useEffect(()=>{
@@ -98,7 +99,7 @@ function ListPackageVersions(props: {value: ApplicationPackage[] | null, version
             )
         })
         
-    }, [value]);
+    }, [value, version, onChange]);
 
     return (
         <section>

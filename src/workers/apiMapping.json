@@ -8,7 +8,6 @@
         {"domain": "CoreCatalogues", "action": "listeApplications"},
         {"domain": "CoreCatalogues", "action": "infoApplication"},
         {"domain": "CoreCatalogues", "action": "listeVersionsApplication"},
-        {"domain": "CoreCatalogues", "action": "setPackageVersion"},
         {"domain": "CoreMaitreDesComptes", "action": "getListeUsagers"},
         {"domain": "CoreMaitreDesComptes", "action": "getPasskeysUsager", "exchange": "2.prive"},
         {"domain": "CoreMaitreDesComptes", "action": "getCsrRecoveryParcode", "exchange": "2.prive"},
@@ -31,6 +30,7 @@
     "commands": [
         {"domain": "*", "action": "regenerer"},
         {"domain": "*", "action": "declencherBackup"},
+        {"domain": "CoreCatalogues", "action": "setPackageVersion"},
         {"domain": "CoreMaitreDesComptes", "action": "signerCompteParProprietaire", "exchange": "2.prive"},
         {"domain": "CoreMaitreDesComptes", "action": "majUsagerDelegations"},
         {"domain": "CoreMaitreDesComptes", "action": "resetWebauthnUsager"},
