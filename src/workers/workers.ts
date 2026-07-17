@@ -32,10 +32,10 @@ export async function initWorkers(callback: (params: ConnectionCallbackParameter
 
     let {idmg, ca, chiffrage} = await loadFiche();
 
-    let connectionWorker = new Worker(new URL('./connection.worker.ts', import.meta.url));
+    let connectionWorker = new Worker(new URL('./connection.worker.ts', import.meta.url), {type: 'module'});
     let connection = wrap(connectionWorker) as Remote<AppsConnectionWorker>;
 
-    let encryptionWorker = new Worker(new URL('./encryption.worker.ts', import.meta.url));
+    let encryptionWorker = new Worker(new URL('./encryption.worker.ts', import.meta.url), {type: 'module'});
     let encryption = wrap(encryptionWorker) as Remote<AppsEncryptionWorker>;
 
     // Set-up the workers
@@ -78,8 +78,4 @@ async function loadFiche(): Promise<LoadFicheResult> {
 
     // Return the content
     return {idmg, ca, chiffrage};
-}
-
-export async function connect() {
-    await workers?.connection.connect();
 }

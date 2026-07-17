@@ -14,10 +14,10 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   	<React.StrictMode>
-  		<React.Suspense fallback={<Loading />}>
-  			<ErrorBoundary>
+		<ErrorBoundary>
+	  		<React.Suspense fallback={<Loading />}>
   				<App />
-  			</ErrorBoundary>
-  		</React.Suspense>
-  	</React.StrictMode>
+			</React.Suspense>
+  		</ErrorBoundary>
+	</React.StrictMode>
 );

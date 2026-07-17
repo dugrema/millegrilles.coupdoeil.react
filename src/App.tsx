@@ -35,11 +35,6 @@ const Users = React.lazy(()=>import('./users/Users'));
 const UserList = React.lazy(()=>import('./users/UserList'));
 const UserDetail = React.lazy(()=>import('./users/UserDetail'));
 
-// const FileManagement = React.lazy(()=>import('./consignation/FileManagement'));
-// const FileManagerList = React.lazy(()=>import('./consignation/FileManagerList'));
-// const FileManagerDetail = React.lazy(()=>import('./consignation/FileManagerInformation'));
-// const FileManagerConfiguration = React.lazy(()=>import('./consignation/FileManagerConfiguration'));
-// const FileManagerSftpConfiguration = React.lazy(()=>import('./consignation/FileManagerSftpConfiguration'));
 const FileHosting = React.lazy(()=>import('./filehosting/FileHosting'));
 const FileHostingList = React.lazy(()=>import('./filehosting/FileHostingList'));
 const FileHostingAdd = React.lazy(()=>import('./filehosting/FileHostingAdd'));
@@ -47,7 +42,6 @@ const FileHostingEdit = React.lazy(()=>import('./filehosting/FileHostingEdit'));
 
 const KeyManagement = React.lazy(()=>import('./utilities/KeyManagement'));
 const KeyManagementOptions = React.lazy(()=>import('./utilities/KeyManagementOptions'));
-// const DecryptKeys = React.lazy(()=>import('./utilities/DecryptKeys'));
 const ApplicationPackages = React.lazy(()=>import('./utilities/ApplicationPackages'));
 const ApplicationPackageDetail = React.lazy(()=>import('./utilities/ApplicationPackageDetail'));
 const Installer = React.lazy(()=>import('./installer/Installer'));

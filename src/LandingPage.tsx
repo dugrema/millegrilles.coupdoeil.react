@@ -8,16 +8,6 @@ import { useEffect } from "react";
 
 function LandingPage() {
 
-    let navigate = useNavigate();
-    let installationMode = useConnectionStore(state=>state.installationMode);
-    let recoveryMode = useConnectionStore(state=>state.recoveryMode);
-
-    useEffect(()=>{
-        if(installationMode === true || recoveryMode === true) {
-            navigate('/coupdoeil2/install');  // Redirect to the installation screen
-        }
-    }, [installationMode, recoveryMode, navigate]);
-
     return (
         <div>
             <HeaderMenu title="Coup D'Oeil" />

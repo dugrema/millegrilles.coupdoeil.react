@@ -10,11 +10,11 @@ type MenuProps = {
 
 export default function HeaderMenu(props: MenuProps) {
 
-    let installationMode = useConnectionStore(state=>state.installationMode);
-    let recoveryMode = useConnectionStore(state=>state.recoveryMode);
-    let connectionReady = useConnectionStore(state=>state.connectionAuthenticated);
+    const installationMode = useConnectionStore(state=>state.installationMode);
+    const recoveryMode = useConnectionStore(state=>state.recoveryMode);
+    const connectionReady = useConnectionStore(state=>state.connectionAuthenticated);
 
-    let cssDisconnected = useMemo(()=>{
+    const cssDisconnected = useMemo(()=>{
         if(connectionReady) return '';
         if(installationMode === true || recoveryMode === true) return ' bg-amber-700';
         return ' bg-red-500';

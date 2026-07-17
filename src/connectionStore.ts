@@ -38,8 +38,8 @@ interface ConnectionStoreState {
 const useConnectionStore = create<ConnectionStoreState>()(
     devtools(
         (set) => ({
-            installationMode: null,
-            recoveryMode: null,
+            installationMode: false,
+            recoveryMode: false,
             idmg: '',
             ca: '',
             chiffrage: null,
