@@ -1,1 +1,0 @@
-import{n as e,t}from"./middleware-DFRzfkKu.js";var n=e()(t(e=>({applications:null,setApplications:t=>e(()=>({applications:t})),clear:()=>e(()=>({applications:null}))})));export{n as t};

@@ -1,1 +1,0 @@
-import{n as e,t}from"./middleware-DFRzfkKu.js";var n=e()(t(e=>({users:null,setUsers:t=>e(()=>({users:t})),updateUser:t=>e(e=>{let n=e.users;if(!n)return{users:[t]};let r={...n.filter(e=>e.userId===t.userId).pop()||{},...t};return{users:n.map(e=>e.userId===r.userId?r:e)}}),clear:()=>e(()=>({users:null}))})));export{n as t};

@@ -1,1 +1,0 @@
-import{n as e,t}from"./middleware-DFRzfkKu.js";var n=e()(t(e=>({domains:null,setDomains:t=>e(()=>({domains:t})),updateDomain:t=>e(e=>{let n=e.domains;if(!n)return{domains:[t]};let r={...n.filter(e=>e.domaine===t.domaine).pop()||{},...t};return{domains:n.map(e=>e.domaine===r.domaine?r:e)}}),clear:()=>e(()=>({domains:null}))})));export{n as t};

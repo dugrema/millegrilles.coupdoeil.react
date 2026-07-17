@@ -1,1 +1,0 @@
-import{d as e,n as t}from"./chunk-KS7C4IRE-a-Q6ZfrD.js";import{n,t as r}from"./Footer-D_4NTKUF.js";var i=e();function a(){return(0,i.jsxs)(`div`,{children:[(0,i.jsx)(n,{title:`Coup D'Oeil`,backLink:!0}),(0,i.jsx)(`main`,{className:`fixed top-9 bottom-8 overflow-y-auto pt-2 pb-2 pl-2 pr-2 w-full`,children:(0,i.jsx)(t,{})}),(0,i.jsx)(r,{})]})}export{a as default};
