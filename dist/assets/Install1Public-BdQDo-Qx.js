@@ -1,0 +1,1 @@
+import{d as e}from"./chunk-KS7C4IRE-a-Q6ZfrD.js";import{InstallSatellite as t}from"./Install2Prive-BFwxVgq_.js";var n=e();function r(){return(0,n.jsx)(t,{security:`1.public`})}export{r as default};

@@ -6,15 +6,6 @@
     "@peculiar/x509": "2.0.0",
     "@solana/webcrypto-ed25519-polyfill": "2.0.0-preview.3",
     "@tailwindcss/forms": "^0.5.11",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.2",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/jest": "^30.0.0",
-    "@types/json-stable-stringify": "^1.2.0",
-    "@types/node": "^26.1.1",
-    "@types/pako": "^2.0.4",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
     "axios": "^1.18.1",
     "comlink": "^4.4.2",
     "flowbite": "^4.0.2",
@@ -34,14 +25,13 @@
     "react-i18next": "^17.0.10",
     "react-router-dom": "^7.18.1",
     "tailwindcss": "^4.3.3",
-    "typescript": "^6.0.3",
     "zustand": "^5.0.14"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "vite --host",
+    "build": "vite build",
+    "test": "vitest",
+    "preview": "vite preview"
   },
   "eslintConfig": {
     "extends": [
@@ -61,5 +51,22 @@
       "last 1 safari version"
     ]
   },
-  "homepage": "/coupdoeil2"
+  "homepage": "/coupdoeil2",
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
+    "@types/json-stable-stringify": "^1.1.0",
+    "@types/node": "^26.1.1",
+    "@types/pako": "^2.0.4",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "jsdom": "^29.1.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
+  }
 }
