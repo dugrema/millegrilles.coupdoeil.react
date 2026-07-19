@@ -1,11 +1,11 @@
 {
-  "name": "coupdoeil",
+  "name": "coupdoeil2",
   "version": "DEV",
   "labels": {
-    "en": "Coup D'Oeil Administration console for MilleGrilles",
-    "fr": "Console d'administration Coup D'Oeil pour MilleGrilles"
+    "en": "Coup D'Oeil 2 - Administration console for MilleGrilles",
+    "fr": "Console d'administration Coup D'Oeil 2 pour MilleGrilles"
   },
-  "path": "coupdoeil",
+  "path": "coupdoeil2",
   "portal": {
     "admin": true
   }
