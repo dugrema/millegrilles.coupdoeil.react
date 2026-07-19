@@ -1,0 +1,12 @@
+{
+  "name": "coupdoeil",
+  "version": "DEV",
+  "labels": {
+    "en": "Coup D'Oeil Administration console for MilleGrilles",
+    "fr": "Console d'administration Coup D'Oeil pour MilleGrilles"
+  },
+  "path": "coupdoeil",
+  "portal": {
+    "admin": true
+  }
+}
