@@ -2,7 +2,7 @@ import '@solana/webcrypto-ed25519-polyfill';
 import { expose } from 'comlink';
 import axios from 'axios';
 import { ConnectionWorker, MessageResponse, SubscriptionCallback, SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
-import apiMapping from './apiMapping.json';
+import apiMapping from '@apiMapping-json';
 import { messageStruct, keymaster, encryption } from 'millegrilles.cryptography';
 
 const DOMAINE_CORETOPOLOGIE = 'CoreTopologie';
