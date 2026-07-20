@@ -6,7 +6,7 @@
     "fr": "Console d'administration Coup D'Oeil 2 pour MilleGrilles"
   },
   "path": "coupdoeil2",
-  "portal": {
+  "portal": [{
     "admin": true
-  }
+  }]
 }
