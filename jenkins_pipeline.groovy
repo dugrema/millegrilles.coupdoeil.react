@@ -29,7 +29,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh "rsync artifacts/* ${DEPLOY_RSYNC_WEBAPP_DEST}/copudoeil"
+                sh "rsync artifacts/* ${DEPLOY_RSYNC_WEBAPP_DEST}/coupdoeil"
             }
         }
     }
