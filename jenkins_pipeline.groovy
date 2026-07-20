@@ -23,7 +23,7 @@ pipeline {
 
         stage('Build & Package') {
             steps {
-                sh "make package VERSION_FULL=${VBUILD} ARCHIVE_NAME=${ARCHIVE_NAME}"
+                sh "make deploy VERSION_FULL=${VBUILD} ARCHIVE_NAME=${ARCHIVE_NAME}"
             }
         }
 
