@@ -63,8 +63,8 @@ package: build
 
 # 4. Deploy the artifacts
 deploy: package
-	@echo "==> Deploying artifact $$NAME.$(VERSION_FULL).tar.gz"
-	@rsync "$(ARTIFACTS_DIR)/$(ARCHIVE_NAME).$(VERSION_FULL).tar.gz" ${DEPLOY_RSYNC_WEBAPP_DEST}/coupdoeil/coupdoeil
+	@echo "==> Deploying artifact $(ARCHIVE_NAME).$(VERSION_FULL).tar.gz"
+	@rsync "$(ARTIFACTS_DIR)/$(ARCHIVE_NAME).$(VERSION_FULL).tar.gz" ${DEPLOY_RSYNC_WEBAPP_DEST}/coupdoeil
 	${DEPLOY_CATALOGUE_UPDATE_COMMAND} --baseurl https://libs.millegrilles.com/archives/coupdoeil --archive "archives/coupdoeil/$(ARCHIVE_NAME).$(VERSION_FULL).tar.gz"
 
 
