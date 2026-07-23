@@ -1,12 +1,14 @@
 {
   "name": "coupdoeil2",
   "version": "DEV",
+  "securite": "3.protege",
   "labels": {
     "en": "Coup D'Oeil 2 - Administration console for MilleGrilles",
     "fr": "Console d'administration Coup D'Oeil 2 pour MilleGrilles"
   },
   "path": "coupdoeil2",
-  "portal": [{
+  "web": [{
+    "path": "/coupdoeil2",
     "admin": true
   }]
 }
