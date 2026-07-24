@@ -24,42 +24,30 @@ export default LandingPage;
 
 function SystemManagement() {
     
+    const navItems = [
+        { to: '/coupdoeil2/instances', label: 'Instances', icon: 'fa-server', color: 'text-indigo-400' },
+        { to: '/coupdoeil2/domains', label: 'Domains', icon: 'fa-globe', color: 'text-blue-400' },
+        { to: '/coupdoeil2/users', label: 'Users', icon: 'fa-users', color: 'text-emerald-400' },
+        { to: '/coupdoeil2/keys', label: 'Key management', icon: 'fa-key', color: 'text-amber-400' },
+        { to: '/coupdoeil2/fileHosting', label: 'File hosting', icon: 'fa-folder', color: 'text-rose-400' },
+    ];
+
     return (
-        <section>
-            <h2 className='text-lg font-bold pt-4'>System management</h2>
+        <section className="mt-8">
+            <h2 className='text-lg font-bold mb-6'>System management</h2>
             <nav>
-                <ul>
-                    <li className='pt-2'>
-                        <Link to='/coupdoeil2/instances' 
-                            className='btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900'>
-                                Instances
+                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6'>
+                    {navItems.map((item) => (
+                        <Link 
+                            key={item.to}
+                            to={item.to} 
+                            className='group flex flex-col items-center justify-center p-6 bg-slate-800 border border-slate-700 rounded-xl shadow-lg hover:bg-slate-700 hover:scale-105 transition-all duration-200'
+                        >
+                            <i className={`fa ${item.icon} text-3xl mb-3 ${item.color} group-hover:scale-110 transition-transform duration-200`} />
+                            <span className='font-semibold text-center text-slate-200 group-hover:text-white'>{item.label}</span>
                         </Link>
-                    </li>
-                    <li className='pt-2'>
-                        <Link to='/coupdoeil2/domains' 
-                            className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                                Domains
-                        </Link>
-                    </li>
-                    <li className='pt-2'>
-                        <Link to='/coupdoeil2/users' 
-                            className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                                Users
-                        </Link>
-                    </li>
-                    <li className='pt-2'>
-                        <Link to='/coupdoeil2/keys' 
-                            className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                                Key management
-                        </Link>
-                    </li>
-                    <li className='pt-2'>
-                        <Link to='/coupdoeil2/fileHosting' 
-                            className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                                File hosting
-                        </Link>
-                    </li>
-                </ul>
+                    ))}
+                </div>
             </nav>        
         </section>
     )
