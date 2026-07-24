@@ -17,39 +17,53 @@ function UserList() {
         return userCopy.map(item=>{
             let security = mapUserSecurity(item);
             return (
-                <React.Fragment key={item.userId}>
-                    <Link to={`/coupdoeil2/users/${item.userId}`} 
-                        className='underline'>
+                <tr key={item.userId} className="hover:bg-slate-700/30 transition-colors border-b border-slate-700/50 last:border-0">
+                    <td className="px-4 py-3 text-white font-medium">
+                        <Link to={`/coupdoeil2/users/${item.userId}`} className="hover:text-blue-400 transition-colors">
                             {item.nomUsager}
-                    </Link>
-                    <p>{security}</p>
-                </React.Fragment>
+                        </Link>
+                    </td>
+                    <td className="px-4 py-3 text-slate-400">{security}</td>
+                </tr>
             )
         })
     }, [users]);
 
     return (
-        <>
-<Link to='/coupdoeil2'
-                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate/700 hover:scale-105 active:bg-slate/700 shadow-lg rounded-xl transition-all duration-200'>
+        <div className="space-y-8 pb-12">
+            <div className="flex items-center justify-between">
+                <Link to='/coupdoeil2'
+                    className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
                     Back
-            </Link>
+                </Link>
+                <h1 className='text-3xl font-bold text-white'>Users</h1>
+            </div>
 
-
-
-            <h1 className='text-xl font-bold pt-4'>Users</h1>
-
-            <section>
-                <h2 className='text-lg font-bold pt-4 pb-2'>User list</h2>
-                
-                <div className='grid grid-cols-2 pt-2 pb-2'>
-                    <p className='font-bold pb-2'>User name</p>
-                    <p className='font-bold pb-2'>Security</p>
-
-                    {userRows}
+            <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2 flex items-center'>
+                    <span className='mr-2'>👥</span> User list
+                </h2>
+                <div className='overflow-x-auto'>
+                    <table className='w-full text-left text-sm'>
+                        <thead className='text-xs text-slate-400 uppercase bg-slate-900/50'>
+                            <tr>
+                                <th className='px-4 py-3'>User name</th>
+                                <th className='px-4 py-3'>Security</th>
+                            </tr>
+                        </thead>
+                        <tbody className='divide-y divide-slate-700'>
+                            {userRows.length > 0 ? (
+                                userRows
+                            ) : (
+                                <tr>
+                                    <td colSpan={2} className="px-4 py-3 text-center text-slate-400">No users found</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </section>
-        </>
+        </div>
     );
 }
 
