@@ -222,16 +222,16 @@ function PasskeyList(props: {value: UserDetail | null}) {
     let { value } = props;
 
     let passkeys = useMemo(()=>{
-        if((!value?.passkeys) || value.passkeys.length === 0) return [<p>None</p>];
+        if((!value?.passkeys) || value.passkeys.length === 0) return <tr><td colSpan={3} className="px-4 py-3 text-center text-slate-400">None</td></tr>;
         let passkeysCopy = [...value.passkeys];
         passkeysCopy.sort(sortPasskeys);
         return passkeysCopy.map(item=>{
             return (
-                <React.Fragment key={item.cred_id}>
-                    <p>{item.hostname}</p>
-                    <p><Formatters.FormatterDate value={item.date_creation} /></p>
-                    <p><Formatters.FormatterDate value={item.dernier_auth} /></p>
-                </React.Fragment>
+                <tr key={item.cred_id}>
+                    <td className="px-4 py-3">{item.hostname}</td>
+                    <td className="px-4 py-3"><Formatters.FormatterDate value={item.date_creation} /></td>
+                    <td className="px-4 py-3"><Formatters.FormatterDate value={item.dernier_auth} /></td>
+                </tr>
             )
         });
     }, [value]);
@@ -243,15 +243,15 @@ function ActivationList(props: {value: UserDetail | null}) {
     let { value } = props;
 
     let activations = useMemo(()=>{
-        if((!value?.activations) || value.activations.length === 0) return [<p>None</p>];
+        if((!value?.activations) || value.activations.length === 0) return <tr><td colSpan={2} className="px-4 py-3 text-center text-slate-400">None</td></tr>;
         let activationsCopy = [...value.activations];
         activationsCopy.sort(sortuserActivations);
         return activationsCopy.map(item=>{
             return (
-                <React.Fragment key={item.fingerprint_pk+item.date_creation}>
-                    <p className='md:col-span-2 break-words'>{item.fingerprint_pk}</p>
-                    <p><Formatters.FormatterDate value={item.date_creation} /></p>
-                </React.Fragment>
+                <tr key={item.fingerprint_pk+item.date_creation}>
+                    <td className="px-4 py-3 break-words">{item.fingerprint_pk}</td>
+                    <td className="px-4 py-3"><Formatters.FormatterDate value={item.date_creation} /></td>
+                </tr>
             )
         });
     }, [value]);
@@ -263,16 +263,16 @@ function CookiesList(props: {value: UserDetail | null}) {
     let { value } = props;
 
     let cookies = useMemo(()=>{
-        if((!value?.cookies) || value.cookies.length === 0) return [<p>None</p>];
+        if((!value?.cookies) || value.cookies.length === 0) return <tr><td colSpan={3} className="px-4 py-3 text-center text-slate-400">None</td></tr>;
         let cookiesCopy = [...value.cookies];
         cookiesCopy.sort(sortCookies);
         return cookiesCopy.map(item=>{
             return (
-                <React.Fragment key={item.hostname+item.date_creation}>
-                    <p>{item.hostname}</p>
-                    <p><Formatters.FormatterDate value={item.date_creation} /></p>
-                    <p><Formatters.FormatterDate value={item.expiration} /></p>
-                </React.Fragment>
+                <tr key={item.hostname+item.date_creation}>
+                    <td className="px-4 py-3">{item.hostname}</td>
+                    <td className="px-4 py-3"><Formatters.FormatterDate value={item.date_creation} /></td>
+                    <td className="px-4 py-3"><Formatters.FormatterDate value={item.expiration} /></td>
+                </tr>
             )
         });
     }, [value]);
