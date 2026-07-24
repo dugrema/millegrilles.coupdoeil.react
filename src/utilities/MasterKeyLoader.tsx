@@ -1,6 +1,6 @@
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import UploadButton from "../components/UploadButton";
-import { forgePrivateKey } from 'millegrilles.cryptography';
+import { certificates, forgePrivateKey } from 'millegrilles.cryptography';
 
 type MasterKeyProps = {
     // children?: React.ReactElement,
@@ -82,7 +82,7 @@ function LoadKey(props: LoadKeyProps) {
             <input type="text" value={password} onChange={passwordOnChange} placeholder="Master key password, ex: p7Pxu+wrscBTlavrodLZRUAPbqHQge9+KAGuJedhOwU"
                 className="text-black" />
             <div>
-                <UploadButton id="masterKeyUploadId" onChange={uploadHandler} disabled={disabled}
+                <UploadButton id="masterKeyUploadId" onChange={uploadHandler} disabled={disabled} accept='application/json, application/x-pem-file, .pem'
                     className="btn pl-7 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500">
                         <p>Upload</p>
                 </UploadButton>
@@ -133,13 +133,13 @@ async function parseFile(acceptedFiles: FileList): Promise<MasterKeyFile> {
     }
 
     let file = acceptedFiles[0];
-    if( file.type !== 'application/json' ) {
-        throw new Error("Expecting a json file");
+    const acceptedFileTypes = ['application/json', 'application/x-pem-file']
+    if( ! acceptedFileTypes.includes(file.type) && !file.name.toLocaleLowerCase().endsWith('.pem') ) {
+        throw new Error(`Expecting a json/pem file, received: ${file.type}`);
     }
 
     let reader = new FileReader();
-
-    let fichierCharge = await new Promise((resolve, reject)=>{
+    let content = await new Promise((resolve, reject)=>{
         reader.onload = () => {
             let result = reader.result;
             if(!result) throw new Error("No content read");
@@ -153,5 +153,25 @@ async function parseFile(acceptedFiles: FileList): Promise<MasterKeyFile> {
         reader.readAsArrayBuffer(file);
     }) as string;
 
-    return JSON.parse(fichierCharge);
+    // Parse the json file content
+    try {
+        const key = JSON.parse(content);
+        return key;
+    } catch(err) {
+        // Try to parse the file as PEM with private key and certificate
+        try {
+            console.debug("Not json, trying to load as PEM:\n", content);
+            const {key, chain} = certificates.splitKeyCertPem(content);
+            const certificat = chain.join("\n");
+            console.debug("Parsed PEM: \n%O\n%O\nCHAIN:\n%O", key, certificat, chain);
+            const parsedKey = {
+                idmg: "DUMMY",
+                racine: {certificat, cleChiffree: key},
+            } as MasterKeyFile;
+            console.debug("Parsed key: ", parsedKey);
+            return(parsedKey);
+        } catch(err2) {
+            throw err;  // Re-throw original error
+        }
+    }
 }
