@@ -48,35 +48,42 @@ function DomainBackupVersions(props: {back: string}) {
     }, [workers, ready, domainName, setList, setCurrentVersion, setError]);
 
     return (
-        <>
-            <Link to={backUrl}
-                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate/700 hover:scale-105 active:bg-slate/700 shadow-lg rounded-xl transition-all duration-200'>
+        <div className="space-y-8 pb-12">
+            <div className="flex items-center justify-between">
+                <Link to={backUrl}
+                    className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
                     Back
-            </Link>
+                </Link>
+                <h1 className='text-3xl font-bold text-white'>Backup versions for domain {domainName}</h1>
+            </div>
 
-            <h1 className='text-xl font-bold pt-4'>Backup versions for domain {domainName}</h1>
-
-            <section>
-                <h2 className='text-lg font-bold pt-4 pb-2'>Current version</h2>
-                <p>This is the currently used version for this domain.</p>
-                <div className='grid grid-cols-3'>
-                    <p>Version</p>
-                    <p className='col-span-2'>{currentVersion?currentVersion:'N/A'}</p>
+            <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2 flex items-center'>
+                    <span className='mr-2'>⭐</span> Current version
+                </h2>
+                <p className="text-slate-400 mb-4">This is the currently used version for this domain.</p>
+                <div className="bg-slate-900/50 p-4 rounded-xl flex items-center justify-between">
+                    <span className="text-slate-400 font-medium">Version ID</span>
+                    <span className="text-white font-mono">{currentVersion ? currentVersion : 'N/A'}</span>
                 </div>
             </section>
 
-            <section>
-                <h2 className='text-lg font-bold pt-4 pb-2'>Backup files</h2>
-                {error?
-                    <p>Error loading files</p>
+            <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2 flex items-center'>
+                    <span className='mr-2'>📦</span> Backup files
+                </h2>
+                {error ? 
+                    <div className="bg-red-900/20 border border-red-700/50 p-4 rounded-xl text-red-400 text-center">
+                        Error loading files
+                    </div>
                 :
                     <>
-                        <p className='pb-4'>Click on a version to set it as the current version to use.</p>
+                        <p className='text-slate-400 mb-6'>Click on a version to set it as the current version to use.</p>
                         <Filehosts value={list} current={currentVersion} setCurrent={setCurrentVersion} />
                     </>
                 }
             </section>
-        </>
+        </div>
     )
 }
 
@@ -87,7 +94,7 @@ function Filehosts(props: {value: FilehostBackupDomainVersions[] | null, current
     let { value, current, setCurrent } = props;
 
     let filehostsElem = useMemo(()=>{
-        if(!value) return <p>Loading ...</p>;
+        if(!value) return <div className="text-slate-400">Loading ...</div>;
 
         let filehosts = value.map(item=>{
             let label = item.filehost_id;
@@ -98,19 +105,20 @@ function Filehosts(props: {value: FilehostBackupDomainVersions[] | null, current
 
         return filehosts.map(item=>{
             return (
-                <React.Fragment key={item.filehost_id}>
-                    <div key={item.filehost_id} className='grid grid-cols-3'>
-                        <p>Filehost</p>
-                        <p className='col-span-2'>{item.label}</p>
+                <div key={item.filehost_id} className="mb-8 last:mb-0">
+                    <div className="flex items-center justify-between mb-3 px-1">
+                        <h3 className="text-xl font-bold text-white">{item.label}</h3>
                     </div>
                     <Versions value={item.versions || []} current={current} setCurrent={setCurrent} />
-                </React.Fragment>
+                </div>
             )
         })
-    }, [value])
+    }, [value, current, setCurrent])
     
     return (
-        <>{filehostsElem}</>
+        <div className="space-y-6">
+            {filehostsElem}
+        </div>
     )
 }
 
@@ -132,8 +140,8 @@ function Versions(props: {value: BackupDomainVersions[] | null, current: string 
     }, [workers, ready, domainName, setCurrent]);
 
     let versionElems = useMemo(()=>{
-        if(!value) return <p>Loading ...</p>;
-        if(value.length === 0) return <p>No files</p>;
+        if(!value) return <div className="text-slate-400">Loading ...</div>;
+        if(value.length === 0) return <div className="text-slate-400">No files available</div>;
 
         let versions = value.map(item=>{
             let label = item.version;
@@ -150,37 +158,47 @@ function Versions(props: {value: BackupDomainVersions[] | null, current: string 
 
         return versions.map(item=>{
             return (
-                <div key={item.version} className='grid grid-cols-12'>
-                    <p className='col-span-2'>
+                <tr key={item.version} className="hover:bg-slate-700/30 transition-colors border-b border-slate-700/50 last:border-0">
+                    <td className="px-4 py-3">
                         {item.version!==current?
-                            <ActionButton onClick={changeVersionHandler} value={item.version} disabled={!ready || !domainName}>
+                            <ActionButton onClick={changeVersionHandler} value={item.version} disabled={!ready || !domainName} className="px-2 py-1 text-xs">
                                 {item.version}
                             </ActionButton>
                             :
-                            item.version
+                            <span className="font-bold text-blue-400">{item.version}</span>
                         }
-                        
-                    </p>
-                    <p>{item.transactions}</p>
-                    <Formatters.FormatterDate value={item.start_date} className='col-span-2' />
-                    <Formatters.FormatterDate value={item.end_date}  className='col-span-2' />
-                    <Formatters.FormatterDate value={item.end_date_concatene}  className='col-span-2' />
-                </div>
+                    </td>
+                    <td className="px-4 py-3 text-slate-400">{item.transactions}</td>
+                    <td className="px-4 py-3 text-slate-400">
+                        <Formatters.FormatterDate value={item.start_date} />
+                    </td>
+                    <td className="px-4 py-3 text-slate-400">
+                        <Formatters.FormatterDate value={item.end_date} />
+                    </td>
+                    <td className="px-4 py-3 text-slate-400">
+                        <Formatters.FormatterDate value={item.end_date_concatene} />
+                    </td>
+                </tr>
             )
         })
-    }, [value]);
+    }, [value, current, ready, domainName, changeVersionHandler]);
 
     return (
-        <div className='pt-2 pb-4'>
-            <div className='grid grid-cols-12 font-bold'>
-                <p className='col-span-2'>Version</p>
-                <p>Count</p>
-                <p className='col-span-2'>Start</p>
-                <p className='col-span-2'>End</p>
-                <p className='col-span-2'>End concatene</p>
-            </div>
-            {versionElems}
+        <div className="overflow-x-auto border border-slate-700 rounded-xl">
+            <table className="w-full text-left text-sm">
+                <thead className="text-xs text-slate-400 uppercase bg-slate-900/50">
+                    <tr>
+                        <th className="px-4 py-3">Version</th>
+                        <th className="px-4 py-3">Count</th>
+                        <th className="px-4 py-3">Start</th>
+                        <th className="px-4 py-3">End</th>
+                        <th className="px-4 py-3">End concatene</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700">
+                    {versionElems}
+                </tbody>
+            </table>
         </div>
     );
 }
-

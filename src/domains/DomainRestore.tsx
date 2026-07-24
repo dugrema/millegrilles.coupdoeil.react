@@ -9,7 +9,6 @@ import useConnectionStore from '../connectionStore';
 import { decryptNonDecryptableKeys, KeyProgress, MaitreDesClesProgress } from '../utilities/DecryptKeys';
 import { BackupDomainVersion } from '../workers/connection.worker';
 
-
 function DomainRestore() {
 
     let workers = useWorkers();
@@ -37,36 +36,45 @@ function DomainRestore() {
     }, [workers, ready, setDomainBackupVersionList]);
 
     return (
-        <>
-            <Link to='/coupdoeil2/domains'
-                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
+        <div className="space-y-8 pb-12">
+            <div className="flex items-center justify-between">
+                <Link to='/coupdoeil2/domains'
+                    className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
                     Back
-            </Link>
+                </Link>
+                <h1 className='text-3xl font-bold text-white'>System restore</h1>
+            </div>
 
-            <h1 className='text-xl font-bold pt-4'>System restore</h1>
-
-            <section>
-                <h2 className='text-lg font-bold pt-4 pb-2'>Backup files</h2>
+            <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2 flex items-center'>
+                    <span className='mr-2'>📁</span> Backup files
+                </h2>
                 <BackupFileSection />
             </section>
 
-            <section className='pt-6'>
-                <h2 className='text-lg font-bold pt-4 pb-2'>Initial domains</h2>
+            <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2 flex items-center'>
+                    <span className='mr-2'>🔐</span> Initial domains
+                </h2>
 
-                <p className='pb-6'>
-                    The first two domains to restore on a MilleGrilles system are CorePki and Maitre des cles. 
-                    CorePki provides the security certificates required to restore transactions and Maitre des cles provides
-                    the backup decryption keys for other domains.
-                </p>
+                <div className="mb-6 text-slate-400 text-sm space-y-4">
+                    <p>
+                        The first two domains to restore on a MilleGrilles system are <span className="text-white font-medium">CorePki</span> and <span className="text-white font-medium">Maitre des cles</span>. 
+                        CorePki provides the security certificates required to restore transactions and Maitre des cles provides
+                        the backup decryption keys for other domains.
+                    </p>
+                </div>
 
                 <InitialDomainsSection masterKey={masterKey} masterKeyOnChange={setMasterKey} backupVersions={domainBackupVersionList} />
             </section>
 
-            <section>
-                <h2 className='text-lg font-bold pt-4 pb-2'>Restore the rest of the system</h2>
+            <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2 flex items-center'>
+                    <span className='mr-2'>🚀</span> Restore the rest of the system
+                </h2>
                 <DomainListRegeneration masterKey={masterKey} backupVersions={domainBackupVersionList} />
             </section>
-        </>
+        </div>
     );
 }
 
@@ -75,7 +83,7 @@ export default DomainRestore;
 function BackupFileSection() {
     return (
         <>
-            <p className='pb-2'>The following domains are available from a file server.</p>
+            <p className='text-slate-400 mb-4'>The following domains are available from a file server.</p>
             <FilehostBackupList />
         </>
     );
@@ -125,35 +133,38 @@ function InitialDomainsSection(props: InitialDomainSectionProps) {
     }, [masterKey, masterKeyOnChange]);
 
     return (
-        <>
-            <p className='pb-2'>
-                1. Provide the master key to decrypt the Initial Domains backup files since the Maitre des cles is not available yet.
-            </p>
-            <MasterKeyLoader onChange={masterKeyOnChange} />
+        <div className="space-y-8">
+            <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+                <p className='text-slate-300 mb-4'>
+                    1. Provide the master key to decrypt the Initial Domains backup files since the Maitre des cles is not available yet.
+                </p>
+                <MasterKeyLoader onChange={masterKeyOnChange} />
+            </div>
 
-            <p className='pb-2'>2. Rebuild the CorePki and Maitre des cles domains in the database.</p>
+            <div className="space-y-4">
+                <p className='text-slate-300'>2. Rebuild the CorePki and Maitre des cles domains in the database.</p>
+                <div className="flex flex-wrap gap-4">
+                    <button value='CorePki' onClick={restoreDomaineCallback} disabled={!masterKey}
+                        className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-white hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none'>
+                        Rebuild CorePki
+                    </button>
+                    <button value='MaitreDesCles' onClick={restoreDomaineCallback} disabled={!masterKey}
+                        className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-white hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none'>
+                        Rebuild Maitre des cles
+                    </button>
+                </div>
+            </div>
 
-            <button value='CorePki' onClick={restoreDomaineCallback} disabled={!masterKey}
-                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none'>
-                Rebuild CorePki
-            </button>
-            <button value='MaitreDesCles' onClick={restoreDomaineCallback} disabled={!masterKey}
-                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none'>
-                Rebuild Maitre des cles
-            </button>
-
-
-            <p className='pb-2 pt-6'>3. Decrypt all keys in Maitre des cles to make them available to other services.</p>
-            <button onClick={decryptKeysHandler} disabled={!masterKey}
-                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none'>
-                Decrypt keys
-            </button>
-
-
-            <MaitreDesClesProgress value={keyProgress} />
-        </>        
+            <div className="space-y-4">
+                <p className='text-slate-300'>3. Decrypt all keys in Maitre des cles to make them available to other services.</p>
+                <button onClick={decryptKeysHandler} disabled={!masterKey}
+                    className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-white hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none'>
+                    Decrypt keys
+                </button>
+                <MaitreDesClesProgress value={keyProgress} />
+            </div>
+        </div>
     );
-
 }
 
 async function restoreInitialDomain(workers: AppWorkers, domain: string, masterKey: Uint8Array, resubmitKeys: boolean, version: string | null) {

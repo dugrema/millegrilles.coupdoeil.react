@@ -9,34 +9,35 @@ import { sortDomains } from './DomainList';
 import ActionButton from '../components/ActionButton';
 import { messageStruct } from 'millegrilles.cryptography';
 
-
 function DomainBackup() {
 
     return (
-        <>
-            <Link to='/coupdoeil2/domains'
-                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate/700 hover:scale-105 active:bg-slate/700 shadow-lg rounded-xl transition-all duration-200'>
+        <div className="space-y-8 pb-12">
+            <div className="flex items-center justify-between">
+                <Link to='/coupdoeil2/domains'
+                    className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
                     Back
-            </Link>
+                </Link>
+                <h1 className='text-3xl font-bold text-white'>Domain backup files</h1>
+            </div>
 
-            <h1 className='text-xl font-bold pt-4'>Domain backup files</h1>
-
-            <p className='pb-2'>
-                This list is taken from the file server. It acts as a backup server for each domain databases. 
-                An incremental backup is done every 30 minutes but with transfers the files can be over an hour old.
-                If you need the latest backup files, trigger a complete backup (previous screen) and come back here when completed.
-            </p>
-
-            <section>
-                <h2 className='text-lg font-bold pt-4 pb-2'>Backup files for each domain</h2>
-                <p className='pb-4'>
+            <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
+                <p className='text-slate-300 mb-4'>
+                    This list is taken from the file server. It acts as a backup server for each domain databases. 
+                    An incremental backup is done every 30 minutes but with transfers the files can be over an hour old.
+                    If you need the latest backup files, trigger a complete backup (previous screen) and come back here when completed.
+                </p>
+                <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2 flex items-center'>
+                    <span className='mr-2'>💾</span> Backup files for each domain
+                </h2>
+                <p className='text-slate-400 text-sm mb-4'>
                     You can download an archive for each domain by clicking on the domain name. 
                     Each domain tar file contains .mgbak encrypted archives. These archives
                     can only be used with the system's master key.
                 </p>
                 <FilehostBackupList />
             </section>
-        </>
+        </div>
     );
 }
 
@@ -67,7 +68,7 @@ export function FilehostBackupList() {
 
 
     let filehostElems = useMemo(()=>{
-        if(!filehostBackupList) return [];
+        if(!filehostBackupList) return null;
 
         let filehostBackupListCopy = filehostBackupList.map(item=>{
             let label = item.filehost_id;
@@ -77,22 +78,28 @@ export function FilehostBackupList() {
 
         return filehostBackupListCopy.map(item=>{
             return (
-                <React.Fragment key={item.filehost_id}>
-                    <div className='grid grid-cols-3 pt-4'>
-                        <p>Filehost</p>
-                        <p className='col-span-2'>{item.label}</p>
+                <div key={item.filehost_id} className="mb-8 last:mb-0">
+                    <div className="flex items-center justify-between mb-2 px-2">
+                        <h3 className="text-lg font-semibold text-white">{item.label}</h3>
+                        {item.ok ? (
+                            <span className="text-xs text-green-400 bg-green-400/10 px-2 py-1 rounded-full">Online</span>
+                        ) : (
+                            <span className="text-xs text-red-400 bg-red-400/10 px-2 py-1 rounded-full">Offline</span>
+                        )}
                     </div>
                     {item.ok?
                         <DomainBackupList value={item.domains} url={item.url} />
                         :
-                        <p>No information</p>
+                        <div className="bg-red-900/20 border border-red-700/50 p-4 rounded-xl text-red-400 text-sm text-center">
+                            No information available for this filehost
+                        </div>
                     }
-                </React.Fragment>
+                </div>
             )
         });
     }, [filehostBackupList]);
 
-    if(!filehostBackupList) return <></>;
+    if(!filehostBackupList) return null;
     return <>{filehostElems}</>;
 }
 
@@ -116,7 +123,11 @@ function DomainBackupList(props: {value: DomainBackupInformation[] | null | unde
     }, [workers, ready, url]);
 
     let listElems = useMemo(()=>{
-        if(!domainBackupList) return <></>;
+        if(!domainBackupList || domainBackupList.length === 0) return (
+            <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-slate-400">No backup files found for this filehost</td>
+            </tr>
+        );
 
         let listCopy = [...domainBackupList];
         listCopy.sort(sortDomains);
@@ -124,34 +135,48 @@ function DomainBackupList(props: {value: DomainBackupInformation[] | null | unde
         return listCopy.map(item=>{
 
             return (
-                <div key={item.domaine} 
-                    className='grid grid-cols-5 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40'>
-                        <p>
-                            {item.domaine}
-                            {url?<ActionButton onClick={downloadHandler} value={item.domaine}>Download</ActionButton>:<></>}
-                        </p>
+                <tr key={item.domaine} className="hover:bg-slate-700/30 transition-colors border-b border-slate-700/50 last:border-0">
+                    <td className="px-4 py-3 text-white font-medium">
+                        {item.domaine}
+                        {url && (
+                            <ActionButton onClick={downloadHandler} value={item.domaine} className="ml-2 px-2 py-1 text-xs">
+                                Download
+                            </ActionButton>
+                        )}
+                    </td>
+                    <td className="px-4 py-3 text-slate-400">
                         <Formatters.FormatterDate value={item.concatene?.date} />
-                        <p><Formatters.FormatterDate value={item.transaction_plus_recente} /></p>
-                        <p>{item.nombre_transactions}</p>
-<Link to={`/coupdoeil2/domains/restore/versions/${item.domaine}`} className='text-indigo-400 hover:text-indigo-300 font-bold'>
-                                                            {item.concatene?.version}
-                                                        </Link>
-
-                </div>
+                    </td>
+                    <td className="px-4 py-3 text-slate-400">
+                        <Formatters.FormatterDate value={item.transaction_plus_recente} />
+                    </td>
+                    <td className="px-4 py-3 text-slate-400">{item.nombre_transactions}</td>
+                    <td className="px-4 py-3">
+                        <Link to={`/coupdoeil2/domains/restore/versions/${item.domaine}`} className='text-blue-400 hover:text-blue-300 font-medium'>
+                            {item.concatene?.version}
+                        </Link>
+                    </td>
+                </tr>
             )
         });
-    }, [domainBackupList]);
+    }, [domainBackupList, url]);
 
     return (
-        <>
-            <div className='grid grid-cols-5'>
-                <p className='font-bold pb-2'>Domain</p>
-                <p className='font-bold pb-2'>Last complete</p>
-                <p className='font-bold pb-2'>Last transaction date</p>
-                <p className='font-bold pb-2'>Transaction count</p>
-                <p className='font-bold pb-2'>Version id</p>
-            </div>
-            {listElems}
-        </>
+        <div className="overflow-x-auto mt-2">
+            <table className="w-full text-left text-sm">
+                <thead className="text-xs text-slate-400 uppercase bg-slate-900/50">
+                    <tr>
+                        <th className="px-4 py-3">Domain</th>
+                        <th className="px-4 py-3">Last complete</th>
+                        <th className="px-4 py-3">Last transaction date</th>
+                        <th className="px-4 py-3">Count</th>
+                        <th className="px-4 py-3">Version id</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700">
+                    {listElems}
+                </tbody>
+            </table>
+        </div>
     )
 }

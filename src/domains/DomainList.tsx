@@ -8,7 +8,6 @@ import useConnectionStore from '../connectionStore';
 import ActionButton from '../components/ActionButton';
 import useInstanceStore, { ServerInstanceStore } from '../instances/instanceStore';
 
-
 function DomainList() {
 
     let workers = useWorkers();
@@ -37,44 +36,44 @@ function DomainList() {
     }, [workers, ready]);
 
     return (
-        <>
-            <Link to='/coupdoeil2'
-                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
-                    Back
-            </Link>
-
-            <h1 className='text-xl font-bold pt-4'>Domains</h1>
-
-            <section>
-
-                <h2 className='text-lg font-bold pt-4 pb-2'>Utilities</h2>
-
-                <ActionButton onClick={backupAllHandler} disabled={!ready} mainButton={true}>
-                    Backup now
-                </ActionButton>
-
-                <Link to='/coupdoeil2/domains/restore'
+        <div className="space-y-8 pb-12">
+            <div className="flex items-center justify-between">
+                <Link to='/coupdoeil2/domains'
                     className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
+                    Back
+                </Link>
+                <h1 className='text-3xl font-bold text-white'>Domains</h1>
+            </div>
+
+            <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2 flex items-center'>
+                    <span className='mr-2'>🛠️</span> Utilities
+                </h2>
+
+                <div className="flex flex-wrap gap-4 mb-6">
+                    <ActionButton onClick={backupAllHandler} disabled={!ready} mainButton={true}>
+                        Backup now
+                    </ActionButton>
+
+                    <Link to='/coupdoeil2/domains/restore'
+                        className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
                         Restore
                     </Link>
 
-<Link to='/coupdoeil2/domains/backup'
-                    className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate/700 shadow-lg rounded-xl transition-all duration-200'>
+                    <Link to='/coupdoeil2/domains/backup'
+                        className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
                         Files
                     </Link>
-
-
-
-
-
-
+                </div>
             </section>
 
-            <section>
-                <h2 className='text-lg font-bold pt-4 pb-2'>Domain list</h2>
+            <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2 flex items-center'>
+                    <span className='mr-2'>📋</span> Domain list
+                </h2>
                 <DomainListSection rebuild={rebuildHandler} backup={domainBackupHandler} />
             </section>
-        </>
+        </div>
     );
 }
 
@@ -100,16 +99,29 @@ export function DomainListSection(props: DomainListSectionProps) {
     }, [domains, rebuild, backup]);
 
     return (
-        <div className='grid grid-cols-2 lg:grid-cols-6'>
-            <p className='col-span-2  font-bold pb-2'>Domain</p>
-            <p className='font-bold pb-2'>Last presence</p>
-            <p className='font-bold pb-2'>Instance</p>
-            <p className='font-bold pb-2'>Status</p>
-            <p className='font-bold pb-2'>Actions</p>
-            {sortedDomainElems}
+        <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+                <thead className="text-xs text-slate-400 uppercase bg-slate-900/50">
+                    <tr>
+                        <th className="px-4 py-3">Domain</th>
+                        <th className="px-4 py-3">Last presence</th>
+                        <th className="px-4 py-3">Instance</th>
+                        <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700">
+                    {sortedDomainElems.length > 0 ? (
+                        sortedDomainElems
+                    ) : (
+                        <tr>
+                            <td colSpan={5} className="px-4 py-8 text-center text-slate-400">No domains found</td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
         </div>
     );
-
 }
 
 type DomainItemProps = {
@@ -129,52 +141,58 @@ function DomainItem(props: DomainItemProps) {
         if(!backup) throw new Error("backup method not provided");
         if(!value.domaine) throw new Error("domaine not provided");
         await backup(value.domaine);
-    }, [backup]);
+    }, [backup, value.domaine]);
 
     const rebuildHandler = useCallback(async () => {
         if(!rebuild) throw new Error("rebuild method not provided");
         if(!value.domaine) throw new Error("domaine not provided");
         await rebuild(value.domaine);
-    }, [value, rebuild]);
+    }, [value.domaine, rebuild]);
 
     const instanceLabel = useMemo(()=>{
-        if(!instances || !value.instance_id) return '';
+        if(!instances || !value.instance_id) return '-';
         let instance = instances.filter(item=>item.instance_id === value.instance_id).pop();
         if(instance) {
             const hostname = instance?.system_state?.host?.hostname;
             if(hostname) {
                 const labelSplit = hostname.split('.');
-                // Split the first domain value from the hostname. Allows displaying on 2 lines.
                 if(labelSplit && labelSplit.length > 1) {
-                    return <><span>{labelSplit[0]}</span> <span>.{labelSplit.slice(1).join('.')}</span></>
+                    return <><span className="font-medium">{labelSplit[0]}</span> <span className="text-slate-500 text-xs">.{labelSplit.slice(1).join('.')}</span></>
                 }
                 return <>{hostname}</>;
             }
         }
-        return <>value.instance_id</>;
-    }, [instances]);
+        return <span className="text-slate-500">{value.instance_id}</span>;
+    }, [instances, value.instance_id]);
 
     const backupRunning = useMemo(()=>{
-        if(value.backupRunning) return true;
-        return false;
-    }, [value]);
+        return !!value.backupRunning;
+    }, [value.backupRunning]);
 
     return (
-        <>
-            <p className='col-span-2 '>{value.domaine}</p>
-            <ConditionalFormatters.FormatterConditionalDate value={value.presence?value.presence:undefined} warn={360} error={1800} />
-            <p className='break-words'>{instanceLabel}</p>
-            <p className='pb-2'><DomainStatus value={value} /></p>
-            <div className='pb-2'>
-                {backup?
-                    <ActionButton onClick={backupHandler} disabled={!ready || backupRunning} 
-                        forceErrorStatus={!!value.backupMessage}>Backup</ActionButton>
-                :<></>}
-                {rebuild?
-                    <ActionButton onClick={rebuildHandler} disabled={!ready || !!value.rebuilding}>Rebuild</ActionButton>
-                :<></>}
-            </div>
-        </>
+        <tr>
+            <td className='px-4 py-3 text-white font-medium'>{value.domaine}</td>
+            <td className="px-4 py-3 text-slate-400">
+                <ConditionalFormatters.FormatterConditionalDate value={value.presence?value.presence:undefined} warn={360} error={1800} />
+            </td>
+            <td className="px-4 py-3 text-slate-400 break-words">{instanceLabel}</td>
+            <td className="px-4 py-3 text-slate-400">
+                <DomainStatus value={value} />
+            </td>
+            <td className="px-4 py-3">
+                <div className="flex flex-wrap gap-2">
+                    {backup?
+                        <ActionButton onClick={backupHandler} disabled={!ready || backupRunning} 
+                            forceErrorStatus={!!value.backupMessage} className="px-2 py-1 text-xs">Backup</ActionButton>
+                    :
+                        <></>}
+                    {rebuild?
+                        <ActionButton onClick={rebuildHandler} disabled={!ready || !!value.rebuilding} className="px-2 py-1 text-xs">Rebuild</ActionButton>
+                    :
+                        <></>}
+                </div>
+            </td>
+        </tr>
     )
 }
 
@@ -207,18 +225,18 @@ function DomainStatus(props: {value: DomainStore}) {
     }, [value]);
 
     if(value.rebuildDone) {
-        return <span>Rebuild complete</span>;
+        return <span className="text-green-400 text-xs">Rebuild complete</span>;
     }
 
     if(value.rebuilding) {
-        return <span>Rebuilding ({rebuildPct})%</span>;
+        return <span className="text-blue-400 text-xs">Rebuilding ({rebuildPct}%)</span>;
     }
 
-    if(backupStatus) return <span>{backupStatus}</span>;
+    if(backupStatus) return <span className="text-amber-400 text-xs">{backupStatus}</span>;
 
     if(value.reclame_fuuids) {
-        return <span>Reclame fuuids</span>;
+        return <span className="text-purple-400 text-xs">Reclame fuuids</span>;
     }
 
-    return <span></span>;
+    return <span className="text-slate-600 text-xs">Stable</span>;
 }
