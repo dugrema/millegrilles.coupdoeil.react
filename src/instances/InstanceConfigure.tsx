@@ -1,4 +1,4 @@
-import { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import ActionButton from "../components/ActionButton";
@@ -8,79 +8,83 @@ import { FileHost } from "../workers/connection.worker";
 import useInstanceStore from "./instanceStore";
 
 function InstanceConfigure() {
+    const { instanceId } = useParams();
+    const workers = useWorkers();
+    const ready = useConnectionStore(state => state.connectionAuthenticated);
 
-    let { instanceId } = useParams();
-    let workers = useWorkers();
-    let ready = useConnectionStore(state=>state.connectionAuthenticated);
-
-    let deleteInstanceHandler = useCallback(async () => {
-        if(!ready) return;
-        if(!workers) throw new Error("workers not initialized");
-        if(!instanceId) throw new Error("instanceId not provided");
-        let response = await workers.connection.deleteInstance(instanceId)
-        if(response.ok !== true) throw new Error("Error deleting instance: " + response);
+    const deleteInstanceHandler = useCallback(async () => {
+        if (!ready) return;
+        if (!workers) throw new Error("workers not initialized");
+        if (!instanceId) throw new Error("instanceId not provided");
+        const response = await workers.connection.deleteInstance(instanceId);
+        if (response.ok !== true) throw new Error("Error deleting instance: " + response);
     }, [workers, ready, instanceId]);
 
     return (
-        <>
+        <div className="space-y-8 pb-12">
             <ConfigureFileManager />
 
-            <section className='pt-10'>
-                <h2 className='text-lg font-bold pt-4'>Danger zone</h2>
-                <ActionButton onClick={deleteInstanceHandler} disabled={!ready || !instanceId}>
+            <section className='bg-slate-800/50 border border-red-500/30 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-red-400 mb-4 border-b border-red-500/20 pb-2 flex items-center'>
+                    <span className='mr-2'>⚠️</span> Danger zone
+                </h2>
+                <p className='text-slate-400 text-sm mb-4'>
+                    This action is permanent and cannot be undone.
+                </p>
+                <ActionButton 
+                    onClick={deleteInstanceHandler} 
+                    disabled={!ready || !instanceId}
+                    className="bg-red-600 hover:bg-red-500 border-red-500"
+                >
                     Delete instance
                 </ActionButton>
             </section>
-        </>
+        </div>
     )
 };
 
 export default InstanceConfigure;
 
+
 function ConfigureFileManager() {
+    const { instanceId } = useParams();
+    const workers = useWorkers();
+    const ready = useConnectionStore(state => state.connectionAuthenticated);
+    const [filehosts, setFilehosts] = useState(null as FileHost[] | null);
+    const instances = useInstanceStore(state => state.instances);
 
-    let { instanceId } = useParams();
-    let workers = useWorkers();
-    let ready = useConnectionStore(state=>state.connectionAuthenticated);
-    // let [fileManagers, setFileManagers] = useState(null as FileManager[] | null);;
-    let [filehosts, setFilehosts] = useState(null as FileHost[] | null);;
-    let instances = useInstanceStore(state=>state.instances);
+    const [selected, setSelected] = useState(null as string | null);
+    const onChangeHandler = useCallback((e: ChangeEvent<HTMLSelectElement>) => setSelected(e.currentTarget.value), [setSelected]);
 
-    let [selected, setSelected] = useState(null as string | null);
-    let onChangeHandler = useCallback((e: ChangeEvent<HTMLSelectElement>)=>setSelected(e.currentTarget.value), [setSelected]);
-
-    useEffect(()=>{
-        if(!workers || !ready || !instanceId) return;
+    useEffect(() => {
+        if (!workers || !ready || !instanceId) return;
         workers.connection.getInstanceConfigurationList(instanceId)
-            .then(response=>{
-                // console.debug("Configuration", response);
-                if(response.ok !== true) console.error("Error loading server instance configuration: %O", response)
-                let filehostConfigId = response.configuration['filehost_id'];
+            .then(response => {
+                if (response.ok !== true) console.error("Error loading server instance configuration: %O", response)
+                const filehostConfigId = response.configuration['filehost_id'];
                 setSelected(filehostConfigId)
             })
-            .catch(err=>console.error("Error loading server instance configuration", err));
-    }, [workers, ready, instanceId, setSelected]);
+            .catch(err => console.error("Error loading server instance configuration", err));
+    }, [workers, ready, instanceId]);
 
-    let filehostsOptions = useMemo(()=>{
-        let filehostsOpts = [<option key='default' value=''>Default</option>];
-        if(filehosts) {
-            // Make list of instances with labels, then sort labels
-            let fileMappedInstances = filehosts.map(item=>{
+    const filehostsOptions = useMemo(() => {
+        const filehostsOpts = [<option key='default' value=''>Default</option>];
+        if (filehosts) {
+            const fileMappedInstances = filehosts.map(item => {
                 let label = item.url_external;
-                if(!label) {
-                    let instance = instances?.filter(innerItem=>innerItem.instance_id === item.instance_id).pop();
-                    if(instance) {
+                if (!label) {
+                    const instance = instances?.filter(innerItem => innerItem.instance_id === item.instance_id).pop();
+                    if (instance) {
                         label = instance.hostname || label;
                     } else {
                         label = item.filehost_id;
                     }
                 }
-                return {filehost_id: item.filehost_id, label};
+                return { filehost_id: item.filehost_id, label };
             })
-            fileMappedInstances.sort((a: any, b: any)=>a.label.localeCompare(b.label));
+            fileMappedInstances.sort((a: any, b: any) => a.label.localeCompare(b.label));
 
-            // Add sorted options
-            for(let item of fileMappedInstances) {
+            for (const item of fileMappedInstances) {
                 filehostsOpts.push(
                     <option key={item.filehost_id} value={item.filehost_id}>{item.label}</option>
                 );
@@ -89,40 +93,54 @@ function ConfigureFileManager() {
         return filehostsOpts;
     }, [filehosts, instances]);
 
-    let saveInstanceFilehostHandler = useCallback(async () => {
-        if(!ready || !workers) throw new Error('workers not initialized');
-        if(!instanceId) throw new Error('Instance id not provided');
-        if(selected === null) throw new Error('File manager id not provided');
-        let response = await workers.connection.setFilehostForInstance(instanceId, selected?selected:null);
-        if(response.ok !== true) {
+    const saveInstanceFilehostHandler = useCallback(async () => {
+        if (!ready || !workers) throw new Error('workers not initialized');
+        if (!instanceId) throw new Error('Instance id not provided');
+        if (selected === null) throw new Error('File manager id not provided');
+        const response = await workers.connection.setFilehostForInstance(instanceId, selected ? selected : null);
+        if (response.ok !== true) {
             throw new Error(`Error changing file manager for instance: ${response.err}`);
         }
     }, [workers, ready, instanceId, selected]);
 
-    useEffect(()=>{
-        if(!ready || !workers) return;
+    useEffect(() => {
+        if (!ready || !workers) return;
         workers.connection.getFilehostList()
-            .then(result=>{
-                if(result.list) {
-                    let filehosts = result.list.filter(item=>!item.deleted);
+            .then(result => {
+                if (result.list) {
+                    const filehosts = result.list.filter(item => !item.deleted);
                     setFilehosts(filehosts);
                 }
             })
-            .catch(err=>console.error("Error loading file managers", err));
-    }, [workers, ready, setFilehosts]);
+            .catch(err => console.error("Error loading file managers", err));
+    }, [workers, ready]);
 
     return (
-        <section>
-            <h2 className='text-lg font-bold pt-4'>Instance file host</h2>
+        <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
+            <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2 flex items-center'>
+                <span className='mr-2'>📁</span> Instance file host
+            </h2>
 
-            <div className='grid grid-cols-1 md:grid-cols-3'>
-                <label htmlFor='select-file-manager'>Select file host</label>
-                <select id='select-file-manager' value={selected||''} onChange={onChangeHandler} 
-                    className='text-black col-span-2'>
-                    {filehostsOptions}
-                </select>
+            <div className='space-y-4'>
+                <div className='flex flex-col space-y-2'>
+                    <label htmlFor='select-file-manager' className='text-sm text-slate-400'>
+                        Select file host
+                    </label>
+                    <select 
+                        id='select-file-manager' 
+                        value={selected || ''} 
+                        onChange={onChangeHandler} 
+                        className='bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all'
+                    >
+                        {filehostsOptions}
+                    </select>
+                </div>
+                <div className="pt-2">
+                    <ActionButton onClick={saveInstanceFilehostHandler} disabled={!ready} mainButton={true}>
+                        Save filehost
+                    </ActionButton>
+                </div>
             </div>
-            <ActionButton onClick={saveInstanceFilehostHandler} disabled={!ready} mainButton={true}>Save filehost</ActionButton>
         </section>
     )
 }

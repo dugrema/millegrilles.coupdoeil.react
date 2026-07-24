@@ -1,21 +1,19 @@
 import React, { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useOutletContext, useParams } from "react-router-dom";
+import { useOutletContext, useParams } from "react-router-dom";
 import useWorkers from "../workers/workers";
 import useConnectionStore from "../connectionStore";
 import { PasswordDict, ServerInstance } from "../workers/connection.worker";
 
 function InstanceApplicationPasswords() {
-
-    let { instanceId } = useParams();
-    let { instance } = useOutletContext() as {instance: ServerInstance};
+    const { instance } = useOutletContext() as {instance: ServerInstance};
 
     return (
-        <>
-            <section>
-                <h2 className='text-lg font-bold pt-4'>Application passwords</h2>
-                <ApplicationPasswords instance={instance} />
-            </section>
-        </>
+        <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
+            <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2 flex items-center'>
+                <span className='mr-2'>🔑</span> Application passwords
+            </h2>
+            <ApplicationPasswords instance={instance} />
+        </section>
     )
 }
 
@@ -24,90 +22,97 @@ export default InstanceApplicationPasswords;
 
 function ApplicationPasswords(props: {instance: ServerInstance | null}) {
 
-    let { instance } = props;
+    const { instance } = props;
 
-    let workers = useWorkers();
-    let ready = useConnectionStore(state=>state.connectionAuthenticated);
+    const workers = useWorkers();
+    const ready = useConnectionStore(state=>state.connectionAuthenticated);
 
-    let [secretCopied, setSecretCopied] = useState(null as string | null);
+    const [secretCopied, setSecretCopied] = useState(null as string | null);
 
-    let copyClipboard = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
-        let {name, value} = e.currentTarget;
+    const copyClipboard = useCallback((name: string, value: string) => {
         navigator.clipboard.writeText(value);
         setSecretCopied(name);
     }, [setSecretCopied]);
 
-    useEffect(()=>{
+    useEffect(() => {
         if(!secretCopied) return;
-        let timeout = setTimeout(()=>setSecretCopied(null), 3_000);
+        const timeout = setTimeout(() => setSecretCopied(null), 3_000);
         return () => {
             clearTimeout(timeout);
         }
-    }, [secretCopied, setSecretCopied]);
+    }, [secretCopied]);
 
-    let [secrets, setSecrets] = useState(null as PasswordDict | null);
+    const [secrets, setSecrets] = useState(null as PasswordDict | null);
 
-    let secretList = useMemo(()=>{
+    const secretRows = useMemo(() => {
         if(!secrets) return [];
-        let fileNames = Object.keys(secrets);
-        fileNames.sort((a: string, b: string)=>{return a.localeCompare(b)});
+        const fileNames = Object.keys(secrets).sort((a, b) => a.localeCompare(b));
 
-        return fileNames.map(filename=>{
-            if(!secrets) return 'N/A';
-            let secretValue = secrets[filename] || 'N/A';
-            let multiline = secretValue.indexOf('\n') > 0;
+        return fileNames.map(filename => {
+            const secretValue = secrets[filename] || 'N/A';
+            const isCopied = filename === secretCopied;
 
-            let buttonClassname = '';
-            if(filename === secretCopied) {
-                buttonClassname = 'bg-amber-700';
-            }
-
-            if(multiline){
-                return (
-                    <li key={filename} 
-                        className='grid grid-cols-6 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40'>
-                            <p className='col-span-6'>{filename}</p>
-                            <button onClick={copyClipboard} name={filename} value={secretValue}
-                                className={'col-span-6 pt-2 pb-6 text-left ' + buttonClassname}>
-                                    <pre>{secretValue}</pre>
-                            </button>
-                    </li>
-                )
-            }
             return (
-                <li key={filename}
-                    className='grid grid-cols-1 md:grid-cols-6 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40'>
-                    <p className='col-span-2'>{filename}</p>
-                    <p className='col-span-4'>
-                        <button onClick={copyClipboard} name={filename} value={secretValue}
-                            className={buttonClassname}>
+                <tr key={filename} className="hover:bg-slate-700/30 transition-colors">
+                    <td className="px-4 py-3 font-medium text-white whitespace-nowrap">{filename}</td>
+                    <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                            <code className={`px-2 py-1 rounded bg-slate-900 text-slate-400 text-xs break-all ${isCopied ? 'text-amber-400 ring-1 ring-amber-400/50' : ''}`}>
                                 {secretValue}
-                        </button>
-                    </p>
-                </li>
-            )
+                            </code>
+                            <button
+                                onClick={() => copyClipboard(filename, secretValue)}
+                                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                                    isCopied 
+                                    ? 'bg-amber-500 text-white' 
+                                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                }`}
+                            >
+                                {isCopied ? 'Copied!' : 'Copy'}
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            );
         });
     }, [secrets, secretCopied, copyClipboard]);
 
-    useEffect(()=>{
-        if(!workers || !ready || !instance?.securite) return // Workers not initialized;
+    useEffect(() => {
+        if(!workers || !ready || !instance?.securite) return;
         const security = instance.securite;
         if(!security) throw new Error("instance security is not defined");
 
         workers.connection.getApplicationPasswords(instance.instance_id, security)
-            .then(response=>{
+            .then(response => {
                 if(response.secrets) setSecrets(response.secrets);
                 else {
                     console.error("getApplicationPasswords Error retrieving passwords", response);
                 }
             })
-            .catch(err=>console.error("getApplicationPasswords Error", err));
-    }, [workers, ready, instance, setSecrets]);
+            .catch(err => console.error("getApplicationPasswords Error", err));
+    }, [workers, ready, instance]);
 
     return (
-        <ul>
-            {secretList}
-        </ul>
+        <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+                <thead className="text-xs text-slate-400 uppercase bg-slate-900/50">
+                    <tr>
+                        <th className="px-4 py-3">Key</th>
+                        <th className="px-4 py-3">Value</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700">
+                    {secretRows.length > 0 ? (
+                        secretRows
+                    ) : (
+                        <tr>
+                            <td colSpan={2} className="px-4 py-8 text-center text-slate-400">No passwords found</td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
+        </div>
     );
 }
+
 
