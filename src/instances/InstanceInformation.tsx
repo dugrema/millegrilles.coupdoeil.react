@@ -185,11 +185,13 @@ function ShowInstanceInformation() {
                     <div className="space-y-2">
                         <p className="text-sm font-medium text-slate-400">Open Ports</p>
                         <div className="flex flex-wrap gap-2">
-                            {state.host?.ports ? Object.entries(state.host.ports).map(([port, p]) => (
-                                <span key={port} className="px-2 py-1 bg-slate-700 rounded text-xs font-mono">
-                                    {port}:{p}
-                                </span>
-                            )) : <span className="text-sm text-slate-500 italic">No port info available</span>}
+                            {state.host?.ports ? Object.entries(state.host.ports)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([port, p]) => (
+        <span key={port} className="px-2 py-1 bg-slate-700 rounded text-xs font-mono">
+            {port}:{p}
+        </span>
+    )) : <span className="text-sm text-slate-500 italic">No port info available</span>}
                         </div>
                     </div>
                 </section>
