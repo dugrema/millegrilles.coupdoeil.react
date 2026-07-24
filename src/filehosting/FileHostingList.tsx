@@ -8,272 +8,257 @@ import { ConditionalFormatters, Formatters } from "millegrilles.reactdeps.typesc
 import useInstanceStore from "../instances/instanceStore";
 
 function FileHostingList() {
+    const ready = useConnectionStore(state => state.connectionAuthenticated);
+    const workers = useWorkers();
 
-    let ready = useConnectionStore(state=>state.connectionAuthenticated);
-    let workers = useWorkers();
-
-    let syncHandler = useCallback(async ()=>{
-        if(!ready || !workers) throw new Error("Workers not initialized");
+    const syncHandler = useCallback(async () => {
+        if (!ready || !workers) throw new Error("Workers not initialized");
     }, [ready, workers]);
 
-    let reindexHandler = useCallback(async ()=>{
-        if(!ready || !workers) throw new Error("Workers not initialized");
-        let result = await workers.connection.reindexFileManagers();
-        if(!result.ok) throw new Error("Error resetting indexes");
+    const reindexHandler = useCallback(async () => {
+        if (!ready || !workers) throw new Error("Workers not initialized");
+        const result = await workers.connection.reindexFileManagers();
+        if (!result.ok) throw new Error("Error resetting indexes");
     }, [ready, workers]);
 
-    let resetTransfersHandler = useCallback(async ()=>{
-        if(!ready || !workers) throw new Error("Workers not initialized");
-        let response = await workers.connection.resetTransfers();
-        if(!response.ok) throw new Error('Error resetting transfers: ' + response.err);
+    const resetTransfersHandler = useCallback(async () => {
+        if (!ready || !workers) throw new Error("Workers not initialized");
+        const response = await workers.connection.resetTransfers();
+        if (!response.ok) throw new Error('Error resetting transfers: ' + response.err);
     }, [ready, workers]);
 
-    let resetVisitsHandler = useCallback(async ()=>{
-        if(!ready || !workers) throw new Error("Workers not initialized");
-        let response = await workers.connection.resetVisitsClaims();
-        if(response.ok !== true) throw new Error('Error resetting visits: ' + response.err);
+    const resetVisitsHandler = useCallback(async () => {
+        if (!ready || !workers) throw new Error("Workers not initialized");
+        const response = await workers.connection.resetVisitsClaims();
+        if (response.ok !== true) throw new Error('Error resetting visits: ' + response.err);
     }, [ready, workers]);
 
-    const claimAllHandler = useCallback(async () =>{
-        if(!ready || !workers) throw new Error("Workers not initialized");
-        let response = await workers.connection.claimAllFiles();
-        if(response.ok !== true) throw new Error('Error resetting visits: ' + response.err);
+    const claimAllHandler = useCallback(async () => {
+        if (!ready || !workers) throw new Error("Workers not initialized");
+        const response = await workers.connection.claimAllFiles();
+        if (response.ok !== true) throw new Error('Error resetting visits: ' + response.err);
     }, [ready, workers]);
 
     return (
-        <>
-            <Link to='/coupdoeil2'
-                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
+        <div className="space-y-8 pb-12">
+            <div className="flex items-center justify-between">
+                <Link to='/coupdoeil2'
+                    className='inline-flex items-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 rounded-xl transition-all duration-200'>
                     Back
-            </Link>
+                </Link>
+                <h1 className='text-xl font-bold text-slate-300'>File hosting</h1>
+            </div>
 
-            <h1 className='text-xl font-bold pt-4'>File hosting</h1>
+            <section className='bg-slate-800/50 border border-slate/700 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2'>Utilities</h2>
 
-            <section>
-
-                <h2 className='text-lg font-bold pt-4 pb-2'>Utilities</h2>
-
-                <ActionButton onClick={syncHandler} disabled={!ready} mainButton={true}>Synchronize</ActionButton>
-                <ActionButton onClick={reindexHandler} disabled={!ready}>Reindex</ActionButton>
-                <ActionButton onClick={resetTransfersHandler} disabled={!ready}>Reset transfers</ActionButton>
-                <ActionButton onClick={resetVisitsHandler} disabled={!ready}>Reset visits/claims</ActionButton>
-                <ActionButton onClick={claimAllHandler} disabled={!ready}>Claim all</ActionButton>
-
-            </section>
-
-            <section>
-                <h2 className='text-lg font-bold pt-4 pb-2'>Configuration</h2>
-                <FilehostConfiguration />
-            </section>
-
-            <section>
-                <h2 className='text-lg font-bold pt-4 pb-2'>File hosts list</h2>
-
-                <div className='pb-2'>
-                                <Link to='/coupdoeil2/fileHosting/add'
-                                    className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
-                                        + Add host
-                                    </Link>
-                                </div>
-
-
-
-                <div>
-                    <div className='grid grid-cols-12'>
-                        <p className='font-bold col-span-12 lg:col-span-4'>Url / Instance</p>
-                        <p className='font-bold col-span-6 lg:col-span-3'>Status</p>
-                        <p className='font-bold col-span-3 lg:col-span-1'>Files</p>
-                        <p className='font-bold col-span-2 lg:col-span-2'>Size</p>
-                        <p className='font-bold hidden lg:block col-span-2'>Queue</p>
-                    </div>
-                    <FileHostList />
+                <div className="flex flex-wrap gap-4">
+                    <ActionButton onClick={syncHandler} disabled={!ready} mainButton={true}>Synchronize</ActionButton>
+                    <ActionButton onClick={reindexHandler} disabled={!ready}>Reindex</ActionButton>
+                    <ActionButton onClick={resetTransfersHandler} disabled={!ready}>Reset transfers</ActionButton>
+                    <ActionButton onClick={resetVisitsHandler} disabled={!ready}>Reset visits/claims</ActionButton>
+                    <ActionButton onClick={claimAllHandler} disabled={!ready} className="bg-amber-600/20 hover:bg-amber-600/30 border-amber-600/40 text-amber-400">Claim all</ActionButton>
                 </div>
             </section>
 
-            <section>
-                <h2 className='text-lg font-bold pt-4 pb-2'>File controlers list</h2>
-                <div className='grid grid-cols-12'>
-                    <p className='font-bold col-span-7 lg:col-span-5'>Instance</p>
-                    <p className='font-bold col-span-3 lg:col-span-7'>Presence</p>
+            <section className='bg-slate-800/50 border border-slate/700 p-6 rounded-2xl shadow-xl'>
+                <div className="flex items-center justify-between mb-4 border-b border-slate/700 pb-2">
+                    <h2 className='text-lg font-bold text-slate/300'>File hosts list</h2>
+                    <Link to='/coupdoeil2/fileHosting/add'
+                        className='inline-flex items-center px-3 py-1 bg-blue-600/20 border border-blue-500/30 text-blue-400 hover:bg-blue-600/30 rounded-lg text-sm transition-all duration-200'>
+                        + Add host
+                    </Link>
+                </div>
+
+                <div className='grid grid-cols-12 gap-2 mb-2'>
+                    <p className='font-semibold col-span-12 lg:col-span-4 text-slate-400'>Url / Instance</p>
+                    <p className='font-semibold col-span-6 lg:col-span-3 text-slate/400 text-center lg:text-left'>Status</p>
+                    <p className='font-semibold col-span-3 lg:col-span-1 text-slate/400 text-center'>Files</p>
+                    <p className='font-semibold col-span-2 lg:col-span-2 text-slate/400 text-center'>Size</p>
+                    <p className='font-semibold hidden lg:block col-span-2 text-slate/400 text-center'>Queue</p>
+                </div>
+                <FileHostList />
+            </section>
+
+            <section className='bg-slate-800/50 border border-slate/700 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-slate/300 mb-4 border-b border-slate/700 pb-2'>File controllers list</h2>
+                <div className='grid grid-cols-12 gap-2 mb-2'>
+                    <p className='font-semibold col-span-7 lg:col-span-5 text-slate/400'>Instance</p>
+                    <p className='font-semibold col-span-5 lg:col-span-7 text-slate/400 text-center'>Presence</p>
                 </div>
                 <FileControlerList />
             </section>
-
-        </>
+        </div>
     )
 }
 
 export default FileHostingList;
 
-const CONST_CLASSNAME_FILEHOST_ROW = 'grid grid-cols-12 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40';
+const CONST_CLASSNAME_FILEHOST_ROW = 'grid grid-cols-12 items-center odd:bg-slate-700/30 pt-2 pb-2 pl-2 pr-2 hover:bg-slate-700/50 transition-colors rounded-lg';
 
 type FilehostListItem = FilehostStoreItem & {label: string};
 
 function FileHostList() {
+    const filehosts = useFilehostStore(state => state.filehosts);
+    const instances = useInstanceStore(state => state.instances);
 
-    let filehosts = useFilehostStore(state=>state.filehosts);
-    let instances = useInstanceStore(state=>state.instances);
+    const filehostElems = useMemo(() => {
+        if (!filehosts) return null;
 
-    let filehostElems = useMemo(()=>{
-        if(!filehosts) return null;
-
-        // Create label and sort
-        let filehostCopy = filehosts.filter(item=>!item.deleted).map(item=>{
+        const filehostCopy = filehosts.filter(item => !item.deleted).map(item => {
             let label = item.url_external;
-            if(!label) {
-                if(instances) {
-                    let instance = instances.filter(instance=>instance.instance_id === item.instance_id).pop();
-                    if(instance) label = instance.hostname;
+            if (!label) {
+                if (instances) {
+                    const instance = instances.find(instance => instance.instance_id === item.instance_id);
+                    if (instance) label = instance.hostname;
                 }
             }
-            if(!label) label = item.filehost_id;  // Fallback
-            return {...item, label};
+            if (!label) label = item.filehost_id; // Fallback
+            return { ...item, label };
         }) as FilehostListItem[];
-        filehostCopy.sort((a, b)=>a.label.localeCompare(b.label));
+        filehostCopy.sort((a, b) => a.label.localeCompare(b.label));
 
-        return filehostCopy.map(item=>{
-
+        return filehostCopy.map(item => {
             let count = '' as number | string;
-            if(typeof(item.fuuid?.count) === 'number') count = item.fuuid.count;
+            if (typeof (item.fuuid?.count) === 'number') count = item.fuuid.count;
             let size = undefined as number | undefined;
-            if(typeof(item.fuuid?.size) === 'number') size = item.fuuid.size;
+            if (typeof (item.fuuid?.size) === 'number') size = item.fuuid.size;
 
             let status = '...';
-            if(!item.sync_active) status = 'disabled';
-            else if(item.connected) status = 'connected';
-            else if(item.connected === false) status = 'not connected';
+            if (!item.sync_active) status = 'disabled';
+            else if (item.connected) status = 'connected';
+            else if (item.connected === false) status = 'not connected';
 
             let transferQueueLength = 'N/A' as number | string;
-            if(typeof(item.transfer_q_len) === 'number') transferQueueLength = item.transfer_q_len;
+            if (typeof (item.transfer_q_len) === 'number') transferQueueLength = item.transfer_q_len;
+
+            const statusColor = status === 'connected' ? 'text-emerald-400' : (status === 'disabled' ? 'text-amber-400' : 'text-red-400');
 
             return (
                 <div key={item.filehost_id} className={CONST_CLASSNAME_FILEHOST_ROW}>
                     <Link to={`/coupdoeil2/fileHosting/filehost/${item.filehost_id}`}
-                        className='underline col-span-12 lg:col-span-4'>
-                            {item.label}
+                        className='underline col-span-12 lg:col-span-4 text-blue-400 hover:text-blue-300 transition-colors'>
+                        {item.label}
                     </Link>
-                    <p className='col-span-6 lg:col-span-3'>{status}</p>
-                    <p className='col-span-3 lg:col-span-1'>{count}</p>
-                    <p className='col-span-2 lg:col-span-2'><Formatters.FormatteurTaille value={size} /></p>
-                    <p className='hidden lg:block col-span-2'>{transferQueueLength}</p>
-                </div>
-            )
-        })
-    }, [filehosts, instances]);
-
-    if(!filehostElems) return <p>Loading ...</p>;
-    return <>{filehostElems}</>;
-}
-
-const CONST_CLASSNAME_FILECONTROLER_ROW = 'grid grid-cols-12 odd:bg-amber-600 odd:bg-opacity-10 pt-1 pb-1 pl-2 pr-2 hover:bg-amber-500 hover:bg-opacity-40';
-
-function FileControlerList() {
-
-    let filecontrolers = useFilehostStore(state=>state.filecontrolers);
-    let instances = useInstanceStore(state=>state.instances);
-
-    let filecontrolersElems = useMemo(()=>{
-        if(!filecontrolers) return <p>Loading ...</p>;
-        return filecontrolers.map(item=>{
-            let label = null;
-            if(!label) {
-                if(instances) {
-                    let instance = instances.filter(instance=>instance.instance_id === item.instance_id).pop();
-                    if(instance) label = instance.hostname;
-                }
-            }
-            if(!label) label = item.instance_id;  // Fallback
-
-            return (
-                <div key={item.instance_id} className={CONST_CLASSNAME_FILECONTROLER_ROW}>
-                    <p className='col-span-7 lg:col-span-5'>{label}</p>
-                    <ConditionalFormatters.FormatterConditionalDate 
-                        value={item.lastUpdate} warn={360} error={1800} className='col-span-5 lg:col-span-7' />
+                    <p className={`col-span-6 lg:col-span-3 text-center lg:text-left text-sm font-medium ${statusColor}`}>{status}</p>
+                    <p className='col-span-3 lg:col-span-1 text-center text-slate-300'>{count}</p>
+                    <p className='col-span-2 lg:col-span-2 text-center text-slate/300'><Formatters.FormatteurTaille value={size} /></p>
+                    <p className='hidden lg:block col-span-2 text-center text-slate/300'>{transferQueueLength}</p>
                 </div>
             )
         });
-    }, [filecontrolers]);
+    }, [filehosts, instances]);
 
+    if (!filehostElems) return <p className="text-slate-400">Loading ...</p>;
+    return <>{filehostElems}</>;
+}
+
+const CONST_CLASSNAME_FILECONTROLER_ROW = 'grid grid-cols-12 items-center odd:bg-slate/50 pt-2 pb-2 pl-2 pr-2 hover:bg-slate/50 transition-colors rounded-lg';
+
+function FileControlerList() {
+    const filecontrolers = useFilehostStore(state => state.filecontrolers);
+    const instances = useInstanceStore(state => state.instances);
+
+    const filecontrolersElems = useMemo(() => {
+        if (!filecontrolers) return <p className="text-slate/400">Loading ...</p>;
+        return filecontrolers.map(item => {
+            let label = null;
+            if (!label) {
+                if (instances) {
+                    const instance = instances.find(instance => instance.instance_id === item.instance_id);
+                    if (instance) label = instance.hostname;
+                }
+            }
+            if (!label) label = item.instance_id; // Fallback
+
+            return (
+                <div key={item.instance_id} className={CONST_CLASSNAME_FILECONTROLER_ROW}>
+                    <p className='col-span-7 lg:col-span-5 text-slate/200'>{label}</p>
+                    <div className='col-span-5 lg:col-span-7 text-center lg:text-left'>
+                        <ConditionalFormatters.FormatterConditionalDate 
+                            value={item.lastUpdate} warn={360} error={1800} className='text-sm' />
+                    </div>
+                </div>
+            )
+        });
+    }, [filecontrolers, instances]);
 
     return <>{filecontrolersElems}</>;
 }
 
 export function FilehostDropdown(props: {value: string, onChange: Dispatch<string>, className?: string}) {
+    const {value, onChange, className} = props;
 
-    let {value, onChange, className} = props;
+    const filehosts = useFilehostStore(state => state.filehosts);
+    const instances = useInstanceStore(state => state.instances);
 
-    let filehosts = useFilehostStore(state=>state.filehosts);
-    let instances = useInstanceStore(state=>state.instances);
-
-    let onChangeHandler = useCallback((e: ChangeEvent<HTMLSelectElement>)=>{
+    const onChangeHandler = useCallback((e: ChangeEvent<HTMLSelectElement>)=>{
         onChange(e.currentTarget.value);
     }, [onChange]);
 
-    let filehostElems = useMemo(()=>{
-        if(!filehosts) return null;
-        // Create label and sort
-        let filehostCopy = filehosts.filter(item=>!item.deleted).map(item=>{
+    const filehostElems = useMemo(() => {
+        if (!filehosts) return null;
+        const filehostCopy = filehosts.filter(item => !item.deleted).map(item => {
             let label = item.url_external;
-            if(!label) {
-                if(instances) {
-                    let instance = instances.filter(instance=>instance.instance_id === item.instance_id).pop();
-                    if(instance) label = instance.hostname;
+            if (!label) {
+                if (instances) {
+                    const instance = instances.find(instance => instance.instance_id === item.instance_id);
+                    if (instance) label = instance.hostname;
                 }
             }
-            if(!label) label = item.filehost_id;  // Fallback
-            return {...item, label};
+            if (!label) label = item.filehost_id; // Fallback
+            return { ...item, label };
         }) as FilehostListItem[];
-        filehostCopy.sort((a, b)=>a.label.localeCompare(b.label));
+        filehostCopy.sort((a, b) => a.label.localeCompare(b.label));
 
-        return filehostCopy.map(item=>{
-            let label = item.label;
-            return (
-                <option key={item.filehost_id} value={item.filehost_id}>{label}</option>
-            )
-        })
+        return filehostCopy.map(item => (
+            <option key={item.filehost_id} value={item.filehost_id}>{item.label}</option>
+        ))
     }, [filehosts, instances]);
 
     return (
-        <select value={value} onChange={onChangeHandler} className={'text-black ' + className}>
-            <option>Pick one</option>
+        <select value={value} onChange={onChangeHandler} className={'bg-slate-900 border border-slate/700 text-slate/200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all ' + className}>
+            <option value="">Pick one</option>
             {filehostElems}
         </select>
-    )    
+    )
 }
 
 function FilehostConfiguration() {
-    let workers = useWorkers();
-    let ready = useConnectionStore(state=>state.connectionAuthenticated);
+    const workers = useWorkers();
+    const ready = useConnectionStore(state => state.connectionAuthenticated);
 
-    let [defaultFilehost, setDefaultFilehost] = useState('');
+    const [defaultFilehost, setDefaultFilehost] = useState('');
 
-    let saveConfigurationHandler = useCallback(async ()=>{
-        if(!workers) throw new Error('workers not initialized');
-        if(!defaultFilehost) throw new Error('No filehost value provided')
-        let response = await workers.connection.setDefaultFilehost(defaultFilehost);
-        if(response.ok !== true) throw new Error('Error saving default filehost: ' + response.err);
+    const saveConfigurationHandler = useCallback(async () => {
+        if (!workers) throw new Error('workers not initialized');
+        if (!defaultFilehost) throw new Error('No filehost value provided')
+        const response = await workers.connection.setDefaultFilehost(defaultFilehost);
+        if (response.ok !== true) throw new Error('Error saving default filehost: ' + response.err);
     }, [workers, defaultFilehost]);
 
-    useEffect(()=>{
-        if(!ready || !workers) return;
+    useEffect(() => {
+        if (!ready || !workers) return;
 
         workers.connection.getFilehostConfiguration()
-            .then(response=>{
-                if(response.configuration) {
-                    let defaultFilehost = response.configuration['filehost.default']
+            .then(response => {
+                if (response.configuration) {
+                    const defaultFilehost = response.configuration['filehost.default']
                     setDefaultFilehost(defaultFilehost);
                 }
             })
-            .catch(err=>console.error("Error loading filehost configuration", err));
+            .catch(err => console.error("Error loading filehost configuration", err));
     }, [workers, ready, setDefaultFilehost])
 
     return (
-        <>
-            <div className='grid grid-cols-1: lg:grid-cols-4'>
-            <label>Default file host</label>
-                <FilehostDropdown value={defaultFilehost} onChange={setDefaultFilehost} className='lg:col-span-2' />
+        <div className="space-y-4">
+            <div className='grid grid-cols-1 lg:grid-cols-4 gap-4 items-center'>
+                <label className='text-sm text-slate/400'>Default file host</label>
+                <FilehostDropdown value={defaultFilehost} onChange={setDefaultFilehost} className='lg:col-span-3' />
             </div>
-            <ActionButton onClick={saveConfigurationHandler}>Save</ActionButton>
-        </>
+            <div className="flex justify-end">
+                <ActionButton onClick={saveConfigurationHandler} disabled={!ready}>Save</ActionButton>
+            </div>
+        </div>
     )
 }
