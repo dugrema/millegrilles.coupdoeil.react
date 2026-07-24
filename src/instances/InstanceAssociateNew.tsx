@@ -31,20 +31,20 @@ function AssociateNew() {
     }, [instanceUrl, setServerConfiguration]);
 
     return (
-        <>
+        <div className="p-4 space-y-4">
             <Link to='/coupdoeil2/instances'
-                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
-                    Back
+                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate/700 shadow-lg rounded-xl transition-all duration-200'>
+                Back
             </Link>
 
-            <h1 className='text-xl font-bold pt-4'>Associate instance</h1>
+            <h1 className='text-xl font-bold'>Associate instance</h1>
 
-            <p className='pt-2'>
+            <p>
                 A new instance certificate will be created and the bus configuration will be provided to an instance that is already
                 locked to this System Id.
             </p>
 
-            <p className='pt-2'>
+            <p>
                 This feature can be used to configure a brand new instance or renew the certificate and fix the bus configuration
                 of an already configured instance.
             </p>
@@ -54,15 +54,18 @@ function AssociateNew() {
                 <div className='grid grid-cols-1 md:grid-cols-2'>
                     <input type="url" value={urlMq} onChange={urlMqChangeHandler} className='text-black' />
                 </div>
+                <div className='pt-4'>
+                    <InstanceConnectHttp setUrl={setUrl} />
+                </div>
             </section>
 
             <section>
                 <h2 className='text-lg font-bold pt-4 pb-2'>Enter instance URL</h2>
-                <InstanceConnectHttp setUrl={setInstanceUrl} />
+                <div className='pt-4'>
+                    <ShowServerConfiguration value={serverConfiguration} urlMq={urlMq} instanceUrl={instanceUrl} />
+                </div>
             </section>
-
-            <ShowServerConfiguration value={serverConfiguration} urlMq={urlMq} instanceUrl={instanceUrl} />
-        </>
+        </div>
     );
 }
 
@@ -331,58 +334,3 @@ async function installSatellite(workers: AppWorkers, instanceUrl: URL, mqUrl: UR
         throw new Error("Error associating new instance: " + responseInstallation.data.err);
     }
 }
-
-
-//   function AfficherExpirationCertificat(props) {
-//     const [certificat, setCertificat] = useState('')
-//     useEffect(_=>{
-//       const pem = props.pem
-//       var cert = ''
-//       if(pem) {
-//         try {
-//           console.debug("PEM : %O", pem)
-//           cert = forgePki.certificateFromPem(pem)
-//           console.debug("Cert : %O", cert)
-//         } catch(err) {
-//           console.error("Erreur chargement certificat noeud: %O", err)
-//         }
-//       }
-//       setCertificat(cert)
-//     }, [props.pem])
-  
-//     const validity = certificat.validity || ''
-  
-//     var notAfter = '', expirationDuree = ''
-//     if(validity) {
-//       notAfter = '' + validity.notAfter
-//       const expirationDureeMs = validity.notAfter.getTime() - new Date().getTime()
-//       if(expirationDureeMs < 0) {
-//         expirationDuree = 'Expire'
-//       } else {
-//         const jourMs = 1000*60*60*24
-//         if(expirationDureeMs > jourMs) {
-//           const expirationDureeJours = expirationDureeMs / jourMs
-//           expirationDuree = Math.floor(expirationDureeJours) + ' jours'
-//         } else {
-//           const expirationDureeHeures = expirationDureeMs / (1000*60*60)
-//           expirationDuree = Math.floor(expirationDureeHeures) + ' heures'
-//         }
-//       }
-//       console.debug("Expiration duree : %O", expirationDuree)
-//     } else {
-//       return ''
-//     }
-  
-//     return (
-//       <>
-//         <Row>
-//           <Col md={3}>Expiration</Col>
-//           <Col>{notAfter}</Col>
-//         </Row>
-//         <Row>
-//           <Col md={3}>Duree restante</Col>
-//           <Col>{expirationDuree}</Col>
-//         </Row>
-//       </>
-//     )
-//   }

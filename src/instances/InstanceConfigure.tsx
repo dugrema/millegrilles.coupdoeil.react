@@ -21,7 +21,7 @@ function InstanceConfigure() {
     }, [workers, ready, instanceId]);
 
     return (
-        <div className="space-y-8 pb-12">
+        <div className="space-y-8 pb-12 p-4">
             <ConfigureFileManager />
 
             <section className='bg-slate-800/50 border border-red-500/30 p-6 rounded-2xl shadow-xl'>

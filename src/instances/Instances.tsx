@@ -49,7 +49,7 @@ export function InstanceEventHandler() {
         // Load domains
         workers.connection.getInstanceList()
             .then(response=>{
-                console.debug("Instance response", response);
+                // console.debug("Instance response", response);
                 if(response.ok !== true || !response.results) {
                     console.error("Error loading domain list: %O", response);
                     return;
@@ -83,7 +83,7 @@ async function processEvent(workers: AppWorkers | null, event: SubscriptionMessa
     let action = event.routingKey.split('.').pop();
     if(action === 'presenceInstanceV2') {
         if(!timestamp) throw new Error("Missing timestamp from message");
-        console.debug("Presence instance ", event);
+        // console.debug("Presence instance ", event);
         const instanceUpdate = {
             instance_id: instanceId,
             timestamp: new Date(timestamp*1000).toISOString(),

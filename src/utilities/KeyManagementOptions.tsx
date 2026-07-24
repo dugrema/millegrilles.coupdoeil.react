@@ -15,7 +15,7 @@ function KeyManagementOptions() {
     let [masterKey, setMasterKey] = useState(null as MasterKeyInformation | null);
 
     return (
-        <>
+        <div className="p-4 space-y-4">
             <Link to='/coupdoeil2'
                 className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
                     Back
@@ -40,7 +40,7 @@ function KeyManagementOptions() {
                 <h2 className='text-lg font-bold pt-4 pb-2'>Keymaster recovery</h2>
                 <KeymasterRecovery masterKey={masterKey} />
             </section>
-        </>
+        </div>
     );
 }
 

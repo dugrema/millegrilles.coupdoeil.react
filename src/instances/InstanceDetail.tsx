@@ -3,8 +3,6 @@ import { useMemo } from "react";
 import { Link, Outlet, useParams } from "react-router-dom";
 
 import useInstanceStore from "./instanceStore";
-import { ServerInstance } from "../workers/connection.worker";
-import { ConditionalFormatters } from "millegrilles.reactdeps.typescript";
 import { ManagerStatusV2 } from "../workers/typesInstance";
 
 function InstanceDetail() {
@@ -19,7 +17,7 @@ function InstanceDetail() {
     }, [instances, instanceId]) as ManagerStatusV2 | null;
 
     return (
-<div className="p-4 space-y-4">
+        <div className="p-4 space-y-4">
             <Link to='/coupdoeil2/instances'
                 className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
                     Back
