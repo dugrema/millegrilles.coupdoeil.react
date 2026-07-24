@@ -56,7 +56,7 @@ function ApplicationPasswords(props: {instance: ServerInstance | null}) {
                 <tr key={filename} className="hover:bg-slate-700/30 transition-colors">
                     <td className="px-4 py-3 font-medium text-white whitespace-nowrap">{filename}</td>
                     <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                             <code className={`px-2 py-1 rounded bg-slate-900 text-slate-400 text-xs break-all ${isCopied ? 'text-amber-400 ring-1 ring-amber-400/50' : ''}`}>
                                 {secretValue}
                             </code>

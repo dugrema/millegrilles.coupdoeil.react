@@ -12,7 +12,7 @@ function InstanceDetail() {
 
     const instance = useMemo(()=>{
         if(!instances) return {};
-        console.debug("Instances", instances);
+        // console.debug("Instances", instances);
         return instances.filter(item=>item.instance_id === instanceId).pop();
     }, [instances, instanceId]) as ManagerStatusV2 | null;
 
