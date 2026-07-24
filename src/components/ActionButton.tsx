@@ -13,13 +13,13 @@ type ActionButtonProps = {
 
 function ActionButton(props: ActionButtonProps) {
 
-    let { onClick, disabled, mainButton, forceErrorStatus, name, value } = props;
+    const { onClick, disabled, mainButton, forceErrorStatus, name, value } = props;
 
-    let [success, setSuccess] = useState(false);
-    let [waiting, setWaiting] = useState(false);
-    let [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
+    const [waiting, setWaiting] = useState(false);
+    const [error, setError] = useState('');
 
-    let [buttonClassName, Icon] = useMemo(()=>{
+    const [buttonClassName, Icon] = useMemo(()=>{
         if(error || forceErrorStatus) return [
             'inline-flex items-center justify-center px-4 py-2 bg-red-800 border border-red-700 text-white hover:bg-red-700 hover:scale-105 active:bg-red-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none', 
             <IconXSvg className='w-5 mr-2 fill-white'/>
@@ -38,7 +38,7 @@ function ActionButton(props: ActionButtonProps) {
         ];
     }, [error, forceErrorStatus, success, mainButton, waiting]);
 
-    let clickHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
+    const clickHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
         // Reset
         setSuccess(false);
         setWaiting(true);

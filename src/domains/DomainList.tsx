@@ -120,38 +120,41 @@ type DomainItemProps = {
 
 function DomainItem(props: DomainItemProps) {
 
-    let { value, rebuild, backup } = props;
+    const { value, rebuild, backup } = props;
 
-    let ready = useConnectionStore(state=>state.connectionAuthenticated);
-    let instances = useInstanceStore(state=>state.instances);
+    const ready = useConnectionStore(state=>state.connectionAuthenticated);
+    const instances = useInstanceStore(state=>state.instances);
 
-    let backupHandler = useCallback(async () => {
+    const backupHandler = useCallback(async () => {
         if(!backup) throw new Error("backup method not provided");
         if(!value.domaine) throw new Error("domaine not provided");
         await backup(value.domaine);
     }, [backup]);
 
-    let rebuildHandler = useCallback(async () => {
+    const rebuildHandler = useCallback(async () => {
         if(!rebuild) throw new Error("rebuild method not provided");
         if(!value.domaine) throw new Error("domaine not provided");
         await rebuild(value.domaine);
     }, [value, rebuild]);
 
-    let instanceLabel = useMemo(()=>{
+    const instanceLabel = useMemo(()=>{
         if(!instances || !value.instance_id) return '';
         let instance = instances.filter(item=>item.instance_id === value.instance_id).pop();
         if(instance) {
-            let labelSplit = instance.hostname.split('.');
-            // Split the first domain value from the hostname. Allows displaying on 2 lines.
-            if(labelSplit.length > 1) {
-                return labelSplit[0] + ' .' + labelSplit.slice(1).join('.')
+            const hostname = instance?.system_state?.host?.hostname;
+            if(hostname) {
+                const labelSplit = hostname.split('.');
+                // Split the first domain value from the hostname. Allows displaying on 2 lines.
+                if(labelSplit && labelSplit.length > 1) {
+                    return <><span>{labelSplit[0]}</span> <span>.{labelSplit.slice(1).join('.')}</span></>
+                }
+                return <>{hostname}</>;
             }
-            return instance.hostname;
         }
-        return value.instance_id;
+        return <>value.instance_id</>;
     }, [instances]);
 
-    let backupRunning = useMemo(()=>{
+    const backupRunning = useMemo(()=>{
         if(value.backupRunning) return true;
         return false;
     }, [value]);

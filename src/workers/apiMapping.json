@@ -68,8 +68,7 @@
             "evenement.*.regeneration",
             "evenement.*.backupMaj"
         ]},
-        "instanceEvents": {"exchanges": ["1.public", "2.prive", "3.protege"], "routingKeys": ["evenement.instance.presenceInstanceV2"]},
-        "instanceApplicationsDomainsEvents": {"exchanges": ["1.public", "2.prive", "3.protege"], "routingKeys": ["evenement.instance.*.presenceInstanceApplications"]},
+        "instanceEvents": {"exchanges": ["1.public", "2.prive", "3.protege"], "routingKeys": ["evenement.instance.*.presenceInstanceV2"]},
         "keymasterRecoveryEvents": {"exchanges": ["3.protege"], "routingKeys": ["evenement.MaitreDesCles.demandeCleSymmetrique"]},
         "userEvents": {"exchanges": ["3.protege"], "routingKeys": [
             "evenement.CoreMaitreDesComptes.majCompteUsager",

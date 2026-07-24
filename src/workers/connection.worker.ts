@@ -4,7 +4,7 @@ import axios from 'axios';
 import { ConnectionWorker, MessageResponse, SubscriptionCallback, SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
 import apiMapping from '@apiMapping-json';
 import { messageStruct, keymaster, encryption } from 'millegrilles.cryptography';
-import { ManagerStatusV2, RequestServerInstancesResponseV2 } from './typesInstance';
+import { ManagerStatusV2, RequestServerInstancesResponseV2, SystemState } from './typesInstance';
 
 const DOMAINE_CORETOPOLOGIE = 'CoreTopologie';
 const DOMAINE_CORECATALOGUES = 'CoreCatalogues';
@@ -74,11 +74,9 @@ export type DiskInformation = {
     free: number,
 }
 
-export type ServerInstancePresenceStatus = ManagerStatusV2;
+export type ServerInstancePresenceStatus = {system_state: SystemState};
 
-export type ServerInstancePresenceEventSubscriptionMessage = SubscriptionMessage & {
-    message: messageStruct.MilleGrillesMessage & {timestamp: number, status: ServerInstancePresenceStatus},
-};
+export type ServerInstancePresenceEventSubscriptionMessage = SubscriptionMessage & ServerInstancePresenceStatus;
 
 export type ServerInstance = ServerInstancePresenceStatus & {
     instance_id: string,

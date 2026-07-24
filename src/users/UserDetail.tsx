@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import useUserStore, { UserDetailStore } from "./userStore";
-import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import React, { ChangeEvent, MouseEvent, MouseEventHandler, useCallback, useEffect, useMemo, useState } from "react";
 import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
 import { CertificateRequest, ChangeUserSecurityCommand, Passkey, UserActivation, UserCookie, UserDetail } from "../workers/connection.worker";
@@ -33,75 +33,115 @@ function UserDetailPage() {
     }, [workers, ready, userId]);
 
     return (
-        <>
-            <Link to='/coupdoeil2/users'
-                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
-                    Back
-            </Link>
+        <div className="space-y-8 pb-12">
+            <div className="flex items-center justify-between">
+                <Link to='/coupdoeil2/users'
+                    className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
+                        Back
+                </Link>
+                <h1 className='text-3xl font-bold text-white'>User: {user?.nomUsager}</h1>
+            </div>
 
-            <h1 className='text-xl font-bold pt-4'>Users</h1>
-
-            <section>
-                <h2 className='text-lg font-bold pt-4 pb-2'>User detail</h2>
-
-                <div className='grid grid-cols-1 lg:grid-cols-2'>
-                    <p className='font-bold'>User name</p>
-                    <p>{user?.nomUsager}</p>
-                    <p className='font-bold'>User Id</p>
-                    <p className='text-xs sm:text-base'>{user?.userId}</p>
+            <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2'>User Profile</h2>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8'>
+                    <div>
+                        <p className='text-sm text-slate-400 uppercase tracking-wider'>Username</p>
+                        <p className='text-lg font-semibold text-slate-100'>{user?.nomUsager}</p>
+                    </div>
+                    <div>
+                        <p className='text-sm text-slate-400 uppercase tracking-wider'>User ID</p>
+                        <p className='text-lg font-semibold text-slate-300 font-mono'>{user?.userId}</p>
+                    </div>
                 </div>
             </section>
 
-            <section>
-                <h2 className='text-lg font-bold pt-4 pb-2'>Actions on account</h2>
+            <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2'>Account Management</h2>
+                
+                <div className='space-y-6'>
+                    <div className='flex flex-col space-y-2'>
+                        <p className='text-sm text-slate-400'>Activate with code provided by the user.</p>
+                        <ActivateCode username={user?.nomUsager} />
+                    </div>
 
-                <p className='pb-1'>Activate with code provided by the user.</p>
-                <div className='grid grid-cols-1 sm:grid-cols-3 md:grid-cols-6 pb-4'>
-                    <ActivateCode username={user?.nomUsager} />
-                </div>
-
-                <p className='pb-1'>Change user security level.</p>
-                <UserSecurity value={user} />
-
-            </section>
-
-            <section className='pt-4'>
-                <h2 className='text-lg font-bold pb-2'>Passkeys</h2>
-                <div className='grid grid-cols-3'>
-                    <p className='font-bold'>Hostname</p>
-                    <p className='font-bold'>Created</p>
-                    <p className='font-bold'>Last login</p>
-                    <PasskeyList value={userDetail} />
+                    <div className='flex flex-col space-y-2'>
+                        <p className='text-sm text-slate-400'>Security Level</p>
+                        <UserSecurity value={user} />
+                    </div>
                 </div>
             </section>
 
-            <section className='pt-4'>
-                <h2 className='text-lg font-bold pb-2'>Browser activations</h2>
-                <div className='grid grid-cols-1 md:grid-cols-3'>
-                    <p className='font-bold md:col-span-2'>Fingerprint</p>
-                    <p className='font-bold'>Created</p>
-                    <ActivationList value={userDetail} />
+            <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2 flex items-center'>
+                    <span className='mr-2'>🔑</span> Passkeys
+                </h2>
+                <div className='overflow-x-auto'>
+                    <table className='w-full text-left text-sm'>
+                        <thead className='text-xs text-slate-400 uppercase bg-slate-900/50 rounded-md'>
+                            <tr>
+                                <th className='px-4 py-3'>Hostname</th>
+                                <th className='px-4 py-3'>Created</th>
+                                <th className='px-4 py-3'>Last login</th>
+                            </tr>
+                        </thead>
+                        <tbody className='divide-y divide-slate-700'>
+                            <PasskeyList value={userDetail} />
+                        </tbody>
+                    </table>
                 </div>
             </section>
 
-            <section className='pt-4'>
-                <h2 className='text-lg font-bold pb-2'>Sessions (cookies)</h2>
-                <div className='grid grid-cols-3'>
-                    <p className='font-bold'>Hostname</p>
-                    <p className='font-bold'>Created</p>
-                    <p className='font-bold'>Expires</p>
-                    <CookiesList value={userDetail} />
+            <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2 flex items-center'>
+                    <span className='mr-2'>🌐</span> Browser Activations
+                </h2>
+                <div className='overflow-x-auto'>
+                    <table className='w-full text-left text-sm'>
+                        <thead className='text-xs text-slate-400 uppercase bg-slate-900/50'>
+                            <tr>
+                                <th className='px-4 py-3'>Fingerprint</th>
+                                <th className='px-4 py-3'>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody className='divide-y divide-slate-700'>
+                            <ActivationList value={userDetail} />
+                        </tbody>
+                    </table>
                 </div>
             </section>
 
-            <section className='pt-10'>
-                <h2 className='text-lg font-bold pb-2'>Live account eviction</h2>
-                <p>This is used to remove user passkeys and sessions and forcibly evict anyone currently logged-in with the <span className='font-bold'>{user?.nomUsager}</span> account.</p>
+            <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2 flex items-center'>
+                    <span className='mr-2'>🍪</span> Sessions (Cookies)
+                </h2>
+                <div className='overflow-x-auto'>
+                    <table className='w-full text-left text-sm'>
+                        <thead className='text-xs text-slate-400 uppercase bg-slate-900/50'>
+                            <tr>
+                                <th className='px-4 py-3'>Hostname</th>
+                                <th className='px-4 py-3'>Created</th>
+                                <th className='px-4 py-3'>Expires</th>
+                            </tr>
+                        </thead>
+                        <tbody className='divide-y divide-slate-700'>
+                            <CookiesList value={userDetail} />
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section className='bg-red-900/10 border border-red-900/30 p-6 rounded-2xl shadow-xl'>
+                <h2 className='text-lg font-bold text-red-400 mb-2'>Live account eviction</h2>
+                <p className='text-sm text-red-300/70 mb-4'>
+                    This is used to remove user passkeys and sessions and forcibly evict anyone currently logged-in with the <span className='font-bold text-red-300'>{user?.nomUsager}</span> account.
+                </p>
                 <EvictActions />
             </section>
-        </>
+        </div>
     );
 }
+
 
 export default UserDetailPage;
 
@@ -128,7 +168,7 @@ function ActivateCode(props: {username?: string | null}) {
         return 'inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none';
     }, [codeError, success]);
 
-    let activateHandler = useCallback(()=>{
+    let activateHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
         if(!workers || !ready) throw new Error("workers not initialized");
         Promise.resolve().then(async () => {
             if(!workers) throw new Error("workers not initialized");
@@ -167,7 +207,7 @@ function ActivateCode(props: {username?: string | null}) {
                 className='text-black' maxLength={9} />
             <ActionButton 
                 onClick={activateHandler} 
-                disabled={!ready || waiting}
+                disabled={!ready}
                 mainButton
             >
                 Activate

@@ -81,15 +81,16 @@ async function processEvent(workers: AppWorkers | null, event: SubscriptionMessa
     if(!instanceId) return;  // No instance id
 
     let action = event.routingKey.split('.').pop();
-    if(action === 'presenceInstance') {
+    if(action === 'presenceInstanceV2') {
         if(!timestamp) throw new Error("Missing timestamp from message");
-        processEventPresenceInstance(instanceId, timestamp, event as ServerInstancePresenceEventSubscriptionMessage, updateInstance);
+        console.debug("Presence instance ", event);
+        const instanceUpdate = {
+            instance_id: instanceId,
+            timestamp: new Date(timestamp*1000).toISOString(),
+            supprime: false,
+            securite: event.exchange,
+            system_state: event.message.system_state,
+        } as ManagerStatusV2;
+        updateInstance(instanceUpdate);
     }
-}
-
-async function processEventPresenceInstance(instance_id: string, timestamp: number, eventInstance: ServerInstancePresenceEventSubscriptionMessage, 
-    updateInstance: (update: ManagerStatusV2)=>void) 
-{
-    const instanceStatus = eventInstance.message.status;
-    updateInstance(instanceStatus);
 }
