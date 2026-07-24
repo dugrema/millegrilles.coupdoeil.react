@@ -43,7 +43,7 @@ function FileHostingList() {
     return (
         <>
             <Link to='/coupdoeil2'
-                className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
                     Back
             </Link>
 
@@ -70,11 +70,13 @@ function FileHostingList() {
                 <h2 className='text-lg font-bold pt-4 pb-2'>File hosts list</h2>
 
                 <div className='pb-2'>
-                    <Link to='/coupdoeil2/fileHosting/add'
-                        className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                            + Add host
-                    </Link>
-                </div>
+                                <Link to='/coupdoeil2/fileHosting/add'
+                                    className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
+                                        + Add host
+                                    </Link>
+                                </div>
+
+
 
                 <div>
                     <div className='grid grid-cols-12'>

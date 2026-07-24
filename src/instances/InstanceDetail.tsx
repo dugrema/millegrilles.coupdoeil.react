@@ -21,7 +21,7 @@ function InstanceDetail() {
     return (
         <>
             <Link to='/coupdoeil2/instances'
-                className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
                     Back
             </Link>
             <h1 className='text-xl font-bold pt-4'>Server instance {instance?.system_state?.host?.hostname}</h1>
@@ -34,18 +34,19 @@ function InstanceDetail() {
 
             <nav>
                 <Link to={`/coupdoeil2/instances/${instanceId}`}
-                    className='btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900'>
+                    className='inline-flex items-center justify-center px-4 py-2 bg-indigo-800 border border-indigo-700 text-white hover:bg-indigo-700 hover:scale-105 active:bg-indigo-700 shadow-lg rounded-xl transition-all duration-200'>
                         Information
                 </Link>
                 <Link to={`/coupdoeil2/instances/${instanceId}/passwords`}
-                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                    className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
                         Passwords
                 </Link>
-                <Link to={`/coupdoeil2/instances/${instanceId}/configure`}
-                    className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+<Link to={`/coupdoeil2/instances/${instanceId}/configure`}
+                    className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
                         Configure
-                </Link>
+                    </Link>
             </nav>
+
 
             <Outlet context={{instance}} />
         </>

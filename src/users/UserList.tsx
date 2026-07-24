@@ -30,10 +30,12 @@ function UserList() {
 
     return (
         <>
-            <Link to='/coupdoeil2'
-                className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+<Link to='/coupdoeil2'
+                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate/700 hover:scale-105 active:bg-slate/700 shadow-lg rounded-xl transition-all duration-200'>
                     Back
             </Link>
+
+
 
             <h1 className='text-xl font-bold pt-4'>Users</h1>
 

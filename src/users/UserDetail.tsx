@@ -35,7 +35,7 @@ function UserDetailPage() {
     return (
         <>
             <Link to='/coupdoeil2/users'
-                className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
+                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
                     Back
             </Link>
 
@@ -123,9 +123,9 @@ function ActivateCode(props: {username?: string | null}) {
         setCode(e.currentTarget.value)
     }, [setCode, setSuccess]);
     let buttonClassName = useMemo(()=>{
-        if(success) return 'btn inline-block text-center bg-green-700 hover:bg-green-600 active:bg-green-500 disabled:bg-green-800';
-        if(codeError) return 'btn inline-block text-center bg-red-700 hover:bg-red-600 active:bg-red-500 disabled:bg-red-800';
-        return 'btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800';
+        if(success) return 'inline-flex items-center justify-center px-4 py-2 bg-green-800 border border-green-700 text-white hover:bg-green-700 hover:scale-105 active:bg-green-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none';
+        if(codeError) return 'inline-flex items-center justify-center px-4 py-2 bg-red-800 border border-red-700 text-white hover:bg-red-700 hover:scale-105 active:bg-red-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none';
+        return 'inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none';
     }, [codeError, success]);
 
     let activateHandler = useCallback(()=>{
@@ -165,10 +165,14 @@ function ActivateCode(props: {username?: string | null}) {
         <>
             <input type='text' value={code} onChange={codeChangeHandler} placeholder="Example: abcd-1234"
                 className='text-black' maxLength={9} />
-            <button onClick={activateHandler} disabled={!ready}
-                className={buttonClassName}>
-                    Activate
-            </button>
+            <ActionButton 
+                onClick={activateHandler} 
+                disabled={!ready || waiting}
+                mainButton
+            >
+                Activate
+            </ActionButton>
+
         </>
     )
 }

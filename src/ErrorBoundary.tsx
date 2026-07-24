@@ -26,10 +26,11 @@ class ErrorBoundary extends Component {
                     <header className="App-header text-slate-300 flex-1 content-center loading">
                         <h1 style={{'paddingTop': '1.5rem', 'paddingBottom': '1.7rem'}}>MilleGrilles</h1>
                         <p>An error occurred. The page cannot be loaded a this time.</p>
-                        <button onClick={reload}
-                            className='btn bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500'>
-                                Retry
-                        </button>
+                                <button onClick={reload}
+                                    className='inline-flex items-center justify-center px-4 py-2 bg-indigo-800 border border-indigo-700 text-white hover:bg-indigo-700 hover:scale-105 active:bg-indigo-700 shadow-lg rounded-xl transition-all duration-200'>
+                                        Retry
+                                </button>
+
                         <div style={{height: '20vh'}}></div>
                     </header>
                 </div>
@@ -55,10 +56,11 @@ export function ErrorPage() {
             <header className="App-header text-slate-300 flex-1 content-center loading">
                 <h1 style={{'paddingTop': '1.5rem', 'paddingBottom': '1.7rem'}}>MilleGrilles</h1>
                 <p>An error occurred. The page cannot be loaded a this time.</p>
-                <button onClick={reload}
-                    className='btn bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500'>
-                        Retry
-                </button>
+                                <button onClick={reload}
+                                    className='inline-flex items-center justify-center px-4 py-2 bg-indigo-800 border border-indigo-700 text-white hover:bg-indigo-700 hover:scale-105 active:bg-indigo-700 shadow-lg rounded-xl transition-all duration-200'>
+                                        Retry
+                                </button>
+
                 <div style={{height: '20vh'}}></div>
             </header>
         </div>

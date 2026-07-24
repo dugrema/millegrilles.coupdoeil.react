@@ -83,10 +83,11 @@ function LoadKey(props: LoadKeyProps) {
                 className="text-black" />
             <div>
                 <UploadButton id="masterKeyUploadId" onChange={uploadHandler} disabled={disabled} accept='application/json, application/x-pem-file, .pem'
-                    className="btn pl-7 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500">
-                        <p>Upload</p>
+                    className="inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-white hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none">
+                    <p>Upload</p>
                 </UploadButton>
             </div>
+
             <div className="min-h-7">
                 {invalid?
                     <p className='text-red-600'>The key file and password do not match.</p>
@@ -97,7 +98,6 @@ function LoadKey(props: LoadKeyProps) {
 }
 
 function KeyLoaded(props: LoadKeyProps) {
-
     let { onChange } = props;
 
     let forgetKeyHandler = useCallback(()=>onChange(null), [onChange]);
@@ -106,12 +106,13 @@ function KeyLoaded(props: LoadKeyProps) {
         <div className='pb-4'>
             <p className='text-green-400 font-bold'>The master key is ready.</p>
             <button onClick={forgetKeyHandler}
-                className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500'>
-                    Forget key
+                className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none'>
+                Forget key
             </button>
         </div>
     )
 }
+
 
 export type MasterKey = {
     secret: Uint8Array,

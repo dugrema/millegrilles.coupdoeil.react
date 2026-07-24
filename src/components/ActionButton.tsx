@@ -21,20 +21,20 @@ function ActionButton(props: ActionButtonProps) {
 
     let [buttonClassName, Icon] = useMemo(()=>{
         if(error || forceErrorStatus) return [
-            'btn inline-block text-center bg-red-700 hover:bg-red-600 active:bg-red-500 disabled:bg-red-800', 
-            <IconXSvg className='w-6 mr-2 fill-white inline'/>
+            'inline-flex items-center justify-center px-4 py-2 bg-red-800 border border-red-700 text-white hover:bg-red-700 hover:scale-105 active:bg-red-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none', 
+            <IconXSvg className='w-5 mr-2 fill-white'/>
         ];
         if(success) return [
-            'btn inline-block text-center bg-green-700 hover:bg-green-600 active:bg-green-500 disabled:bg-green-800', 
-            <IconCheckSvg className='w-6 mr-2 fill-green-500 inline'/>
+            'inline-flex items-center justify-center px-4 py-2 bg-green-800 border border-green-700 text-white hover:bg-green-700 hover:scale-105 active:bg-green-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none', 
+            <IconCheckSvg className='w-5 mr-2 fill-white'/>
         ];
         if(mainButton) return [
-            'btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900', 
-            waiting?<IconCompactDiscSvg className='w-6 mr-2 fill-slate-500 inline animate-spin' />:<></>
+            'inline-flex items-center justify-center px-4 py-2 bg-indigo-800 border border-indigo-700 text-white hover:bg-indigo-700 hover:scale-105 active:bg-indigo-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none', 
+            waiting?<IconCompactDiscSvg className='w-5 mr-2 fill-white animate-spin' />:<></>
         ];
         return [
-            'btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800', 
-            waiting?<IconCompactDiscSvg className='w-6 mr-2 fill-slate-500 inline animate-spin' />:<></>
+            'inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none', 
+            waiting?<IconCompactDiscSvg className='w-5 mr-2 fill-slate-500 animate-spin' />:<></>
         ];
     }, [error, forceErrorStatus, success, mainButton, waiting]);
 
