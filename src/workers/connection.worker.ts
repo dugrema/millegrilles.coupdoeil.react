@@ -81,6 +81,7 @@ export type ServerInstancePresenceEventSubscriptionMessage = SubscriptionMessage
 export type ServerInstance = ServerInstancePresenceStatus & {
     instance_id: string,
     timestamp: number,
+    securite: string,
 }
 
 export type ServerInstanceConfiguredApplication = {name: string, version: string};
