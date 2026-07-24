@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import MasterKeyLoader, { MasterKeyInformation } from '../utilities/MasterKeyLoader';
 import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { FilehostBackupList } from './DomainBackup';
-import UploadButton from '../components/UploadButton';
 import useWorkers, { AppWorkers } from '../workers/workers';
 import { certificates, keymaster, multiencoding, x25519 } from 'millegrilles.cryptography';
 import { DomainListSection } from './DomainList';
@@ -74,22 +73,10 @@ function DomainRestore() {
 export default DomainRestore;
 
 function BackupFileSection() {
-
-    let uploadHandler = useCallback((files: FileList | null)=>{
-        console.warn("File uploaded (TODO): %O", files);
-    }, []);
-
     return (
         <>
-            <p className='pb-2'>The following domains are already available from a consignation file server.</p>
-            
+            <p className='pb-2'>The following domains are available from a file server.</p>
             <FilehostBackupList />
-
-            <p className="pt-4">You can upload additional files for domains to restore here.</p>
-            <UploadButton id="backupUpload" onChange={uploadHandler} 
-                className="btn pl-7 inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800">
-                    <p>Upload</p>
-            </UploadButton>
         </>
     );
 }
