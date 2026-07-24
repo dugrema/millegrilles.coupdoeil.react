@@ -1,105 +1,226 @@
 import React, { useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { certificates } from "millegrilles.cryptography";
-import { Formatters } from "millegrilles.reactdeps.typescript";
-
-import { DiskInformation, ServerInstance } from "../workers/connection.worker";
 import useInstanceStore from "./instanceStore";
+import { ManagerStatusV2 } from "../workers/typesInstance";
+
+// --- Helpers ---
+
+const formatBytes = (bytes: number, decimals = 2) => {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ["B", "KB", "MB", "GB", "TB", "PB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+};
+
+const formatDuration = (seconds: number) => {
+  if (seconds <= 0) return "0s";
+  const d = Math.floor(seconds / (3600 * 24));
+  const h = Math.floor((seconds % (3600 * 24)) / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+
+  const parts = [];
+  if (d > 0) parts.push(`${d}d`);
+  if (h > 0) parts.push(`${h}h`);
+  if (m > 0) parts.push(`${m}m`);
+  if (s > 0 || parts.length === 0) parts.push(`${s}s`);
+
+  return parts.join(" ");
+};
+
+const ProgressBar = ({ value, max, colorClass = "bg-indigo-600" }: { value: number, max: number, colorClass?: string }) => {
+  const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
+  return (
+    <div className="w-full bg-slate-700 rounded-full h-2.5">
+      <div className={`h-2.5 rounded-full ${colorClass}`} style={{ width: `${percentage}%` }}></div>
+    </div>
+  );
+};
+
+// --- Components ---
 
 function ShowInstanceInformation() {
+    const { instanceId } = useParams<{ instanceId: string }>();
+    const instances = useInstanceStore(state => state.instances);
 
-    const { instanceId } = useParams();
-    const instances = useInstanceStore(state=>state.instances);
+    const instance = useMemo(() => {
+        if (!instances || !instanceId) return null;
+        return instances.find(item => item.instance_id === instanceId) as ManagerStatusV2 | undefined;
+    }, [instances, instanceId]);
 
-    const instance = useMemo(()=>{
-        if(!instances) return {};
-        // console.debug("Instances", instances);
-        return instances.filter(item=>item.instance_id === instanceId).pop();
-    }, [instances, instanceId]) as ServerInstance | null;
-    
+    if (!instance) {
+        return (
+            <div className="p-4 text-red-500">
+                Instance not found.
+            </div>
+        );
+    }
+
+    const { system_state, timestamp, securite, supprime } = instance;
+    const state = system_state;
+
     return (
-        <>
-            <InstanceStorageInformation value={instance} />
-        </>
+        <div className="space-y-6 pt-4">
+            {/* Summary Section */}
+            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
+                    <p className="text-sm text-slate-400">Status</p>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${supprime ? 'bg-red-900 text-red-200' : 'bg-green-900 text-green-200'}`}>
+                            {supprime ? 'DELETING' : 'ACTIVE'}
+                        </span>
+                        <span className="text-sm font-medium">{securite}</span>
+                    </div>
+                </div>
+
+                <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
+                    <p className="text-sm text-slate-400">Uptime</p>
+                    <p className="text-lg font-bold mt-1">{formatDuration(state.uptime_seconds)}</p>
+                </div>
+
+                <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
+                    <p className="text-sm text-slate-400">CPU Usage</p>
+                    <p className="text-lg font-bold mt-1">{state.cpu_usage_percent.toFixed(1)}%</p>
+                    <div className="mt-2">
+                        <ProgressBar value={state.cpu_usage_percent} max={100} colorClass="bg-orange-500" />
+                    </div>
+                </div>
+
+                <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
+                    <p className="text-sm text-slate-400">Last Seen</p>
+                    <p className="text-sm font-medium mt-1">{new Date(timestamp).toLocaleString()}</p>
+                </div>
+            </section>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Resource Section */}
+                <section className="space-y-4">
+                    <h2 className="text-lg font-semibold border-b border-slate-700 pb-2">Resources</h2>
+                    
+                    {/* Memory */}
+                    <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                            <span className="font-medium">Memory</span>
+                            <span className="text-slate-400">{formatBytes(state.memory.used)} / {formatBytes(state.memory.total)}</span>
+                        </div>
+                        <ProgressBar value={state.memory.used} max={state.memory.total} />
+                    </div>
+
+                    {/* Swap */}
+                    <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                            <span className="font-medium">Swap</span>
+                            <span className="text-slate-400">{formatBytes(state.swap.used)} / {formatBytes(state.swap.total)}</span>
+                        </div>
+                        <ProgressBar value={state.swap.used} max={state.swap.total} colorClass="bg-yellow-500" />
+                    </div>
+
+                    {/* Disk Usage */}
+                    <div className="space-y-4 pt-2">
+                        <p className="text-sm font-medium text-slate-400">Disk Partitions</p>
+                        <div className="space-y-4">
+                            {state.disk.map((disk, idx) => (
+                                <div key={idx} className="space-y-1">
+                                    <div className="flex justify-between text-xs">
+                                        <span className="font-mono">{disk.mountpoint}</span>
+                                        <span className="text-slate-400">{formatBytes(disk.used)} / {formatBytes(disk.total)}</span>
+                                    </div>
+                                    <ProgressBar value={disk.used} max={disk.total} colorClass="bg-blue-500" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* Network & Host Section */}
+                <section className="space-y-4">
+                    <h2 className="text-lg font-semibold border-b border-slate-700 pb-2">Network & Host</h2>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <p className="text-sm text-slate-400">Hostnames</p>
+                            <div className="text-sm space-y-1">
+                                {state.host?.hostname ? <p className="font-medium">{state.host.hostname}</p> : <p className="text-slate-500 italic">N/A</p>}
+                                {state.host?.ip_addresses.map((ip, idx) => (
+                                    <p key={idx} className="font-mono text-xs">{ip}</p>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-sm text-slate-400">Load Average</p>
+                            <div className="flex gap-2">
+                                {state.load_average.map((load, idx) => (
+                                    <span key={idx} className="px-2 py-0.5 bg-slate-700 rounded text-sm font-mono">
+                                        {load.toFixed(2)}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <p className="text-sm font-medium text-slate-400">Network Traffic</p>
+                        <div className="grid grid-cols-2 gap-4 text-sm bg-slate-800/50 p-3 rounded border border-slate-700/50">
+                            <div>
+                                <p className="text-xs text-slate-500">Sent</p>
+                                <p className="font-mono">{formatBytes(state.network.bytes_sent)}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-slate-500">Received</p>
+                                <p className="font-mono">{formatBytes(state.network.bytes_recv)}</p>
+                            </div>
+                            <div className="text-red-400">
+                                <p className="text-xs text-slate-500">Errors (In/Out)</p>
+                                <p className="font-mono">{state.network.errin} / {state.network.errout}</p>
+                            </div>
+                            <div className="text-orange-400">
+                                <p className="text-xs text-slate-500">Drops (In/Out)</p>
+                                <p className="font-mono">{state.network.dropin} / {state.network.dropout}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <p className="text-sm font-medium text-slate-400">Open Ports</p>
+                        <div className="flex flex-wrap gap-2">
+                            {state.host?.ports ? Object.entries(state.host.ports).map(([port, p]) => (
+                                <span key={port} className="px-2 py-1 bg-slate-700 rounded text-xs font-mono">
+                                    {port}:{p}
+                                </span>
+                            )) : <span className="text-sm text-slate-500 italic">No port info available</span>}
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            {/* Advanced Metrics */}
+            {state.disk_io && (
+                <section className="space-y-4 pt-4 border-t border-slate-700">
+                    <h2 className="text-lg font-semibold">Disk I/O</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                        <div className="p-3 bg-slate-800 rounded border border-slate-700 text-center">
+                            <p className="text-xs text-slate-500 uppercase">Read</p>
+                            <p className="font-bold text-lg">{formatBytes(state.disk_io.read_bytes)}</p>
+                        </div>
+                        <div className="p-3 bg-slate-800 rounded border border-slate-700 text-center">
+                            <p className="text-xs text-slate-500 uppercase">Write</p>
+                            <p className="font-bold text-lg">{formatBytes(state.disk_io.write_bytes)}</p>
+                        </div>
+                        <div className="p-3 bg-slate-800 rounded border border-slate-700 text-center">
+                            <p className="text-xs text-slate-500 uppercase">Read Count</p>
+                            <p className="font-bold text-lg">{state.disk_io.read_count}</p>
+                        </div>
+                        <div className="p-3 bg-slate-800 rounded border border-slate-700 text-center">
+                            <p className="text-xs text-slate-500 uppercase">Write Count</p>
+                            <p className="font-bold text-lg">{state.disk_io.write_count}</p>
+                        </div>
+                    </div>
+                </section>
+            )}
+        </div>
     );
 }
 
 export default ShowInstanceInformation;
-
-export function InstanceStorageInformation(props: {value: ServerInstance | null | undefined}) {
-    const { value } = props;
-
-    const mounts = useMemo(()=>{
-        if(!value || !value.disk) return [];
-
-        const sorted = [...value.disk];
-        sorted.sort((a: DiskInformation, b: DiskInformation)=>{
-            if(a === b) return 0;
-            return a.mountpoint.localeCompare(b.mountpoint);
-        })
-
-        return value.disk.map(item=>{
-
-            const usedPct = Math.floor(item.used / item.total * 100);
-
-            return (
-                <React.Fragment key={item.mountpoint}>
-                    <p className="col-span-3">{item.mountpoint}</p>
-                    <div className="col-span-1">
-                        <Formatters.FormatteurTaille value={item.total} />
-                    </div>
-                    <div className="w-11/12 mt-1 h-4 text-xs bg-gray-200 rounded-full dark:bg-gray-700">
-                        <div className="h-4 bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" style={{width: usedPct+'%'}}> {usedPct}%</div>
-                    </div>
-                    <div className="col-span-1">
-                        (<Formatters.FormatteurTaille value={item.free} />)
-                    </div>
-                </React.Fragment>
-            )
-        })
-    }, [value]);
-
-    return (
-        <section>
-            <h2 className='text-lg font-bold pt-4'>File storage</h2>
-            <div className='grid grid-cols-6'>
-                <p className='font-bold pb-2 col-span-3'>Mount</p>
-                <p className='font-bold pb-2'>Total</p>
-                <p className='font-bold pb-2'>Used</p>
-                <p className='font-bold pb-2'>Free</p>
-                {mounts}
-            </div>
-        </section>
-    );
-}
-
-export function ShowCertificateInformation(props: {value: certificates.CertificateWrapper | null}) {
-
-    const {value} = props;
-
-    const expired = useMemo(()=>{
-        const notAfter = value?.certificate?.notAfter;
-        if(!notAfter) return false;  // No information
-        return notAfter < new Date();
-    }, [value]);
-
-    if(!value) return <></>;
-
-    return (
-        <div className='grid grid-cols-1 sm:grid-cols-2 pb-4'>
-            <p>Instance Id</p>
-            <p>{value.extensions?.commonName}</p>
-            <p>Exchanges</p>
-            <p>{value.extensions?.exchanges?.join(', ')}</p>
-            <p>Roles</p>
-            <p>{value.extensions?.roles}</p>
-            <p>Valid not before</p>
-            <p><Formatters.FormatterDate value={value.certificate.notBefore.getTime()/1000} /></p>
-            <p>Valid not after</p>
-            <p className={expired?'text-red-500':''}>
-                <Formatters.FormatterDate value={value.certificate.notAfter.getTime()/1000} />
-                {expired?<> (Expired)</>:<></>}
-            </p>
-        </div>
-    )
-}
