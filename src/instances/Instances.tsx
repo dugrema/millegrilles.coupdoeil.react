@@ -56,15 +56,6 @@ export function InstanceEventHandler() {
             })
             .catch(err=>console.error("Error loading domain list", err));
 
-
-        // Load current application packages
-        workers.connection.getCurrentPackagesList()
-            .then(response=>{
-                if(response.resultats) setApplicationCurrentPackages(response.resultats);
-                else console.error("Error receiving application packages: ", response);
-            })
-            .catch(err=>console.error("Error loading application packages", err));
-
         // Cleanup
         return () => { 
             // Unsubscribe listener

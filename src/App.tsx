@@ -7,10 +7,8 @@ import InitializeWorkers from './workers/InitializeWorkers';
 import './i18n';
 
 import 'font-awesome/css/font-awesome.min.css';
-import 'react-datetime/css/react-datetime.css';
 import './App.css';
 import { InstanceEventHandler } from './instances/Instances';
-import ApplicationPackageList from './utilities/ApplicationPackageList';
 
 
 const LandingPage = React.lazy(()=>import('./LandingPage'));
@@ -18,10 +16,8 @@ const LandingPage = React.lazy(()=>import('./LandingPage'));
 const Instances = React.lazy(()=>import('./instances/Instances'));
 const InstanceList = React.lazy(()=>import('./instances/InstanceList'));
 const InstanceDetail = React.lazy(()=>import('./instances/InstanceDetail'));
-const InstanceApplications = React.lazy(()=>import('./instances/InstanceApplications'));
 const InstanceInformation = React.lazy(()=>import('./instances/InstanceInformation'));
 const InstanceConfigure = React.lazy(()=>import('./instances/InstanceConfigure'));
-const InstanceInstallNewApplication = React.lazy(()=>import('./instances/InstanceInstallNewApplication'));
 const InstanceApplicationPasswords = React.lazy(()=>import('./instances/InstanceApplicationPasswords'));
 const InstanceAssociateNew = React.lazy(()=>import('./instances/InstanceAssociateNew'));
 
@@ -42,15 +38,6 @@ const FileHostingEdit = React.lazy(()=>import('./filehosting/FileHostingEdit'));
 
 const KeyManagement = React.lazy(()=>import('./utilities/KeyManagement'));
 const KeyManagementOptions = React.lazy(()=>import('./utilities/KeyManagementOptions'));
-const ApplicationPackages = React.lazy(()=>import('./utilities/ApplicationPackages'));
-const ApplicationPackageDetail = React.lazy(()=>import('./utilities/ApplicationPackageDetail'));
-const Installer = React.lazy(()=>import('./installer/Installer'));
-const InstallSelect = React.lazy(()=>import('./installer/InstallSelect'));
-const Install4Secure = React.lazy(()=>import('./installer/Install4Secure'));
-const Install3Protege = React.lazy(()=>import('./installer/Install3Protege'));
-const Install2Prive = React.lazy(()=>import('./installer/Install2Prive'));
-const Install1Public = React.lazy(()=>import('./installer/Install1Public'));
-const InstallationStatus = React.lazy(()=>import('./installer/InstallationStatus'));
 
 const router = createBrowserRouter([
 	{ path: "/coupdoeil2", element: <LandingPage />, errorElement: <ErrorPage /> },
@@ -65,10 +52,8 @@ const router = createBrowserRouter([
                 path: "/coupdoeil2/instances/:instanceId", 
                 element: <InstanceDetail />,
                 children: [
-                    { path: "/coupdoeil2/instances/:instanceId", element: <InstanceApplications /> },
-                    { path: "/coupdoeil2/instances/:instanceId/info", element: <InstanceInformation /> },
+                    { path: "/coupdoeil2/instances/:instanceId", element: <InstanceInformation /> },
                     { path: "/coupdoeil2/instances/:instanceId/configure", element: <InstanceConfigure /> },
-                    { path: "/coupdoeil2/instances/:instanceId/newApplication", element: <InstanceInstallNewApplication /> },
                     { path: "/coupdoeil2/instances/:instanceId/passwords", element: <InstanceApplicationPasswords /> },
                 ]
             },
@@ -100,28 +85,8 @@ const router = createBrowserRouter([
         errorElement: <ErrorPage />,
         children: [
             { path: "/coupdoeil2/keys", element: <KeyManagementOptions /> },
-            // { path: "/coupdoeil2/keys/decrypt", element: <DecryptKeys /> },
         ]
   	},
-    {
-		path: "/coupdoeil2/applicationPackages",
-		element: <ApplicationPackages />,
-        errorElement: <ErrorPage />,
-        children: [
-            { path: "/coupdoeil2/applicationPackages", element: <ApplicationPackageList /> },
-            { path: "/coupdoeil2/applicationPackages/:packageName", element: <ApplicationPackageDetail /> },
-        ]
-  	},
-    // {
-	// 	path: "/coupdoeil2/fileManagement",
-	// 	element: <FileManagement />,
-    //     errorElement: <ErrorPage />,
-    //     children: [
-    //         { path: "/coupdoeil2/fileManagement", element: <FileManagerList /> },
-    //         { path: "/coupdoeil2/fileManagement/:instanceId", element: <FileManagerDetail /> },
-    //         { path: "/coupdoeil2/fileManagement/:instanceId/configure", element: <FileManagerConfiguration /> },
-    //     ]
-  	// },
     {
 		path: "/coupdoeil2/filehosting",
 		element: <FileHosting />,
@@ -130,19 +95,6 @@ const router = createBrowserRouter([
             { path: "/coupdoeil2/filehosting", element: <FileHostingList /> },
             { path: "/coupdoeil2/filehosting/add", element: <FileHostingAdd /> },
             { path: "/coupdoeil2/filehosting/filehost/:filehostId", element: <FileHostingEdit /> },
-        ]
-  	},
-    {
-		path: "/coupdoeil2/install",
-		element: <Installer />,
-        errorElement: <ErrorPage />,
-        children: [
-            { path: "/coupdoeil2/install", element: <InstallSelect /> },
-            { path: "/coupdoeil2/install/4secure", element: <Install4Secure /> },
-            { path: "/coupdoeil2/install/3protege", element: <Install3Protege /> },
-            { path: "/coupdoeil2/install/2private", element: <Install2Prive /> },
-            { path: "/coupdoeil2/install/1public", element: <Install1Public /> },
-            { path: "/coupdoeil2/install/status", element: <InstallationStatus /> },
         ]
   	},
 ]);

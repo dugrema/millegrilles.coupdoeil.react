@@ -34,7 +34,7 @@ function Users() {
         // Load domains
         workers.connection.getUserList()
             .then(response=>{
-                console.debug("User list", response);
+                // console.debug("User list", response);
                 setUsers(response.usagers)
             })
             .catch(err=>console.error("Error loading domain list", err));

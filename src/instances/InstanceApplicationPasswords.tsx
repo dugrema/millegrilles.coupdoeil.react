@@ -12,16 +12,6 @@ function InstanceApplicationPasswords() {
     return (
         <>
             <section>
-                <h2 className='text-lg font-bold pt-4'>Applications</h2>
-
-                <Link to={`/coupdoeil2/instances/${instanceId}`}
-                    className='btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900'>
-                        Back
-                </Link>
-
-            </section>
-
-            <section>
                 <h2 className='text-lg font-bold pt-4'>Application passwords</h2>
                 <ApplicationPasswords instance={instance} />
             </section>

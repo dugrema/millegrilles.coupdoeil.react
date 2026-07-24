@@ -1,9 +1,7 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import HeaderMenu from './Menu';
 import Footer from './Footer';
-import useConnectionStore from "./connectionStore";
-import { useEffect } from "react";
 
 
 function LandingPage() {
@@ -14,15 +12,6 @@ function LandingPage() {
 
             <main className='fixed top-9 bottom-8 overflow-y-auto pt-2 pb-2 pl-2 pr-2 w-full'>
                 <h1 className='text-xl font-bold pt-4'>Configuration of the MilleGrilles system</h1>
-
-                <section className='pt-6'>
-                    <h2 className='text-lg font-bold pt-4'>Local actions</h2>
-                    <Link to='/coupdoeil2/install' 
-                        className='btn inline-block pt-2 pb-2 pl-2 pr-2 text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                            Local setup 
-                    </Link>
-                </section>
-
                 <SystemManagement />
             </main>
             
@@ -62,12 +51,6 @@ function SystemManagement() {
                         <Link to='/coupdoeil2/keys' 
                             className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
                                 Key management
-                        </Link>
-                    </li>
-                    <li className='pt-2'>
-                        <Link to='/coupdoeil2/applicationPackages' 
-                            className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
-                                Applications
                         </Link>
                     </li>
                     <li className='pt-2'>

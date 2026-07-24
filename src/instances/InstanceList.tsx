@@ -15,28 +15,12 @@ function InstanceList() {
 
             <h1 className='text-xl font-bold pt-4'>Instances</h1>
 
-            <section>
-
-                <h2 className='text-lg font-bold pt-4 pb-2'>Actions instances via https</h2>
-
-                <p>Use associate to configure new or unresponsive instances.</p>
-
-                <Link to='/coupdoeil2/instances/associate'
-                    className='btn inline-block text-center bg-indigo-800 hover:bg-indigo-600 active:bg-indigo-500 disabled:bg-indigo-900'>
-                        Associate
-                </Link>
-
-            </section>
-
-            <section>
-                <h2 className='text-lg font-bold pt-4 pb-2'>Instance list</h2>
-                <div className='grid grid-cols-1 sm:grid-cols-4'>
-                    <p className='font-bold pb-2 sm:col-span-2'>Instance name</p>
-                    <p className='font-bold pb-2'>Last presence</p>
-                    <p className='font-bold pb-2'>Security level</p>
-                    <ShowList />
-                </div>
-            </section>
+            <div className='grid grid-cols-1 sm:grid-cols-4'>
+                <p className='font-bold pb-2 sm:col-span-2'>Instance name</p>
+                <p className='font-bold pb-2'>Last presence</p>
+                <p className='font-bold pb-2'>Security level</p>
+                <ShowList />
+            </div>
         </>
     );
 }
