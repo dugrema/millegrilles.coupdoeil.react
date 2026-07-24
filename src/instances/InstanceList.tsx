@@ -4,6 +4,7 @@ import useInstanceStore from "./instanceStore";
 import { useMemo } from "react";
 import { ServerInstance } from "../workers/connection.worker";
 import { ConditionalFormatters } from 'millegrilles.reactdeps.typescript';
+import { ManagerStatusV2 } from '../workers/typesInstance';
 
 function InstanceList() {
     return (
@@ -34,13 +35,14 @@ function ShowList() {
         if(!instances) return [];
         let instanceCopy = [...instances];
 
-        instanceCopy.sort((a: ServerInstance, b: ServerInstance)=>{
+        instanceCopy.sort((a: ManagerStatusV2, b: ManagerStatusV2)=>{
             if(a === b) return 0;
             if(!a) return 1;
             if(!b) return -1;
-            if(a.hostname === b.hostname) return 0;
-            let hostnameA = a.hostname || '';
-            let comp = hostnameA.localeCompare(b.hostname);
+            const hostnameA = a?.system_state?.host?.hostname || '';
+            const hostnameB = a?.system_state?.host?.hostname || '';
+            if(hostnameA === hostnameB) return 0;
+            let comp = hostnameA.localeCompare(hostnameB);
             if(comp !== 0) return comp;
             return a.instance_id.localeCompare(b.instance_id);
         });
@@ -49,10 +51,11 @@ function ShowList() {
             return (
                 <React.Fragment key={item.instance_id}>
                     <Link className='sm:col-span-2 underline font-bold' to={`/coupdoeil2/instances/${item.instance_id}`}>
-                        {item.hostname || item.instance_id}
+                        {item?.system_state?.host?.hostname || item.instance_id}
                     </Link>
-                    <ConditionalFormatters.FormatterConditionalDate value={item.timestamp} warn={60} error={600} />
-                    <p className='pb-2 sm:pb-0'>{item.security}</p>
+                    {/* <ConditionalFormatters.FormatterConditionalDate value={item.timestamp} warn={60} error={600} /> */}
+                    <p>{item.timestamp}</p>
+                    <p className='pb-2 sm:pb-0'>{item.securite}</p>
                 </React.Fragment>
             )
         });

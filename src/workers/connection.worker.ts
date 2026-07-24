@@ -4,6 +4,7 @@ import axios from 'axios';
 import { ConnectionWorker, MessageResponse, SubscriptionCallback, SubscriptionMessage } from 'millegrilles.reactdeps.typescript';
 import apiMapping from '@apiMapping-json';
 import { messageStruct, keymaster, encryption } from 'millegrilles.cryptography';
+import { ManagerStatusV2, RequestServerInstancesResponseV2 } from './typesInstance';
 
 const DOMAINE_CORETOPOLOGIE = 'CoreTopologie';
 const DOMAINE_CORECATALOGUES = 'CoreCatalogues';
@@ -73,17 +74,7 @@ export type DiskInformation = {
     free: number,
 }
 
-export type ServerInstancePresenceStatus = {
-    disk?: DiskInformation[],
-    hostname: string,
-    hostnames?: string[],
-    ip?: string,
-    load_average?: number[],
-    security: string,
-    system_battery?: any,
-    system_fans?: any,
-    system_temperature?: any,
-}
+export type ServerInstancePresenceStatus = ManagerStatusV2;
 
 export type ServerInstancePresenceEventSubscriptionMessage = SubscriptionMessage & {
     message: messageStruct.MilleGrillesMessage & {timestamp: number, status: ServerInstancePresenceStatus},
@@ -359,7 +350,7 @@ export class AppsConnectionWorker extends ConnectionWorker {
 
     async getInstanceList() {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'requestServerInstances') as MessageResponse & {server_instances?: ServerInstance[]};
+        return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'requestServerInstancesV2') as Promise<MessageResponse & RequestServerInstancesResponseV2>;
     }
 
     async deleteInstance(instanceId: string) {
@@ -420,16 +411,6 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async unsubscribeKeymasterEvents(cb: SubscriptionCallback): Promise<void> {
         if(!this.connection) throw new Error("Connection is not initialized");
         return await this.connection.unsubscribe('keymasterRecoveryEvents', cb);
-    }
-
-    async subscribeInstanceApplicationEvents(cb: SubscriptionCallback): Promise<void> {
-        if(!this.connection) throw new Error("Connection is not initialized");
-        return await this.connection.subscribe('instanceApplicationsDomainsEvents', cb);
-    }
-
-    async unsubscribeInstanceApplicationEvents(cb: SubscriptionCallback): Promise<void> {
-        if(!this.connection) throw new Error("Connection is not initialized");
-        return await this.connection.unsubscribe('instanceApplicationsDomainsEvents', cb);
     }
 
     // Domains

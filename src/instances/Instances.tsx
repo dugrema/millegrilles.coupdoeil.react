@@ -9,6 +9,7 @@ import useConnectionStore from '../connectionStore';
 import useWorkers, { AppWorkers } from '../workers/workers';
 import { useEffect, useMemo } from 'react';
 import { ServerInstance, ServerInstancePresenceEventSubscriptionMessage } from '../workers/connection.worker';
+import { ManagerStatusV2 } from '../workers/typesInstance';
 
 
 function Instances() {
@@ -48,11 +49,12 @@ export function InstanceEventHandler() {
         // Load domains
         workers.connection.getInstanceList()
             .then(response=>{
-                if(response.ok !== true) {
+                console.debug("Instance response", response);
+                if(response.ok !== true || !response.results) {
                     console.error("Error loading domain list: %O", response);
                     return;
                 }
-                if(response.server_instances) setInstances(response.server_instances)
+                setInstances(response.results)
             })
             .catch(err=>console.error("Error loading domain list", err));
 
@@ -69,7 +71,7 @@ export function InstanceEventHandler() {
     return <></>;
 }
 
-async function processEvent(workers: AppWorkers | null, event: SubscriptionMessage, updateInstance: (update: ServerInstance)=>void) {
+async function processEvent(workers: AppWorkers | null, event: SubscriptionMessage, updateInstance: (update: ManagerStatusV2)=>void) {
     let content = event.message.content;
     if(!content) throw new Error("message .content is missing");
     let instanceId = content?.__certificate?.extensions?.commonName;
@@ -86,9 +88,8 @@ async function processEvent(workers: AppWorkers | null, event: SubscriptionMessa
 }
 
 async function processEventPresenceInstance(instance_id: string, timestamp: number, eventInstance: ServerInstancePresenceEventSubscriptionMessage, 
-    updateInstance: (update: ServerInstance)=>void) 
+    updateInstance: (update: ManagerStatusV2)=>void) 
 {
-    let instanceStatus = eventInstance.message.status;
-    let serverInstance = {instance_id, timestamp, ...instanceStatus};
-    updateInstance(serverInstance);
+    const instanceStatus = eventInstance.message.status;
+    updateInstance(instanceStatus);
 }

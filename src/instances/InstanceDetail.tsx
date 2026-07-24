@@ -1,25 +1,22 @@
-import { useEffect, useMemo } from "react";
-import {proxy} from 'comlink';
+import { useMemo } from "react";
 
 import { Link, Outlet, useParams } from "react-router-dom";
 
 import useInstanceStore from "./instanceStore";
-import { ServerInstance, ServerInstanceApplicationSubscriptionMessage } from "../workers/connection.worker";
-import { ConditionalFormatters, SubscriptionMessage } from "millegrilles.reactdeps.typescript";
-import useInstanceApplicationStore from "./instanceApplicationsStore";
-import useWorkers, { AppWorkers } from "../workers/workers";
-import useConnectionStore from "../connectionStore";
+import { ServerInstance } from "../workers/connection.worker";
+import { ConditionalFormatters } from "millegrilles.reactdeps.typescript";
+import { ManagerStatusV2 } from "../workers/typesInstance";
 
 function InstanceDetail() {
 
-    let { instanceId } = useParams();
-    let instances = useInstanceStore(state=>state.instances);
+    const { instanceId } = useParams();
+    const instances = useInstanceStore(state=>state.instances);
 
-    let instance = useMemo(()=>{
+    const instance = useMemo(()=>{
         if(!instances) return {};
-        // console.debug("Instances", instances);
+        console.debug("Instances", instances);
         return instances.filter(item=>item.instance_id === instanceId).pop();
-    }, [instances, instanceId]) as ServerInstance | null;
+    }, [instances, instanceId]) as ManagerStatusV2 | null;
 
     return (
         <>
@@ -27,11 +24,12 @@ function InstanceDetail() {
                 className='btn inline-block text-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 disabled:bg-slate-800'>
                     Back
             </Link>
-            <h1 className='text-xl font-bold pt-4'>Server instance {instance?.hostname}</h1>
+            <h1 className='text-xl font-bold pt-4'>Server instance {instance?.system_state?.host?.hostname}</h1>
 
             <section className='grid grid-cols-2 pt-2 pb-4'>
                 <p>Last presence</p>
-                <ConditionalFormatters.FormatterConditionalDate value={instance?.timestamp} warn={60} error={600} />
+                {instance?.timestamp}
+                {/* <ConditionalFormatters.FormatterConditionalDate value={instance?.timestamp} warn={60} error={600} /> */}
             </section>
 
             <nav>

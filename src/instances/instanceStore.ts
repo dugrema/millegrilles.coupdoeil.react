@@ -1,15 +1,16 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { ApplicationPackage, ServerInstance } from '../workers/connection.worker';
+import { ApplicationPackage } from '../workers/connection.worker';
+import { ManagerStatusV2 } from '../workers/typesInstance';
 
-export type ServerInstanceStore = ServerInstance & {
+export type ServerInstanceStore = ManagerStatusV2 & {
     
 };
 
 interface ServerInstanceStoreState {
-    instances: Array<ServerInstanceStore> | null,
+    instances: Array<ManagerStatusV2> | null,
     applicationCurrentPackages: Array<ApplicationPackage> | null,
-    setInstances: (instances: Array<ServerInstanceStore>) => void,
+    setInstances: (instances: Array<ManagerStatusV2>) => void,
     updateInstance: (instance: ServerInstanceStore) => void,
     setApplicationCurrentPackages: (packages: Array<ApplicationPackage>) => void,
     clear: () => void,

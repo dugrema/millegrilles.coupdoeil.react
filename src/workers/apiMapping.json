@@ -13,6 +13,7 @@
         {"domain": "CoreMaitreDesComptes", "action": "getCsrRecoveryParcode", "exchange": "2.prive"},
         {"domain": "CoreTopologie", "action": "listeDomaines"},
         {"domain": "CoreTopologie", "action": "requestServerInstances"},
+        {"domain": "CoreTopologie", "action": "requestServerInstancesV2"},
         {"domain": "CoreTopologie", "action": "requestServerInstanceApplications"},
         {"domain": "CoreTopologie", "action": "requestServerInstanceConfiguration"},
         {"domain": "CoreTopologie", "action": "getConfigurationFichiers"},
@@ -67,7 +68,7 @@
             "evenement.*.regeneration",
             "evenement.*.backupMaj"
         ]},
-        "instanceEvents": {"exchanges": ["1.public", "2.prive", "3.protege"], "routingKeys": ["evenement.instance.presenceInstance"]},
+        "instanceEvents": {"exchanges": ["1.public", "2.prive", "3.protege"], "routingKeys": ["evenement.instance.presenceInstanceV2"]},
         "instanceApplicationsDomainsEvents": {"exchanges": ["1.public", "2.prive", "3.protege"], "routingKeys": ["evenement.instance.*.presenceInstanceApplications"]},
         "keymasterRecoveryEvents": {"exchanges": ["3.protege"], "routingKeys": ["evenement.MaitreDesCles.demandeCleSymmetrique"]},
         "userEvents": {"exchanges": ["3.protege"], "routingKeys": [
