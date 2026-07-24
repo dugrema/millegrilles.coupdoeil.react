@@ -6,8 +6,6 @@ import InitializeWorkers from './workers/InitializeWorkers';
 
 import './i18n';
 
-import 'font-awesome/css/font-awesome.min.css';
-import './App.css';
 import { InstanceEventHandler } from './instances/Instances';
 
 
@@ -103,7 +101,7 @@ function App() {
 
     return (
         <>
-            <div className="App-background text-slate-300">
+            <div className="App-background text-slate-300" translate='no'>
                 <RouterProvider router={router} />
             </div>
             <InitializeWorkers />

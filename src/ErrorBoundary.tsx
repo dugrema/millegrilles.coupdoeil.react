@@ -15,6 +15,7 @@ class ErrorBoundary extends Component {
         // Transfert the error code to state
         let errorCode = error.code;
         this.setState({...this.state, errorCode});
+        console.error("componentDidCatch Error:\n%O\n%O", error, errorInfo);
     }
   
     render() {

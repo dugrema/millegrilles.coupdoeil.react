@@ -4,6 +4,8 @@ import Loading from './Loading';
 
 // Global imports
 import './index.css';
+import 'font-awesome/css/font-awesome.min.css';
+import './App.css';
 import '@solana/webcrypto-ed25519-polyfill';
 import ErrorBoundary from './ErrorBoundary';
 
@@ -14,10 +16,10 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   	<React.StrictMode>
-		<ErrorBoundary>
-	  		<React.Suspense fallback={<Loading />}>
+		<React.Suspense fallback={<Loading />}>
+			<ErrorBoundary>
   				<App />
-			</React.Suspense>
-  		</ErrorBoundary>
-	</React.StrictMode>
+			</ErrorBoundary>
+		</React.Suspense>
+  	</React.StrictMode>
 );
