@@ -75,7 +75,7 @@ function ConfigureFileManager() {
                 if (!label) {
                     const instance = instances?.filter(innerItem => innerItem.instance_id === item.instance_id).pop();
                     if (instance) {
-                        label = instance.hostname || label;
+                        label = instance.system_state.host?.hostname || label || instance.instance_id;
                     } else {
                         label = item.filehost_id;
                     }
