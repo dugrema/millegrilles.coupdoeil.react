@@ -33,24 +33,11 @@ function FileHostingAdd() {
                     className='inline-flex items-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 rounded-xl transition-all duration-200'>
                     Back
                 </Link>
-                <h1 className='text-xl font-bold text-slate-300'>Add new file host</h1>
+                <h1 className='text-xl font-bold text-slate-300'>Add new unmanaged file host</h1>
             </div>
 
             <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
                 <div className='space-y-6'>
-                    <p>Use Instance ID for filehosts in the same MilleGrille</p>
-                    <div className='grid grid-cols-1 lg:grid-cols-12 gap-4 items-center'>
-                        <label className='lg:col-span-2 text-sm text-slate-400'>Instance ID</label>
-                        <input 
-                            placeholder="E.g.: 66e0f0d6-89e7-11f1-a228-fc349716f87d" 
-                            value={instanceId} 
-                            onChange={instanceIdOnChange}
-                            className='lg:col-span-10 bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all'
-                        />
-                    </div>
-
-                    <p>OR use External url for filehosts managed externally</p>
-
                     <div className='grid grid-cols-1 lg:grid-cols-12 gap-4 items-center'>
                         <label className='lg:col-span-2 text-sm text-slate-400'>External url</label>
                         <input 

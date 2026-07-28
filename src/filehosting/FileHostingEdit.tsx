@@ -7,6 +7,7 @@ import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
 import useFilehostStore from "./filehostingStore";
 import { FileHost } from "../workers/connection.worker";
+import useInstanceStore from "../instances/instanceStore";
 
 function FileHostingEdit() {
     const ready = useConnectionStore(state => state.connectionAuthenticated);
@@ -21,28 +22,27 @@ function FileHostingEdit() {
         return filehosts.find(item => item.filehost_id === filehostId) || null;
     }, [filehosts, filehostId]);
 
+    const instances = useInstanceStore(state => state.instances);
+    const instance = useMemo(()=>{
+        if(filehostFromStore && instances) {
+            return instances.filter(instance=>instance.instance_id===filehostFromStore.instance_id).pop();
+        }
+    }, [instances, filehostFromStore]);
+
+
     const [urlExternal, setUrlExternal] = useState('');
     const urlExternalOnChange = useCallback((e: ChangeEvent<HTMLInputElement>) => setUrlExternal(e.currentTarget.value), [setUrlExternal]);
     const [externalTlsSecurity, setExternalTlsSecurity] = useState('external');
-    const [urlInternal, setUrlInternal] = useState('');
-    const urlInternalOnChange = useCallback((e: ChangeEvent<HTMLInputElement>) => setUrlInternal(e.currentTarget.value), [setUrlInternal]);
     const [syncActive, setSyncActive] = useState(true);
     const syncActiveOnChange = useCallback((checked: boolean) => setSyncActive(checked), [setSyncActive]);
-
-    const instanceId = useMemo(() => {
-        if (!filehostFromStore) return null;
-        return filehostFromStore.instance_id;
-    }, [filehostFromStore]);
 
     const saveHandler = useCallback(async () => {
         if (!ready || !workers) throw new Error('workers not initialized');
         const urlExternalParsed = urlExternal ? new URL(urlExternal) : null;
-        const urlInternalParsed = urlInternal ? new URL(urlInternal) : null;
 
         const fileHost = {
             filehost_id: filehostId,
             url_external: urlExternalParsed ? urlExternalParsed.href : null,
-            url_internal: urlInternalParsed ? urlInternalParsed.href : null,
             sync_active: syncActive,
             tls_external: externalTlsSecurity,
         } as FileHost;
@@ -53,7 +53,7 @@ function FileHostingEdit() {
         }
 
         navigate('/coupdoeil2/fileHosting');
-    }, [workers, ready, filehostId, navigate, urlExternal, urlInternal, syncActive, externalTlsSecurity]);
+    }, [workers, ready, filehostId, navigate, urlExternal, syncActive, externalTlsSecurity]);
 
     const testUrlHandler = useCallback(async () => {
     }, []);
@@ -78,7 +78,6 @@ function FileHostingEdit() {
         }
 
         setUrlExternal(filehost.url_external || '');
-        setUrlInternal(filehost.url_internal || '');
         setSyncActive(!!filehost.sync_active);
         setExternalTlsSecurity(filehost.tls_external || 'external');
 
@@ -98,43 +97,41 @@ function FileHostingEdit() {
             <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
                 <div className='space-y-6'>
                     <div className='grid grid-cols-1 lg:grid-cols-12 gap-4'>
-                        <div className='lg:col-span-2 flex flex-col'>
+                        {!instance && (
+                            <div className='lg:col-span-6 flex flex-col space-y-2'>
+                                <label htmlFor='urlExternalId' className='text-sm text-slate/400'>Url (external)</label>
+                                <input id='urlExternalId' placeholder="E.g.: https://myhost.com" value={urlExternal} onChange={urlExternalOnChange}
+                                    className='bg-slate-900 border border-slate/700 text-slate/200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all'
+                                />
+                            </div>
+                        )}
+                        
+                        {instance && (
+                            <>
+                                <div className='lg:col-span-6 flex flex-col'>
+                                    <span className='text-sm text-slate/400'>Instance</span>
+                                    <span className='text-slate/200 break-all'>{instance?.system_state.host?.hostname || instance?.instance_id || 'N/A'}</span>
+                                </div>
+                            </>
+                        )}
+
+                        <div className='lg:col-span-6 flex flex-col'>
                             <span className='text-sm text-slate-400'>Filehost Id</span>
                             <span className='font-mono text-slate-200 break-all'>{filehostId}</span>
                         </div>
-                        <div className='lg:col-span-2 flex flex-col'>
-                            <span className='text-sm text-slate/400'>Instance Id</span>
-                            <span className='text-slate/200 break-all'>{instanceId || 'N/A'}</span>
-                        </div>
-                        
-                        <div className='lg:col-span-4 flex flex-col space-y-2'>
-                            <label htmlFor='urlExternalId' className='text-sm text-slate/400'>Url (external)</label>
-                            <input id='urlExternalId' placeholder="E.g.: https://myhost.com" value={urlExternal} onChange={urlExternalOnChange}
-                                className='bg-slate-900 border border-slate/700 text-slate/200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all'
-                            />
-                        </div>
-                        
+                    </div>
+
+                    <div className='grid grid-cols-1 lg:grid-cols-12 gap-4'>
                         <div className='lg:col-span-6 flex flex-col space-y-2'>
                             <label className='text-sm text-slate/400'>TLS security check</label>
                             <ExternalUrlTypeDropdown value={externalTlsSecurity} onChange={setExternalTlsSecurity} className='w-full' />
                         </div>
-
-                        {instanceId && (
-                            <>
-                                <div className='lg:col-span-4 flex flex-col space-y-2'>
-                                    <label htmlFor='urlInternalId' className='text-sm text-slate/400'>Url (internal)</label>
-                                    <input id='urlInternalId' placeholder="E.g.: https://myhost.com" value={urlInternal} onChange={urlInternalOnChange}
-                                        className='bg-slate-900 border border-slate/700 text-slate/200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all'
-                                    />
-                                </div>
-                                <div className='lg:col-span-2 flex flex-col space-y-2'>
-                                    <label htmlFor='syncActiveId' className='text-sm text-slate/400'>Synchronisation active</label>
-                                    <div className='pt-1'>
-                                        <ToggleSwitch id='syncActiveId' checked={syncActive} onChange={syncActiveOnChange} />
-                                    </div>
-                                </div>
-                            </>
-                        )}
+                        <div className='lg:col-span-2 flex flex-col space-y-2'>
+                            <label htmlFor='syncActiveId' className='text-sm text-slate/400'>Synchronisation active</label>
+                            <div className='pt-1'>
+                                <ToggleSwitch id='syncActiveId' checked={syncActive} onChange={syncActiveOnChange} />
+                            </div>
+                        </div>
                     </div>
 
                     <SecurityDescription />
@@ -153,7 +150,7 @@ function FileHostingEdit() {
             <section className='bg-slate-800/50 border border-red-500/30 p-6 rounded-2xl shadow-xl'>
                 <h2 className='text-lg font-bold text-red-400 mb-4 border-b border-red-500/20'>Delete</h2>
                 <p className='text-slate/400 text-sm mb-4'>
-                    Remove the filehost from the list. Also disables all actions on it and allows all files to be deleted later on.
+                    Remove the filehost from the list. Also disables all actions on it and allows all tracked files to be deleted later on.
                 </p>
                 <ActionButton onClick={deleteHandler} disabled={!ready || !workers} className="bg-red-600 hover:bg-red-500 border-red-500">
                     Delete
@@ -181,18 +178,16 @@ export function ExternalUrlTypeDropdown(props: {value: string, onChange: Dispatc
     )    
 }
 
-
 export function SecurityDescription() {
     return (
         <section className="bg-slate-900/50 p-4 rounded-xl border border-slate/700/50">
             <p className='text-sm text-slate/400 mb-2'>
-                Pick one of Instance ID or External URL
+                This is for unmanaged filehosts only
             </p>
 
             <p className='text-sm text-slate/400 mb-2'>
-                Prefer using the instance id of a node in this same MilleGrille when appropriate, this is the most secure option.
-                Use External URL when the filehost is not managed by this MilleGrille.
-                The TLS security check value applies to either method.
+                Only add filehosts witht his method when connecting to another MilleGrille or a free-standing filehost.
+                Filehosts installed on any node of this MilleGrille will be automatically detected within 10 minutes.
             </p>
 
             <p className='text-sm text-slate/400 mb-2'>

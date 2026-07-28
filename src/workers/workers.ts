@@ -30,16 +30,16 @@ export type InitWorkersResult = {
 
 export async function initWorkers(callback: (params: ConnectionCallbackParameters) => void): Promise<InitWorkersResult> {
 
-    let {idmg, ca, chiffrage} = await loadFiche();
+    const {idmg, ca, chiffrage} = await loadFiche();
 
-    let connectionWorker = new Worker(new URL('./connection.worker.ts', import.meta.url), {type: 'module'});
-    let connection = wrap(connectionWorker) as Remote<AppsConnectionWorker>;
+    const connectionWorker = new Worker(new URL('./connection.worker.ts', import.meta.url), {type: 'module'});
+    const connection = wrap(connectionWorker) as Remote<AppsConnectionWorker>;
 
-    let encryptionWorker = new Worker(new URL('./encryption.worker.ts', import.meta.url), {type: 'module'});
-    let encryption = wrap(encryptionWorker) as Remote<AppsEncryptionWorker>;
+    const encryptionWorker = new Worker(new URL('./encryption.worker.ts', import.meta.url), {type: 'module'});
+    const encryption = wrap(encryptionWorker) as Remote<AppsEncryptionWorker>;
 
     // Set-up the workers
-    let serverUrl = new URL(window.location.href);
+    const serverUrl = new URL(window.location.href);
     serverUrl.pathname = SOCKETIO_PATH;
     await connection.initialize(serverUrl.href, ca, callback, {reconnectionDelay: 7500});
     await encryption.initialize(ca);
@@ -57,23 +57,23 @@ type LoadFicheResult = {
 }
 
 async function loadFiche(): Promise<LoadFicheResult> {
-    let ficheResponse = await fetch('/fiche.json');
+    const ficheResponse = await fetch('/fiche.json');
     if(ficheResponse.status !== 200) {
         throw new Error(`Loading fiche.json, invalid response (${ficheResponse.status})`)
     }
-    let fiche = await ficheResponse.json();
+    const fiche = await ficheResponse.json();
 
-    let content = JSON.parse(fiche['contenu']);
-    let {idmg, ca, chiffrage} = content;
+    const content = JSON.parse(fiche['contenu']);
+    const {idmg, ca, chiffrage} = content;
 
     // Verify IDMG with CA
-    let idmgVerif = await certificates.getIdmg(ca);
+    const idmgVerif = await certificates.getIdmg(ca);
     if(idmgVerif !== idmg) throw new Error("Mismatch IDMG/CA certificate");
     
     console.info("IDMG: ", idmg);
 
     // Verify the signature.
-    let store = new certificates.CertificateStore(ca);
+    const store = new certificates.CertificateStore(ca);
     if(! await store.verifyMessage(fiche)) throw new Error('While loading fiche.json: signature was rejected.');  // Throws Error if invalid
 
     // Return the content
