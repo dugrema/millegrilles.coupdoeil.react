@@ -6,6 +6,8 @@ import { ChangeEvent, Dispatch, useCallback, useEffect, useMemo, useState } from
 import useFilehostStore, { FilehostStoreItem } from "./filehostingStore";
 import { ConditionalFormatters, Formatters } from "millegrilles.reactdeps.typescript";
 import useInstanceStore from "../instances/instanceStore";
+import { InstanceByIdType } from "../workers/typesInstance";
+import { mapInstancesById } from "./FileHosting";
 
 function FileHostingList() {
     const ready = useConnectionStore(state => state.connectionAuthenticated);
@@ -81,7 +83,7 @@ function FileHostingList() {
             </section>
 
             <section className='bg-slate-800/50 border border-slate/700 p-6 rounded-2xl shadow-xl'>
-                <h2 className='text-lg font-bold text-slate/300 mb-4 border-b border-slate/700 pb-2'>File controllers list</h2>
+                <h2 className='text-lg font-bold text-slate/300 mb-4 border-b border-slate/700 pb-2'>File controlers list</h2>
                 <div className='grid grid-cols-12 gap-2 mb-2'>
                     <p className='font-semibold col-span-7 lg:col-span-5 text-slate/400'>Instance</p>
                     <p className='font-semibold col-span-5 lg:col-span-7 text-slate/400 text-center'>Presence</p>
@@ -101,17 +103,19 @@ type FilehostListItem = FilehostStoreItem & {label: string};
 function FileHostList() {
     const filehosts = useFilehostStore(state => state.filehosts);
     const instances = useInstanceStore(state => state.instances);
+    const instancesById = useMemo(()=>{
+        if(instances) return mapInstancesById(instances);
+        return {};
+    }, [instances]);
 
     const filehostElems = useMemo(() => {
         if (!filehosts) return null;
 
         const filehostCopy = filehosts.filter(item => !item.deleted).map(item => {
             let label = item.url_external;
-            if (!label) {
-                if (instances) {
-                    const instance = instances.find(instance => instance.instance_id === item.instance_id);
-                    if (instance) label = instance.hostname;
-                }
+            if(!label && item.instance_id) {
+                const instanceInfo = instancesById[item.instance_id];
+                label = instanceInfo.system_state.host?.hostname;
             }
             if (!label) label = item.filehost_id; // Fallback
             return { ...item, label };
@@ -158,18 +162,20 @@ const CONST_CLASSNAME_FILECONTROLER_ROW = 'grid grid-cols-12 items-center odd:bg
 function FileControlerList() {
     const filecontrolers = useFilehostStore(state => state.filecontrolers);
     const instances = useInstanceStore(state => state.instances);
+    const instancesById = useMemo(()=>{
+        if(instances) return mapInstancesById(instances);
+        return {};
+    }, [instances]);
 
     const filecontrolersElems = useMemo(() => {
         if (!filecontrolers) return <p className="text-slate/400">Loading ...</p>;
         return filecontrolers.map(item => {
-            let label = null;
-            if (!label) {
-                if (instances) {
-                    const instance = instances.find(instance => instance.instance_id === item.instance_id);
-                    if (instance) label = instance.hostname;
-                }
+            let label = item.instance_id; // Fallback
+            if (instances) {
+                const instanceInfo = instancesById[item.instance_id];
+                const hostname = instanceInfo.system_state.host?.hostname;
+                if(hostname) label = hostname;
             }
-            if (!label) label = item.instance_id; // Fallback
 
             return (
                 <div key={item.instance_id} className={CONST_CLASSNAME_FILECONTROLER_ROW}>

@@ -9,17 +9,19 @@ import useWorkers, { AppWorkers } from "../workers/workers";
 import useConnectionStore from "../connectionStore";
 import useFilehostStore, { FilecontrolerStoreItem, FilehostStoreItem } from "./filehostingStore";
 import { FilecontrolerStatusMessage, FileHost, FileHostUsageEventMessage } from "../workers/connection.worker";
+import useInstanceStore from "../instances/instanceStore";
+import { InstanceByIdType, ManagerStatusV2 } from "../workers/typesInstance";
 
 function FileHosting() {
 
-    let workers = useWorkers();
-    let ready = useConnectionStore(state=>state.connectionAuthenticated);
-    let setFilehosts = useFilehostStore(state=>state.setFilehosts);
-    let setFilecontrolers = useFilehostStore(state=>state.setFilecontrolers);
-    let updateFilehosts = useFilehostStore(state=>state.updateFilehosts);
-    let updateFilecontrolers = useFilehostStore(state=>state.updateFilecontrolers);
+    const workers = useWorkers();
+    const ready = useConnectionStore(state=>state.connectionAuthenticated);
+    const setFilehosts = useFilehostStore(state=>state.setFilehosts);
+    const setFilecontrolers = useFilehostStore(state=>state.setFilecontrolers);
+    const updateFilehosts = useFilehostStore(state=>state.updateFilehosts);
+    const updateFilecontrolers = useFilehostStore(state=>state.updateFilecontrolers);
 
-    let domainEventsCb = useMemo(()=>{
+    const domainEventsCb = useMemo(()=>{
         if(!workers) return null;
         return proxy((event: SubscriptionMessage)=>processEvent(workers, event, updateFilehosts, updateFilecontrolers))
     }, [workers, updateFilehosts, updateFilecontrolers]);
@@ -35,22 +37,22 @@ function FileHosting() {
         // Load hosts and controlers
         Promise.resolve().then(async ()=>{
             if(!workers) throw new Error('workers not initialized');
-            let filehostResponse = await workers.connection.getFilehostList();
+            const filehostResponse = await workers.connection.getFilehostList();
             if(filehostResponse.ok !== true || !filehostResponse.list) {
                 console.error("Error loading filehosts: %O", filehostResponse.err);
                 return;
             }
-            let filecontrolersResponse = await workers.connection.getFilecontrolersList();
+            const filecontrolersResponse = await workers.connection.getFilecontrolersList();
             if(filecontrolersResponse.ok !== true || !filecontrolersResponse.list) {
                 console.error("Error loading filecontrolers: %O", filecontrolersResponse.err);
                 return;
             }
             setFilehosts(filehostResponse.list);
 
-            let filecontrolers = filecontrolersResponse.list;
-            let filecontrolerPrimaryId = filecontrolersResponse.filecontroler_primary;
+            const filecontrolers = filecontrolersResponse.list;
+            const filecontrolerPrimaryId = filecontrolersResponse.filecontroler_primary;
             if((!filecontrolers || filecontrolers.length === 0) && filecontrolerPrimaryId) {
-                let filecontrolers = [{instance_id: filecontrolerPrimaryId}]
+                const filecontrolers = [{instance_id: filecontrolerPrimaryId}]
                 setFilecontrolers(filecontrolers);
             } else {
                 setFilecontrolers(filecontrolers);
@@ -89,44 +91,45 @@ type FilehostDeleteEvent = MessageResponse & {filehost_id: string};
 async function processEvent(workers: AppWorkers | null, event: SubscriptionMessage, 
     updateFilehosts: (e: FilehostStoreItem)=>void, updateFilecontrolers: (e: FilecontrolerStoreItem)=>void) 
 {
-    let rkSplit = event.routingKey.split('.');
-    let domain = rkSplit[1];
-    let action = rkSplit.pop();
+    console.debug("FileHosting event", event);
+    const rkSplit = event.routingKey.split('.');
+    const domain = rkSplit[1];
+    const action = rkSplit.pop();
 
     if(domain === 'CoreTopologie') {
         if(action === 'filehostAdd' || action === 'filehostUpdate') {
-            let message = event.message as FilehostItemEvent;
+            const message = event.message as FilehostItemEvent;
             delete message.content
             updateFilehosts(message);
         } else if(action === 'filehostDelete') {
-            let message = event.message as FilehostDeleteEvent;
-            let filehostId = message.filehost_id;
+            const message = event.message as FilehostDeleteEvent;
+            const filehostId = message.filehost_id;
             updateFilehosts({filehost_id: filehostId, deleted: true});
         } else if(action === 'filehostRestore') {
-            let message = event.message as FilehostDeleteEvent;
-            let filehostId = message.filehost_id;
+            const message = event.message as FilehostDeleteEvent;
+            const filehostId = message.filehost_id;
             updateFilehosts({filehost_id: filehostId, deleted: false});
         } else {
             console.warn("Event received from CoreTopologie for unhandled action %s - DROPPED", action);
         }
     } else if(domain === 'filecontroler') {
         if(action === 'status') {
-            let message = event.message as FilecontrolerStatusMessage;
-            for(let fh of message.filehosts) {
-                let status = {filehost_id: fh.filehost_id, connected: fh.connected, transfer_q_len: fh.transfer_q_len };
+            const message = event.message as FilecontrolerStatusMessage;
+            for(const fh of message.filehosts) {
+                const status = {filehost_id: fh.filehost_id, connected: fh.connected, transfer_q_len: fh.transfer_q_len };
                 updateFilehosts(status);
             }
             // @ts-ignore
-            let timestamp = message.content['__original']?.estampille;
-            let fileControlerUpdate = {
+            const timestamp = message.content['__original']?.estampille;
+            const fileControlerUpdate = {
                 instance_id: message.filecontroler_id,
                 lastUpdate: timestamp,
             }
             updateFilecontrolers(fileControlerUpdate);
         } else if(action === 'filehostUsage') {
-            let message = event.message as FileHostUsageEventMessage;
-            let filehostId = message.filehost_id;
-            let fuuid = message.fuuid;
+            const message = event.message as FileHostUsageEventMessage;
+            const filehostId = message.filehost_id;
+            const fuuid = message.fuuid;
             if(fuuid) updateFilehosts({filehost_id: filehostId, fuuid});
         } else {
             console.warn("Event received from filecontroler for unhandled action %s - DROPPED", action);
@@ -134,4 +137,11 @@ async function processEvent(workers: AppWorkers | null, event: SubscriptionMessa
     } else {
         console.warn("Event received from unhandled domain %s - DROPPED", domain);
     }
+}
+
+export function mapInstancesById(instances: ManagerStatusV2[]): InstanceByIdType {
+    return instances?.reduce((instanceDict, instance)=>{
+        instanceDict[instance.instance_id] = instance;
+        return instanceDict;
+    }, {} as InstanceByIdType);
 }

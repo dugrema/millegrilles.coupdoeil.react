@@ -78,3 +78,5 @@ export interface RequestServerInstancesResponseV2 {
   ok: boolean;
   results: ManagerStatusV2[];
 }
+
+export type InstanceByIdType = {[key: string]: ManagerStatusV2};

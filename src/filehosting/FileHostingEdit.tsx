@@ -176,7 +176,6 @@ export function ExternalUrlTypeDropdown(props: {value: string, onChange: Dispatc
         <select value={value} onChange={onChangeHandler}
             className={'bg-slate-900 border border-slate/700 text-slate/200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all ' + className}>
                 <option value="external">External TLS certificate</option>
-                <option value="millegrille">MilleGrille client TLS certificate</option>
                 <option value="nocheck">No check</option>
         </select>
     )    
@@ -187,14 +186,20 @@ export function SecurityDescription() {
     return (
         <section className="bg-slate-900/50 p-4 rounded-xl border border-slate/700/50">
             <p className='text-sm text-slate/400 mb-2'>
+                Pick one of Instance ID or External URL
+            </p>
+
+            <p className='text-sm text-slate/400 mb-2'>
+                Prefer using the instance id of a node in this same MilleGrille when appropriate, this is the most secure option.
+                Use External URL when the filehost is not managed by this MilleGrille.
+                The TLS security check value applies to either method.
+            </p>
+
+            <p className='text-sm text-slate/400 mb-2'>
                 Notes about the external TLS security check: 
             </p>
 
             <ol className='list-decimal list-inside text-xs text-slate/400 space-y-1'>
-                <li>
-                    The most secure is the MilleGrille client TLS certificate. This requires a filehost
-                    installed on a MilleGrille instance and usage of the port 444.
-                </li>
                 <li>
                     External requires that a TLS certificate be installed and valid on the host (e.g. from 
                     Let's Encrypt, ZeroSSL, Verisign, etc.).

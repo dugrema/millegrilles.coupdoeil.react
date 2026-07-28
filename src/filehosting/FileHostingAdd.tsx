@@ -10,22 +10,21 @@ function FileHostingAdd() {
     const workers = useWorkers();
     const navigate = useNavigate();
 
-    const [url, setUrl] = useState('');
-    const urlOnChange = useCallback((e: ChangeEvent<HTMLInputElement>) => setUrl(e.currentTarget.value), []);
-    const [externalTlsSecurity, setExternalTlsSecurity] = useState('external');
+    const [instanceId, setInstanceId] = useState('');
+    const instanceIdOnChange = useCallback((e: ChangeEvent<HTMLInputElement>) => setInstanceId(e.currentTarget.value), []);
+    const [externalUrl, setExternalUrl] = useState('');
+    const externalUrlOnChange = useCallback((e: ChangeEvent<HTMLInputElement>) => setExternalUrl(e.currentTarget.value), []);
+    const [tlsSecurity, setTlsSecurity] = useState('external');
 
     const saveHandler = useCallback(async () => {
         if (!ready || !workers) throw new Error('workers not initialized');
-        const urlParsed = new URL(url);
-        const response = await workers.connection.addFileHost(urlParsed.href, externalTlsSecurity);
+        const externalUrlParsed = new URL(externalUrl);
+        const response = await workers.connection.addFileHost(instanceId, externalUrlParsed.href, tlsSecurity);
         if (response.ok !== true) {
             throw new Error('Error adding file host: ' + response.err);
         }
         navigate('/coupdoeil2/fileHosting');
-    }, [navigate, workers, ready, url, externalTlsSecurity]);
-
-    const testUrlHandler = useCallback(async () => {
-    }, []);
+    }, [navigate, workers, ready, instanceId, externalUrl, tlsSecurity]);
 
     return (
         <div className="p-4 space-y-4">
@@ -39,39 +38,49 @@ function FileHostingAdd() {
 
             <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
                 <div className='space-y-6'>
+                    <p>Use Instance ID for filehosts in the same MilleGrille</p>
                     <div className='grid grid-cols-1 lg:grid-cols-12 gap-4 items-center'>
-                        <label className='lg:col-span-2 text-sm text-slate-400'>Url</label>
+                        <label className='lg:col-span-2 text-sm text-slate-400'>Instance ID</label>
+                        <input 
+                            placeholder="E.g.: 66e0f0d6-89e7-11f1-a228-fc349716f87d" 
+                            value={instanceId} 
+                            onChange={instanceIdOnChange}
+                            className='lg:col-span-10 bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all'
+                        />
+                    </div>
+
+                    <p>OR use External url for filehosts managed externally</p>
+
+                    <div className='grid grid-cols-1 lg:grid-cols-12 gap-4 items-center'>
+                        <label className='lg:col-span-2 text-sm text-slate-400'>External url</label>
                         <input 
                             placeholder="E.g.: https://myhost.com" 
-                            value={url} 
-                            onChange={urlOnChange}
+                            value={externalUrl} 
+                            onChange={externalUrlOnChange}
                             className='lg:col-span-10 bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all'
                         />
                     </div>
                     <div className='grid grid-cols-1 lg:grid-cols-12 gap-4 items-center'>
                         <label className='lg:col-span-2 text-sm text-slate-400'>TLS security check</label>
                         <div className='lg:col-span-10'>
-                            <ExternalUrlTypeDropdown value={externalTlsSecurity} onChange={setExternalTlsSecurity} className='w-full' />
+                            <ExternalUrlTypeDropdown value={tlsSecurity} onChange={setTlsSecurity} className='w-full' />
                         </div>
                     </div>
+
                     <SecurityDescription />
+
                     <div className='flex flex-wrap gap-4 pt-4 justify-end'>
-                        <ActionButton onClick={testUrlHandler} className="bg-slate-700 hover:bg-slate-600 border-slate-600">
-                            Test
-                        </ActionButton>
                         <ActionButton onClick={saveHandler} disabled={!ready || !workers} mainButton={true}>
                             Save
                         </ActionButton>
+                        <Link to='/coupdoeil2/fileHosting'
+                            className='inline-flex items-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 rounded-xl transition-all duration-200'>
+                            Cancel
+                        </Link>
                     </div>
                 </div>
             </section>
 
-            <div className="flex justify-end">
-                <Link to='/coupdoeil2/fileHosting'
-                    className='text-slate-400 hover:text-slate-200 text-sm transition-colors'>
-                    Cancel
-                </Link>
-            </div>
         </div>
     )
 }

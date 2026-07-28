@@ -658,9 +658,9 @@ export class AppsConnectionWorker extends ConnectionWorker {
 
     // File hosting
 
-    async addFileHost(url: string, tls_external: string) {
+    async addFileHost(instance_id: string, url: string, tls_external: string) {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendCommand({url_external: url, tls_external}, DOMAINE_CORETOPOLOGIE, 'filehostAdd');
+        return this.connection.sendCommand({instance_id, url_external: url, tls_external}, DOMAINE_CORETOPOLOGIE, 'filehostAdd');
     }
 
     async updateFileHost(filehost: FileHost) {
@@ -737,30 +737,6 @@ export class AppsConnectionWorker extends ConnectionWorker {
         authenticationMessage.millegrille = caPem;
         let response = await axios({method: 'POST', data: authenticationMessage, url: authenticateUrl.href});
         if(response.status !== 200) throw new Error("Access denied")        
-    }
-
-    async getAcmeConfiguration(instanceId: string) {
-        if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendRequest(
-            {}, DOMAINE_INSTANCE, 'configurationAcme', 
-            {partition: instanceId, role: 'instance'}
-        ) as Promise<AcmeConfigurationResponse>;
-    }
-
-    async updateAcmeConfiguration(instanceId: string, configuration: AcmeConfiguration) {
-        if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendCommand(
-            configuration, DOMAINE_INSTANCE, 'updateAcmeConfiguration', 
-            {partition: instanceId, role: 'instance'}
-        ) as Promise<AcmeConfigurationResponse>;
-    }
-
-    async issueAcmeCertificate(instanceId: string, configuration: AcmeConfiguration) {
-        if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendCommand(
-            configuration, DOMAINE_INSTANCE, 'issueAcmeCertificate', 
-            {partition: instanceId, role: 'instance', timeout: 180_000}
-        ) as Promise<AcmeConfigurationResponse>;
     }
 }
 
