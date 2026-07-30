@@ -17,7 +17,6 @@ const InstanceDetail = React.lazy(()=>import('./instances/InstanceDetail'));
 const InstanceInformation = React.lazy(()=>import('./instances/InstanceInformation'));
 const InstanceConfigure = React.lazy(()=>import('./instances/InstanceConfigure'));
 const InstanceApplicationPasswords = React.lazy(()=>import('./instances/InstanceApplicationPasswords'));
-const InstanceAssociateNew = React.lazy(()=>import('./instances/InstanceAssociateNew'));
 
 const Domains = React.lazy(()=>import('./domains/Domains'));
 const DomainBackup = React.lazy(()=>import('./domains/DomainBackup'));
@@ -45,7 +44,6 @@ const router = createBrowserRouter([
         errorElement: <ErrorPage />,
         children: [
             { path: "/coupdoeil2/instances", element: <InstanceList /> },
-            { path: "/coupdoeil2/instances/associate", element: <InstanceAssociateNew /> },
             { 
                 path: "/coupdoeil2/instances/:instanceId", 
                 element: <InstanceDetail />,
