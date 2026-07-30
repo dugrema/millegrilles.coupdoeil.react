@@ -74,28 +74,36 @@ function ShowList() {
                 const uptimeSeconds = item.system_state?.uptime_seconds || 0;
                 const memoryPercent = item.system_state?.memory?.percent || 0;
                 const swapPercent = item.system_state?.swap?.percent || 0;
-                const diskUsageWarning = item.system_state?.disk?.some(d => (d.used / d.total * 100) > 90) || false;
-
-                let status = 'ACTIVE';
-                let statusColor = 'bg-green-900 text-green-200';
-
-                if (item.supprime) {
-                    status = 'DELETING';
-                    statusColor = 'bg-red-900 text-red-200';
-                } else if (lastSeenSeconds > 20 * 60) {
-                    status = 'FAILED';
-                    statusColor = 'bg-red-900 text-red-200';
-                } else if (
-                    cpuUsage > 80 ||
-                    lastSeenMinutes > 3 ||
-                    uptimeSeconds < 3600 ||
-                    swapPercent > 20 ||
-                    memoryPercent > 80 ||
-                    diskUsageWarning
-                ) {
-                    status = 'WARN';
-                    statusColor = 'bg-yellow-900 text-yellow-200';
-                }
+                 const diskUsageWarning = item.system_state?.disk?.some(d => (d.used / d.total * 100) > 90) || false;
+ 
+                 const warningLabels: string[] = [];
+                 if (cpuUsage > 80) warningLabels.push('CPU');
+                 if (lastSeenMinutes > 3) warningLabels.push('Lagging');
+                 if (uptimeSeconds < 3600) warningLabels.push('Uptime');
+                 if (swapPercent > 20) warningLabels.push('Swap');
+                 if (memoryPercent > 80) warningLabels.push('Mem');
+                 if (diskUsageWarning) warningLabels.push('Disk');
+ 
+                 let status = 'ACTIVE';
+                 let statusColor = 'bg-green-900 text-green-200';
+ 
+                 if (item.supprime) {
+                     status = 'DELETING';
+                     statusColor = 'bg-red-900 text-red-200';
+                 } else if (lastSeenSeconds > 20 * 60) {
+                     status = 'FAILED';
+                     statusColor = 'bg-red-900 text-red-200';
+                 } else if (
+                     cpuUsage > 80 ||
+                     lastSeenMinutes > 3 ||
+                     uptimeSeconds < 3600 ||
+                     swapPercent > 20 ||
+                     memoryPercent > 80 ||
+                     diskUsageWarning
+                 ) {
+                     status = 'WARN';
+                     statusColor = 'bg-yellow-900 text-yellow-200';
+                 }
 
                 const lastSeenColor = lastSeenMinutes > 3 ? 'text-red-400' : 'text-slate-400';
 
@@ -115,7 +123,13 @@ function ShowList() {
                             </span>
                         </div>
                         <div className={`text-sm ${lastSeenColor}`}>{new Date(item.timestamp).toLocaleString()}</div>
-                        <div>INFO TODO</div>
+                        <div className="flex flex-wrap gap-1">
+                            {status === 'WARN' && warningLabels.map(label => (
+                                <span key={label} className="px-1 py-0.5 bg-yellow-900/30 text-yellow-200 text-[10px] rounded">
+                                    {label}
+                                </span>
+                            ))}
+                        </div>
                     </React.Fragment>
                 );
             })}
