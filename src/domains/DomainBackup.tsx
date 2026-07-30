@@ -4,10 +4,10 @@ import useWorkers from '../workers/workers';
 import React, { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import useConnectionStore from '../connectionStore';
 import { DomainBackupInformation, FilehostBackupInformation } from '../workers/connection.worker';
-import { Formatters } from 'millegrilles.reactdeps.typescript';
 import { sortDomains } from './DomainList';
 import ActionButton from '../components/ActionButton';
 import { messageStruct } from 'millegrilles.cryptography';
+import { formatDate } from '../utilities/dateUtils';
 
 function DomainBackup() {
 
@@ -145,10 +145,10 @@ function DomainBackupList(props: {value: DomainBackupInformation[] | null | unde
                         )}
                     </td>
                     <td className="px-4 py-3 text-slate-400">
-                        <Formatters.FormatterDate value={item.concatene?.date} />
+                        {formatDate(item.concatene?.date as any, true)}
                     </td>
                     <td className="px-4 py-3 text-slate-400">
-                        <Formatters.FormatterDate value={item.transaction_plus_recente} />
+                        {formatDate(item.transaction_plus_recente as any, true)}
                     </td>
                     <td className="px-4 py-3 text-slate-400">{item.nombre_transactions}</td>
                     <td className="px-4 py-3">

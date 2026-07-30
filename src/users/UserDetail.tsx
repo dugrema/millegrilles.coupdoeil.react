@@ -5,6 +5,7 @@ import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
 import { CertificateRequest, ChangeUserSecurityCommand, Passkey, UserActivation, UserCookie, UserDetail } from "../workers/connection.worker";
 import { Formatters } from "millegrilles.reactdeps.typescript";
+import { formatDate } from '../utilities/dateUtils';
 import ActionButton from "../components/ActionButton";
 
 function UserDetailPage() {
@@ -229,8 +230,8 @@ function PasskeyList(props: {value: UserDetail | null}) {
             return (
                 <tr key={item.cred_id}>
                     <td className="px-4 py-3">{item.hostname}</td>
-                    <td className="px-4 py-3"><Formatters.FormatterDate value={item.date_creation} /></td>
-                    <td className="px-4 py-3"><Formatters.FormatterDate value={item.dernier_auth} /></td>
+                    <td className="px-4 py-3"><td className="px-4 py-3">{formatDate(item.date_creation as any, true)}</td></td>
+                    <td className="px-4 py-3"><td className="px-4 py-3">{formatDate(item.dernier_auth as any, true)}</td></td>
                 </tr>
             )
         });
@@ -250,7 +251,7 @@ function ActivationList(props: {value: UserDetail | null}) {
             return (
                 <tr key={item.fingerprint_pk+item.date_creation}>
                     <td className="px-4 py-3 break-words">{item.fingerprint_pk}</td>
-                    <td className="px-4 py-3"><Formatters.FormatterDate value={item.date_creation} /></td>
+                    <td className="px-4 py-3"><td className="px-4 py-3">{formatDate(item.date_creation as any, true)}</td></td>
                 </tr>
             )
         });
@@ -270,8 +271,8 @@ function CookiesList(props: {value: UserDetail | null}) {
             return (
                 <tr key={item.hostname+item.date_creation}>
                     <td className="px-4 py-3">{item.hostname}</td>
-                    <td className="px-4 py-3"><Formatters.FormatterDate value={item.date_creation} /></td>
-                    <td className="px-4 py-3"><Formatters.FormatterDate value={item.expiration} /></td>
+                    <td className="px-4 py-3"><td className="px-4 py-3">{formatDate(item.date_creation as any, true)}</td></td>
+                    <td className="px-4 py-3"><td className="px-4 py-3">{formatDate(item.expiration as any, true)}</td></td>
                 </tr>
             )
         });

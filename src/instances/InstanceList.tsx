@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Link } from "react-router-dom";
 import useInstanceStore from "./instanceStore";
 import { useTimeTick } from '../hooks/useTimeTick';
+import { formatDate } from '../utilities/dateUtils';
 
 const formatDuration = (seconds: number) => {
     if (seconds <= 0) return "0s";
@@ -122,7 +123,7 @@ function ShowList() {
                                 {status}
                             </span>
                         </div>
-                        <div className={`text-sm ${lastSeenColor}`}>{new Date(item.timestamp).toLocaleString()}</div>
+                        <div className={`text-sm ${lastSeenColor}`}>{formatDate(item.timestamp)}</div >
                         <div className="flex flex-wrap gap-1">
                             {status === 'WARN' && warningLabels.map(label => (
                                 <span key={label} className="px-1 py-0.5 bg-yellow-900/30 text-yellow-200 text-[10px] rounded">

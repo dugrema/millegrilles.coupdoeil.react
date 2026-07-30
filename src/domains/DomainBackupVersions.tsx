@@ -4,8 +4,8 @@ import { Link, useParams } from "react-router-dom";
 import useWorkers from "../workers/workers";
 import useConnectionStore from "../connectionStore";
 import { BackupDomainVersions, FilehostBackupDomainVersions } from "../workers/connection.worker";
-import { Formatters } from "millegrilles.reactdeps.typescript";
 import ActionButton from "../components/ActionButton";
+import { formatDate } from '../utilities/dateUtils';
 
 function DomainBackupVersions(props: {back: string}) {
 
@@ -170,13 +170,13 @@ function Versions(props: {value: BackupDomainVersions[] | null, current: string 
                     </td>
                     <td className="px-4 py-3 text-slate-400">{item.transactions}</td>
                     <td className="px-4 py-3 text-slate-400">
-                        <Formatters.FormatterDate value={item.start_date} />
+                        {formatDate(item.start_date as any, true)}
                     </td>
                     <td className="px-4 py-3 text-slate-400">
-                        <Formatters.FormatterDate value={item.end_date} />
+                        {formatDate(item.end_date as any, true)}
                     </td>
                     <td className="px-4 py-3 text-slate-400">
-                        <Formatters.FormatterDate value={item.end_date_concatene} />
+                        {formatDate(item.end_date_concatene as any, true)}
                     </td>
                 </tr>
             )

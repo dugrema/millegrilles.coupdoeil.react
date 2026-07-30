@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import useInstanceStore from "./instanceStore";
 import { ManagerStatusV2 } from "../workers/typesInstance";
 import { useTimeTick } from '../hooks/useTimeTick';
+import { formatDate } from '../utilities/dateUtils';
 
 // --- Helpers ---
 
@@ -116,7 +117,7 @@ function ShowInstanceInformation() {
 
                 <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
                     <p className="text-sm text-slate-400">Last Seen</p>
-                    <p className={`text-sm font-medium mt-1 ${isLagging ? 'text-red-500' : ''}`}>{new Date(timestamp).toLocaleString()}</p>
+                    <p className={`text-sm font-medium mt-1 ${isLagging ? 'text-red-500' : ''}`}>{formatDate(timestamp)}</p>
                 </div>
             </section>
 

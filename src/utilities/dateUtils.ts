@@ -1,4 +1,6 @@
-export const formatDate = (dateString: string | number) => {
+export const formatDate = (dateString: string | number | null, isSeconds?: boolean) => {
+  if(!dateString) return '';
+  if(typeof(dateString) !== 'string' && isSeconds) dateString *= 1000;
   const date = new Date(dateString);
   if (isNaN(date.getTime())) {
     return 'Invalid Date';
