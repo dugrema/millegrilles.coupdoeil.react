@@ -108,7 +108,7 @@ function ShowInstanceInformation() {
 
                 <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
                     <p className="text-sm text-slate-400">CPU Usage</p>
-                    <p className="text-lg font-bold mt-1">{state.cpu_usage_percent.toFixed(1)}%</p>
+                    <p className={`text-lg font-bold mt-1 ${isCpuWarning ? 'text-red-500' : ''}`}>{state.cpu_usage_percent.toFixed(1)}%</p>
                     <div className="mt-2">
                         <ProgressBar value={state.cpu_usage_percent} max={100} colorClass="bg-orange-500" />
                     </div>
@@ -116,7 +116,7 @@ function ShowInstanceInformation() {
 
                 <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
                     <p className="text-sm text-slate-400">Last Seen</p>
-                    <p className="text-sm font-medium mt-1">{new Date(timestamp).toLocaleString()}</p>
+                    <p className={`text-sm font-medium mt-1 ${isLagging ? 'text-red-500' : ''}`}>{new Date(timestamp).toLocaleString()}</p>
                 </div>
             </section>
 
@@ -129,7 +129,8 @@ function ShowInstanceInformation() {
                     <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                             <span className="font-medium">Memory</span>
-                            <span className="text-slate-400">{formatBytes(state.memory.used)} / {formatBytes(state.memory.total)}</span>
+                            <span className={`${isMemWarning ? 'text-red-500' : 'text-slate-400'}`}>{formatBytes(state.memory.used)} / {formatBytes(state.memory.total)}</span
+>
                         </div>
                         <ProgressBar value={state.memory.used} max={state.memory.total} />
                     </div>
@@ -138,7 +139,8 @@ function ShowInstanceInformation() {
                     <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                             <span className="font-medium">Swap</span>
-                            <span className="text-slate-400">{formatBytes(state.swap.used)} / {formatBytes(state.swap.total)}</span>
+                            <span className={`${isSwapWarning ? 'text-red-500' : 'text-slate-400'}`}>{formatBytes(state.swap.used)} / {formatBytes(state.swap.total)}</span
+>
                         </div>
                         <ProgressBar value={state.swap.used} max={state.swap.total} colorClass="bg-yellow-500" />
                     </div>
@@ -151,7 +153,8 @@ function ShowInstanceInformation() {
                                 <div key={idx} className="space-y-1">
                                     <div className="flex justify-between text-xs">
                                         <span className="font-mono">{disk.mountpoint}</span>
-                                        <span className="text-slate-400">{formatBytes(disk.used)} / {formatBytes(disk.total)}</span>
+                                        <span className={`${(disk.used / disk.total) > 0.9 ? 'text-red-500' : 'text-slate-400'}`}>{formatBytes(disk.used)} / {formatBytes(disk.total)}</span
+>
                                     </div>
                                     <ProgressBar value={disk.used} max={disk.total} colorClass="bg-blue-500" />
                                 </div>
@@ -197,11 +200,11 @@ function ShowInstanceInformation() {
                                 <p className="text-xs text-slate-500">Received</p>
                                 <p className="font-mono">{formatBytes(state.network.bytes_recv)}</p>
                             </div>
-                            <div className="text-red-400">
+                            <div className={(state.network.errin || state.network.errout)?"text-red-400":""}>
                                 <p className="text-xs text-slate-500">Errors (In/Out)</p>
                                 <p className="font-mono">{state.network.errin} / {state.network.errout}</p>
                             </div>
-                            <div className="text-orange-400">
+                            <div className={(state.network.dropin || state.network.dropout)?"text-orange-400":""}>
                                 <p className="text-xs text-slate-500">Drops (In/Out)</p>
                                 <p className="font-mono">{state.network.dropin} / {state.network.dropout}</p>
                             </div>
