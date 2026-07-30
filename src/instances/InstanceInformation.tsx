@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import useInstanceStore from "./instanceStore";
 import { ManagerStatusV2 } from "../workers/typesInstance";
+import { useTimeTick } from '../hooks/useTimeTick';
 
 // --- Helpers ---
 
@@ -61,6 +62,31 @@ function ShowInstanceInformation() {
     const { system_state, timestamp, securite, supprime } = instance;
     const state = system_state;
 
+    const now = useTimeTick(60000);
+    const lastSeenSeconds = Math.floor((now - new Date(timestamp).getTime()) / 1000);
+    const lastSeenMinutes = Math.floor(lastSeenSeconds / 60);
+
+    const isCpuWarning = state.cpu_usage_percent > 80;
+    const isMemWarning = (state.memory.used / state.memory.total) > 0.8;
+    const isSwapWarning = (state.swap.used / state.swap.total) > 0.2;
+    const isDiskWarning = state.disk.some(d => (d.used / d.total) > 0.9);
+    const isLagging = lastSeenMinutes > 3;
+    const isFailed = lastSeenSeconds > 1200;
+
+    let status = 'ACTIVE';
+    let statusColor = 'bg-green-900 text-green-200';
+
+    if (supprime) {
+        status = 'DELETING';
+        statusColor = 'bg-red-900 text-red-200';
+    } else if (isFailed) {
+        status = 'FAILED';
+        statusColor = 'bg-red-900 text-red-200';
+    } else if (isCpuWarning || isLagging || isMemWarning || isSwapWarning || isDiskWarning) {
+        status = 'WARN';
+        statusColor = 'bg-yellow-900 text-yellow-200';
+    }
+
     return (
         <div className="space-y-6 pt-4">
             {/* Summary Section */}
@@ -68,8 +94,8 @@ function ShowInstanceInformation() {
                 <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
                     <p className="text-sm text-slate-400">Status</p>
                     <div className="flex items-center gap-2 mt-1">
-                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${supprime ? 'bg-red-900 text-red-200' : 'bg-green-900 text-green-200'}`}>
-                            {supprime ? 'DELETING' : 'ACTIVE'}
+                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${statusColor}`}>
+                            {status}
                         </span>
                         <span className="text-sm font-medium">{securite}</span>
                     </div>
@@ -186,12 +212,12 @@ function ShowInstanceInformation() {
                         <p className="text-sm font-medium text-slate-400">Open Ports</p>
                         <div className="flex flex-wrap gap-2">
                             {state.host?.ports ? Object.entries(state.host.ports)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([port, p]) => (
-        <span key={port} className="px-2 py-1 bg-slate-700 rounded text-xs font-mono">
-            {port}:{p}
-        </span>
-    )) : <span className="text-sm text-slate-500 italic">No port info available</span>}
+                                .sort(([a], [b]) => a.localeCompare(b))
+                                .map(([port, p]) => (
+                                    <span key={port} className="px-2 py-1 bg-slate-700 rounded text-xs font-mono">
+                                        {port}:{p}
+                                    </span>
+                                )) : <span className="text-sm text-slate-500 italic">No port info available</span>}
                         </div>
                     </div>
                 </section>
