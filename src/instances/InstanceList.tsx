@@ -63,12 +63,45 @@ function ShowList() {
         });
     }, [instances]);
 
+    const now = new Date().getTime();
+
     return (
         <>
             {sortedInstances.map(item => {
                 const hostname = item?.system_state?.host?.hostname || item.instance_id;
-                const status = item.supprime ? 'DELETING' : 'ACTIVE';
-                const statusColor = item.supprime ? 'bg-red-900 text-red-200' : 'bg-green-900 text-green-200';
+                const timestamp = new Date(item.timestamp).getTime();
+                const lastSeenSeconds = Math.floor((now - timestamp) / 1000);
+                const lastSeenMinutes = Math.floor(lastSeenSeconds / 60);
+                
+                const cpuUsage = item.system_state?.cpu_usage_percent || 0;
+                const uptimeSeconds = item.system_state?.uptime_seconds || 0;
+                const memoryPercent = item.system_state?.memory?.percent || 0;
+                const swapPercent = item.system_state?.swap?.percent || 0;
+                const diskUsageWarning = item.system_state?.disk?.some(d => (d.used / d.total * 100) > 90) || false;
+
+                let status = 'ACTIVE';
+                let statusColor = 'bg-green-900 text-green-200';
+
+                if (item.supprime) {
+                    status = 'DELETING';
+                    statusColor = 'bg-red-900 text-red-200';
+                } else if (lastSeenSeconds > 20 * 60) {
+                    status = 'FAILED';
+                    statusColor = 'bg-red-900 text-red-200';
+                } else if (
+                    cpuUsage > 80 ||
+                    lastSeenMinutes > 3 ||
+                    uptimeSeconds < 3600 ||
+                    swapPercent > 20 ||
+                    memoryPercent > 80 ||
+                    diskUsageWarning
+                ) {
+                    status = 'WARN';
+                    statusColor = 'bg-yellow-900 text-yellow-200';
+                }
+
+                const cpuColor = cpuUsage > 80 ? 'text-red-400' : 'text-slate-400';
+                const lastSeenColor = lastSeenMinutes > 3 ? 'text-red-400' : 'text-slate-400';
 
                 return (
                     <React.Fragment key={item.instance_id}>
@@ -85,9 +118,9 @@ function ShowList() {
                                 {status}
                             </span>
                         </div>
-                        <div className='text-sm text-slate-400'>{new Date(item.timestamp).toLocaleString()}</div>
-                        <div className='text-sm font-mono'>{item.system_state?.cpu_usage_percent.toFixed(1)}%</div>
-                        <div className='text-sm text-slate-400'>{formatDuration(item.system_state?.uptime_seconds || 0)}</div>
+                        <div className={`text-sm ${lastSeenColor}`}>{new Date(item.timestamp).toLocaleString()}</div>
+                        <div className={`text-sm font-mono ${cpuColor}`}>{cpuUsage.toFixed(1)}%</div>
+                        <div className='text-sm text-slate-400'>{formatDuration(uptimeSeconds)}</div>
                     </React.Fragment>
                 );
             })}
