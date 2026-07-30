@@ -129,8 +129,7 @@ function ShowInstanceInformation() {
                     <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                             <span className="font-medium">Memory</span>
-                            <span className={`${isMemWarning ? 'text-red-500' : 'text-slate-400'}`}>{formatBytes(state.memory.used)} / {formatBytes(state.memory.total)}</span
->
+                            <div className={`flex items-baseline gap-1 ${isMemWarning ? 'text-red-500' : 'text-slate-400'}`}><span>{formatBytes(state.memory.used)} / {formatBytes(state.memory.total)}</span><span className="font-mono w-12 text-right">({Math.round((state.memory.used / state.memory.total) * 100)}%)</span></div>
                         </div>
                         <ProgressBar value={state.memory.used} max={state.memory.total} />
                     </div>
@@ -139,8 +138,7 @@ function ShowInstanceInformation() {
                     <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                             <span className="font-medium">Swap</span>
-                            <span className={`${isSwapWarning ? 'text-red-500' : 'text-slate-400'}`}>{formatBytes(state.swap.used)} / {formatBytes(state.swap.total)}</span
->
+                            <div className={`flex items-baseline gap-1 ${isSwapWarning ? 'text-red-500' : 'text-slate-400'}`}><span>{formatBytes(state.swap.used)} / {formatBytes(state.swap.total)}</span><span className="font-mono w-12 text-right">({Math.round((state.swap.used / state.swap.total) * 100)}%)</span></div>
                         </div>
                         <ProgressBar value={state.swap.used} max={state.swap.total} colorClass="bg-yellow-500" />
                     </div>
@@ -153,8 +151,7 @@ function ShowInstanceInformation() {
                                 <div key={idx} className="space-y-1">
                                     <div className="flex justify-between text-xs">
                                         <span className="font-mono">{disk.mountpoint}</span>
-                                        <span className={`${(disk.used / disk.total) > 0.9 ? 'text-red-500' : 'text-slate-400'}`}>{formatBytes(disk.used)} / {formatBytes(disk.total)}</span
->
+                                        <div className={`flex items-baseline gap-1 ${(disk.used / disk.total) > 0.9 ? 'text-red-500' : 'text-slate-400'}`}><span>{formatBytes(disk.used)} / {formatBytes(disk.total)}</span><span className="font-mono w-12 text-right">({Math.round((disk.used / disk.total) * 100)}%)</span></div>
                                     </div>
                                     <ProgressBar value={disk.used} max={disk.total} colorClass="bg-blue-500" />
                                 </div>
