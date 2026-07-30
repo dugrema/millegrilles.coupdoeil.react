@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Link } from "react-router-dom";
 import useInstanceStore from "./instanceStore";
 import { ManagerStatusV2 } from '../workers/typesInstance';
+import { useTimeTick } from '../hooks/useTimeTick';
 
 const formatDuration = (seconds: number) => {
     if (seconds <= 0) return "0s";
@@ -27,7 +28,6 @@ function InstanceList() {
                 className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
                     Back
             </Link>
-
 
                 <h1 className='text-xl font-bold'>Instances</h1>
             </div>
@@ -63,7 +63,7 @@ function ShowList() {
         });
     }, [instances]);
 
-    const now = new Date().getTime();
+    const now = useTimeTick(60000);
 
     return (
         <>
@@ -129,4 +129,5 @@ function ShowList() {
 }
 
 export default InstanceList;
+
 
