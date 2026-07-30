@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { Link } from "react-router-dom";
 import useInstanceStore from "./instanceStore";
-import { ManagerStatusV2 } from '../workers/typesInstance';
 import { useTimeTick } from '../hooks/useTimeTick';
 
 const formatDuration = (seconds: number) => {
@@ -34,13 +33,11 @@ function InstanceList() {
 
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-x-4 gap-y-4 p-4 bg-slate-800 rounded-lg border border-slate-700'>
                 {/* Headers */}
-                <p className='font-bold pb-2'>Instance</p>
+                <p className='font-bold pb-2 col-span-2'>Instance</p>
                 <p className='font-bold pb-2 text-center sm:text-left'>Security</p>
                 <p className='font-bold pb-2 text-center sm:text-left'>Status</p>
                 <p className='font-bold pb-2 text-center sm:text-left'>Last Seen</p>
-                <p className='font-bold pb-2 text-center sm:text-left'>CPU</p>
-                <p className='font-bold pb-2 text-center sm:text-left'>Uptime</p>
-                
+                <p className='font-bold pb-2 text-center sm:text-left'>Info</p>
                 <ShowList />
             </div>
         </div>
@@ -100,13 +97,12 @@ function ShowList() {
                     statusColor = 'bg-yellow-900 text-yellow-200';
                 }
 
-                const cpuColor = cpuUsage > 80 ? 'text-red-400' : 'text-slate-400';
                 const lastSeenColor = lastSeenMinutes > 3 ? 'text-red-400' : 'text-slate-400';
 
                 return (
                     <React.Fragment key={item.instance_id}>
                         <Link 
-                            className='underline font-bold truncate block' 
+                            className='underline font-bold truncate block col-span-2' 
                             to={`/coupdoeil2/instances/${item.instance_id}`}
                             title={hostname}
                         >
@@ -119,8 +115,7 @@ function ShowList() {
                             </span>
                         </div>
                         <div className={`text-sm ${lastSeenColor}`}>{new Date(item.timestamp).toLocaleString()}</div>
-                        <div className={`text-sm font-mono ${cpuColor}`}>{cpuUsage.toFixed(1)}%</div>
-                        <div className='text-sm text-slate-400'>{formatDuration(uptimeSeconds)}</div>
+                        <div>INFO TODO</div>
                     </React.Fragment>
                 );
             })}
