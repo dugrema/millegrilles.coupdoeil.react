@@ -115,7 +115,7 @@ function FileHostList() {
             let label = item.url_external;
             if(!label && item.instance_id) {
                 const instanceInfo = instancesById[item.instance_id];
-                label = instanceInfo.system_state.host?.hostname;
+                label = instanceInfo?.system_state.host?.hostname;
             }
             if (!label) label = item.filehost_id; // Fallback
             return { ...item, label };
@@ -173,7 +173,7 @@ function FileControlerList() {
             let label = item.instance_id; // Fallback
             if (instances) {
                 const instanceInfo = instancesById[item.instance_id];
-                const hostname = instanceInfo.system_state.host?.hostname;
+                const hostname = instanceInfo?.system_state.host?.hostname;
                 if(hostname) label = hostname;
             }
 
