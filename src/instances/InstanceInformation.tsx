@@ -74,6 +74,13 @@ function ShowInstanceInformation() {
     const isLagging = lastSeenMinutes > 3;
     const isFailed = lastSeenSeconds > 1200;
 
+    const isCertWarning = useMemo(() => {
+        if (!instance.certissuer?.not_after) return false;
+        const threeMonthsInSeconds = 3 * 30 * 24 * 60 * 60;
+        const diff = instance.certissuer.not_after - Math.floor(now / 1000);
+        return diff > 0 && diff < threeMonthsInSeconds;
+    }, [instance.certissuer, now]);
+
     let status = 'ACTIVE';
     let statusColor = 'bg-green-900 text-green-200';
 
@@ -83,15 +90,14 @@ function ShowInstanceInformation() {
     } else if (isFailed) {
         status = 'FAILED';
         statusColor = 'bg-red-900 text-red-200';
-    } else if (isCpuWarning || isLagging || isMemWarning || isSwapWarning || isDiskWarning) {
+    } else if (isCpuWarning || isLagging || isMemWarning || isSwapWarning || isDiskWarning || isCertWarning) {
         status = 'WARN';
         statusColor = 'bg-yellow-900 text-yellow-200';
     }
 
     return (
         <div className="space-y-6 pt-4">
-            {/* Summary Section */}
-            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
                     <p className="text-sm text-slate-400">Status</p>
                     <div className="flex items-center gap-2 mt-1">
@@ -119,7 +125,24 @@ function ShowInstanceInformation() {
                     <p className="text-sm text-slate-400">Last Seen</p>
                     <p className={`text-sm font-medium mt-1 ${isLagging ? 'text-red-500' : ''}`}>{formatDate(timestamp)}</p>
                 </div>
+
+                <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
+                    <p className="text-sm text-slate-400">Certificate</p>
+                    <div className="space-y-1 mt-1">
+                        <div className="flex justify-between text-xs">
+                            <span className="text-slate-500">Not Before:</span>
+                            <span className="font-mono">{instance.certissuer?.not_before ? formatDate(instance.certissuer.not_before, true) : 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                            <span className="text-slate-500">Not After:</span>
+                            <span className={`font-mono ${isCertWarning ? 'text-red-500' : ''}`}>
+                                {instance.certissuer?.not_after ? formatDate(instance.certissuer.not_after, true) : 'N/A'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </section>
+
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Resource Section */}
