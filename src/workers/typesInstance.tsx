@@ -65,10 +65,16 @@ export interface SystemState {
   apc?: any;
 }
 
+export interface CertissuerState {
+  not_before?: number,  // Date epoch seconds
+  not_after?: number,   // Date epoch seconds
+}
+
 export interface ManagerStatusV2 {
   instance_id: string;
   system_state: SystemState;
   securite: string;
+  certissuer?: CertissuerState;
   supprime: boolean;
   /** ISO 8601 string (DateTime<Utc>) */
   timestamp: string;

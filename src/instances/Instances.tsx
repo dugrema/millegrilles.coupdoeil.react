@@ -8,7 +8,6 @@ import useInstanceStore from './instanceStore';
 import useConnectionStore from '../connectionStore';
 import useWorkers, { AppWorkers } from '../workers/workers';
 import { useEffect, useMemo } from 'react';
-import { ServerInstance, ServerInstancePresenceEventSubscriptionMessage } from '../workers/connection.worker';
 import { ManagerStatusV2 } from '../workers/typesInstance';
 
 
