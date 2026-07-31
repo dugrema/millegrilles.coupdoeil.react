@@ -137,9 +137,6 @@ function FileHostingEdit() {
                     <SecurityDescription />
 
                     <div className='flex flex-wrap gap-4 pt-4 justify-end'>
-                        <ActionButton onClick={testUrlHandler} className="bg-slate/700 hover:bg-slate/600 border-slate/600">
-                            Test
-                        </ActionButton>
                         <ActionButton onClick={saveHandler} disabled={!ready || !workers} mainButton={true}>
                             Save
                         </ActionButton>
