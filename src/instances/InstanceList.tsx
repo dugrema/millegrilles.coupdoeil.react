@@ -77,7 +77,12 @@ function ShowList() {
                 const swapPercent = item.system_state?.swap?.percent || 0;
                 const diskUsageWarning = item.system_state?.disk?.some(d => (d.used / d.total * 100) > 90) || false;
 
+                const isCertWarning = item.certissuer?.not_after 
+                    ? (item.certissuer.not_after - Math.floor(now / 1000)) < (3 * 30 * 24 * 60 * 60) && (item.certissuer.not_after - Math.floor(now / 1000)) > 0
+                    : false;
+
                 const warningLabels: string[] = [];
+                if (isCertWarning) warningLabels.push('Cert');
                 if (cpuUsage > 80) warningLabels.push('CPU');
                 if (lastSeenMinutes > 3) warningLabels.push('Lagging');
                 if (uptimeSeconds < 3600) warningLabels.push('Uptime');
@@ -100,7 +105,8 @@ function ShowList() {
                     uptimeSeconds < 3600 ||
                     swapPercent > 20 ||
                     memoryPercent > 80 ||
-                    diskUsageWarning
+                    diskUsageWarning ||
+                    isCertWarning
                 ) {
                     status = 'WARN';
                     statusColor = 'bg-yellow-900 text-yellow-200';
