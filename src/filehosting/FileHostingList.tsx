@@ -73,11 +73,11 @@ function FileHostingList() {
                 </div>
 
                 <div className='grid grid-cols-12 gap-2 mb-2'>
-                    <p className='font-semibold col-span-12 lg:col-span-4 text-slate-400'>Url / Instance</p>
-                    <p className='font-semibold col-span-6 lg:col-span-3 text-slate/400 text-center lg:text-left'>Status</p>
-                    <p className='font-semibold col-span-3 lg:col-span-1 text-slate/400 text-center'>Files</p>
-                    <p className='font-semibold col-span-2 lg:col-span-2 text-slate/400 text-center'>Size</p>
-                    <p className='font-semibold hidden lg:block col-span-2 text-slate/400 text-center'>Queue</p>
+                    <p className='font-semibold hidden sm:block col-span-12 lg:col-span-4 text-slate-400'>Url / Instance</p>
+                    <p className='font-semibold hidden sm:block col-span-6 lg:col-span-3 text-slate/400 text-center lg:text-left'>Status</p>
+                    <p className='font-semibold hidden sm:block col-span-3 lg:col-span-1 text-slate/400 text-right'>Files</p>
+                    <p className='font-semibold hidden sm:block col-span-2 lg:col-span-2 text-slate/400 text-right'>Size</p>
+                    <p className='font-semibold hidden lg:block col-span-2 text-slate/400 text-right'>Queue</p>
                 </div>
                 <FileHostList />
             </section>
@@ -85,8 +85,8 @@ function FileHostingList() {
             <section className='bg-slate-800/50 border border-slate/700 p-6 rounded-2xl shadow-xl'>
                 <h2 className='text-lg font-bold text-slate/300 mb-4 border-b border-slate/700 pb-2'>File controlers list</h2>
                 <div className='grid grid-cols-12 gap-2 mb-2'>
-                    <p className='font-semibold col-span-7 lg:col-span-5 text-slate/400'>Instance</p>
-                    <p className='font-semibold col-span-5 lg:col-span-7 text-slate/400 text-center'>Presence</p>
+                    <p className='font-semibold hidden sm:block col-span-6 lg:col-span-8 text-slate/400'>Instance</p>
+                    <p className='font-semibold hidden sm:block col-span-6 lg:col-span-4 lg:text-left text-slate/400'>Presence</p>
                 </div>
                 <FileControlerList />
             </section>
@@ -96,7 +96,7 @@ function FileHostingList() {
 
 export default FileHostingList;
 
-const CONST_CLASSNAME_FILEHOST_ROW = 'grid grid-cols-12 items-center odd:bg-slate-700/30 pt-2 pb-2 pl-2 pr-2 hover:bg-slate-700/50 transition-colors rounded-lg';
+const CONST_CLASSNAME_FILEHOST_ROW = 'grid grid-cols-12 items-center odd:bg-slate-700/30 pt-2 pb-2 gap-2 hover:bg-slate-700/50 transition-colors rounded-lg';
 
 type FilehostListItem = FilehostStoreItem & {label: string};
 
@@ -145,9 +145,9 @@ function FileHostList() {
                         {item.label}
                     </Link>
                     <p className={`col-span-6 lg:col-span-3 text-center lg:text-left text-sm font-medium ${statusColor}`}>{status}</p>
-                    <p className='col-span-3 lg:col-span-1 text-center text-slate-300'>{count}</p>
-                    <p className='col-span-2 lg:col-span-2 text-center text-slate/300'><Formatters.FormatteurTaille value={size} /></p>
-                    <p className='hidden lg:block col-span-2 text-center text-slate/300'>{transferQueueLength}</p>
+                    <p className='col-span-3 lg:col-span-1 text-right text-slate-300'>{count}</p>
+                    <p className='col-span-2 lg:col-span-2 text-right text-slate/300'><Formatters.FormatteurTaille value={size} /></p>
+                    <p className='hidden lg:block col-span-2 text-right text-slate/300'>{transferQueueLength}</p>
                 </div>
             )
         });
@@ -157,7 +157,7 @@ function FileHostList() {
     return <>{filehostElems}</>;
 }
 
-const CONST_CLASSNAME_FILECONTROLER_ROW = 'grid grid-cols-12 items-center odd:bg-slate/50 pt-2 pb-2 pl-2 pr-2 hover:bg-slate/50 transition-colors rounded-lg';
+const CONST_CLASSNAME_FILECONTROLER_ROW = 'grid grid-cols-12 items-center odd:bg-slate/50 gap-2 pt-2 pb-2 hover:bg-slate/50 transition-colors rounded-lg';
 
 function FileControlerList() {
     const filecontrolers = useFilehostStore(state => state.filecontrolers);
@@ -179,8 +179,8 @@ function FileControlerList() {
 
             return (
                 <div key={item.instance_id} className={CONST_CLASSNAME_FILECONTROLER_ROW}>
-                    <p className='col-span-7 lg:col-span-5 text-slate/200'>{label}</p>
-                    <div className='col-span-5 lg:col-span-7 text-center lg:text-left'>
+                    <p className='col-span-12 sm:col-span-6 lg:col-span-8 text-slate/200'>{label}</p>
+                    <div className='col-span-12 sm:col-span-6 lg:col-span-4 lg:text-left'>
                         <ConditionalFormatters.FormatterConditionalDate 
                             value={item.lastUpdate} warn={360} error={1800} className='text-sm' />
                     </div>
