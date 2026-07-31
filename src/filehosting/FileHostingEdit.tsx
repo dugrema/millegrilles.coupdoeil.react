@@ -129,7 +129,7 @@ function FileHostingEdit() {
                         <div className='lg:col-span-2 flex flex-col space-y-2'>
                             <label htmlFor='syncActiveId' className='text-sm text-slate/400'>Synchronisation active</label>
                             <div className='pt-1'>
-                                <ToggleSwitch id='syncActiveId' checked={syncActive} onChange={syncActiveOnChange} />
+                                <ToggleSwitch id='syncActiveId' checked={syncActive} onChange={syncActiveOnChange} color='blue' />
                             </div>
                         </div>
                     </div>

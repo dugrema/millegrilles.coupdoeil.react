@@ -2,6 +2,7 @@
 @plugin "@tailwindcss/forms";
 @plugin "flowbite/plugin";
 @source "../node_modules/flowbite-react/dist/**/*.js";
+@source "../node_modules/flowbite/**/*.js";
 
 @layer components {
     .btn {
