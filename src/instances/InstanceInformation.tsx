@@ -71,8 +71,8 @@ function ShowInstanceInformation() {
     const isMemWarning = (state.memory.used / state.memory.total) > 0.8;
     const isSwapWarning = (state.swap.used / state.swap.total) > 0.2;
     const isDiskWarning = state.disk.some(d => (d.used / d.total) > 0.9);
-    const isLagging = lastSeenMinutes > 3;
-    const isFailed = lastSeenSeconds > 1200;
+    const isLagging = lastSeenMinutes > 1;
+    const isFailed = lastSeenSeconds > 600;
 
     const isCertWarning = useMemo(() => {
         if (!instance.certissuer?.not_after) return false;
