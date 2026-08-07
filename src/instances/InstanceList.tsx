@@ -75,7 +75,7 @@ function ShowList() {
                 const uptimeSeconds = item.system_state?.uptime_seconds || 0;
                 const memoryPercent = item.system_state?.memory?.percent || 0;
                 const swapPercent = item.system_state?.swap?.percent || 0;
-                const diskUsageWarning = item.system_state?.disk?.some(d => (d.used / d.total * 100) > 90) || false;
+                const diskUsageWarning = item.system_state?.disk?.some(d => (d.used / (d.free + d.used) * 100) > 95) || false;
 
                 const isCertWarning = item.certissuer?.not_after 
                     ? (item.certissuer.not_after - Math.floor(now / 1000)) < (3 * 30 * 24 * 60 * 60) && (item.certissuer.not_after - Math.floor(now / 1000)) > 0

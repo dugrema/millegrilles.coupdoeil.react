@@ -175,9 +175,12 @@ function ShowInstanceInformation() {
                                 <div key={idx} className="space-y-1">
                                     <div className="flex justify-between text-xs">
                                         <span className="font-mono">{disk.mountpoint}</span>
-                                        <div className={`flex items-baseline gap-1 ${(disk.used / disk.total) > 0.9 ? 'text-red-500' : 'text-slate-400'}`}><span>{formatBytes(disk.used)} / {formatBytes(disk.total)}</span><span className="font-mono w-12 text-right">({Math.round((disk.used / disk.total) * 100)}%)</span></div>
+                                        <div className={`flex items-baseline gap-1 ${(disk.used / (disk.free + disk.used)) > 0.95 ? 'text-red-500' : 'text-slate-400'}`}>
+                                            <span>{formatBytes(disk.used)} / {formatBytes(disk.free + disk.used)}</span>
+                                            <span className="font-mono w-12 text-right">({Math.round((disk.used / (disk.free + disk.used)) * 100)}%)</span>
+                                        </div>
                                     </div>
-                                    <ProgressBar value={disk.used} max={disk.total} colorClass="bg-blue-500" />
+                                    <ProgressBar value={disk.used} max={(disk.free + disk.used)} colorClass="bg-blue-500" />
                                 </div>
                             ))}
                         </div>
