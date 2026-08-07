@@ -460,6 +460,11 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendCommand({complet: true}, domain, 'declencherBackup', {noverif});
     }
 
+    async deleteDomain(domain: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({domain_name: domain}, DOMAINE_CORETOPOLOGIE, 'deleteDomain');
+    }
+
     async getNonDecryptableKeyCount() {
         if(!this.connection) throw new Error("Connection is not initialized");
         return await this.connection.sendRequest({}, DOMAINE_MAITREDESCLES, 'compterClesNonDechiffrables') as GetNonDecryptableKeyCount;

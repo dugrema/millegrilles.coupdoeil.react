@@ -47,6 +47,7 @@
         {"domain": "CoreTopologie", "action": "resetVisitsClaims"},
         {"domain": "CoreTopologie", "action": "resetTransfers"},
         {"domain": "CoreTopologie", "action": "setBackupDomainVersion"},
+        {"domain": "CoreTopologie", "action": "deleteDomain"},
         {"domain": "GrosFichiers", "action": "reindexerFichiers"},
         {"domain": "GrosFichiers", "action": "claimAllFiles"},
         {"domain": "MaitreDesCles", "action": "rechiffrerBatch"},

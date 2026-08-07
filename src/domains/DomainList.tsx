@@ -10,27 +10,36 @@ import useInstanceStore, { ServerInstanceStore } from '../instances/instanceStor
 
 function DomainList() {
 
-    let workers = useWorkers();
-    let ready = useConnectionStore(state=>state.connectionAuthenticated);
+    const workers = useWorkers();
+    const ready = useConnectionStore(state=>state.connectionAuthenticated);
 
-    let rebuildHandler = useCallback(async (domaine: string) => {
+    const rebuildHandler = useCallback(async (domaine: string) => {
         if(!ready || !workers) throw new Error("workers not initialized");
-        let response = await workers.connection.rebuildDomain(domaine);
+        const response = await workers.connection.rebuildDomain(domaine);
         if(response.ok !== true) throw new Error('Error starting rebuild: ' + response.err);
     }, [workers, ready]);
 
-    let domainBackupHandler = useCallback(async (domaine: string) => {
+    const domainBackupHandler = useCallback(async (domaine: string) => {
         if(!ready || !workers) throw new Error("workers not initialized");
-        let response = await workers.connection.backupDomain(domaine);
+        const response = await workers.connection.backupDomain(domaine);
         if(response.ok !== true) {
             console.warn("Error starting backup", response);
             throw new Error('Error starting backup: ' + response.err);
         }
     }, [workers, ready]);
 
-    let backupAllHandler = useCallback(async () => {
+    const domainDeleteHandler = useCallback(async (domaine: string) => {
+        if(!ready || !workers) throw new Error("workers not initialized");
+        const response = await workers.connection.deleteDomain(domaine);
+        if(response.ok !== true) {
+            console.warn("Error deleting domain", response);
+            throw new Error('Error deleting domain: ' + response.err);
+        }
+    }, [workers, ready]);
+
+    const backupAllHandler = useCallback(async () => {
         if(!ready || !workers) throw new Error('workers not initialized');
-        let result = await workers.connection.backupDomain('global', true);
+        const result = await workers.connection.backupDomain('global', true);
         // Only check that a result was received. The command is sent to all domains at the same time, the first response wins.
         if(!result) throw new Error("No response received to complete backup command");
     }, [workers, ready]);
@@ -73,7 +82,7 @@ function DomainList() {
                 <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2 flex items-center'>
                     <span className='mr-2'>📋</span> Domain list
                 </h2>
-                <DomainListSection rebuild={rebuildHandler} backup={domainBackupHandler} />
+                <DomainListSection rebuild={rebuildHandler} backup={domainBackupHandler} delete={domainDeleteHandler} />
             </section>
         </div>
     );
@@ -84,11 +93,12 @@ export default DomainList;
 type DomainListSectionProps = {
     rebuild?: (domaine: string) => Promise<void>,
     backup?: (domaine: string) => Promise<void>,
+    delete?: (domaine: string) => Promise<void>,
 }
 
 export function DomainListSection(props: DomainListSectionProps) {
     
-    let { rebuild, backup } = props;
+    let { rebuild, backup, delete: deleteHandler } = props;
 
     let domains = useDomainStore(state=>state.domains);
 
@@ -97,7 +107,7 @@ export function DomainListSection(props: DomainListSectionProps) {
         // Sort
         let domainCopy = [...domains];
         domainCopy.sort(sortDomains);
-        return domainCopy.map(item=><DomainItem key={item.domaine} value={item} rebuild={rebuild} backup={backup} />)
+        return domainCopy.map(item=><DomainItem key={item.domaine} value={item} rebuild={rebuild} backup={backup} delete={deleteHandler} />)
     }, [domains, rebuild, backup]);
 
     return (
@@ -130,11 +140,12 @@ type DomainItemProps = {
     value: DomainStore,
     rebuild?: (domaine: string) => Promise<void>,
     backup?: (domaine: string) => Promise<void>,
+    delete?: (domaine: string) => Promise<void>,
 }
 
 function DomainItem(props: DomainItemProps) {
 
-    const { value, rebuild, backup } = props;
+    const { value, rebuild, backup, delete: deleteHandler } = props;
 
     const ready = useConnectionStore(state=>state.connectionAuthenticated);
     const instances = useInstanceStore(state=>state.instances);
@@ -150,6 +161,12 @@ function DomainItem(props: DomainItemProps) {
         if(!value.domaine) throw new Error("domaine not provided");
         await rebuild(value.domaine);
     }, [value.domaine, rebuild]);
+
+    const deleteHandlerInner = useCallback(async () => {
+        if(!deleteHandler) throw new Error("delete method not provided");
+        if(!value.domaine) throw new Error("domaine not provided");
+        await deleteHandler(value.domaine);
+    }, [value.domaine, deleteHandler]);
 
     const instanceLabel = useMemo(()=>{
         if(!instances || !value.instance_id) return '-';
@@ -185,13 +202,14 @@ function DomainItem(props: DomainItemProps) {
                 <div className="flex flex-wrap gap-2">
                     {backup?
                         <ActionButton onClick={backupHandler} disabled={!ready || backupRunning} 
-                            forceErrorStatus={!!value.backupMessage} className="px-2 py-1 text-xs">Backup</ActionButton>
+                            forceErrorStatus={!!value.backupMessage}>Backup</ActionButton>
                     :
                         <></>}
                     {rebuild?
-                        <ActionButton onClick={rebuildHandler} disabled={!ready || !!value.rebuilding} className="px-2 py-1 text-xs">Rebuild</ActionButton>
+                        <ActionButton onClick={rebuildHandler} disabled={!ready || !!value.rebuilding}>Rebuild</ActionButton>
                     :
                         <></>}
+                    <ActionButton onClick={deleteHandlerInner} disabled={!ready}>Delete</ActionButton>
                 </div>
             </td>
         </tr>
