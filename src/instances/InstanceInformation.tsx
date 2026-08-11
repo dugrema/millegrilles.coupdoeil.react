@@ -66,13 +66,15 @@ function ShowInstanceInformation() {
     const now = useTimeTick(60000);
     const lastSeenSeconds = Math.floor((now - new Date(timestamp).getTime()) / 1000);
     const lastSeenMinutes = Math.floor(lastSeenSeconds / 60);
+    const uptimeSeconds = system_state?.uptime_seconds || 0;
 
     const isCpuWarning = state.cpu_usage_percent > 80;
     const isMemWarning = (state.memory.used / state.memory.total) > 0.8;
     const isSwapWarning = (state.swap.used / state.swap.total) > 0.2;
     const isDiskWarning = state.disk.some(d => (d.used / d.total) > 0.95);
+    const isRestartedWarning = (uptimeSeconds < 300);
     const isLagging = lastSeenMinutes > 1;
-    const isFailed = lastSeenSeconds > 600;
+    const isFailed = lastSeenMinutes > 5;
 
     const isCertWarning = useMemo(() => {
         if (!instance.certissuer?.not_after) return false;
@@ -90,7 +92,7 @@ function ShowInstanceInformation() {
     } else if (isFailed) {
         status = 'FAILED';
         statusColor = 'bg-red-900 text-red-200';
-    } else if (isCpuWarning || isLagging || isMemWarning || isSwapWarning || isDiskWarning || isCertWarning) {
+    } else if (isCpuWarning || isLagging || isMemWarning || isSwapWarning || isDiskWarning || isCertWarning || isRestartedWarning) {
         status = 'WARN';
         statusColor = 'bg-yellow-900 text-yellow-200';
     }
@@ -109,7 +111,7 @@ function ShowInstanceInformation() {
                 </div>
 
                 <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
-                    <p className="text-sm text-slate-400">Uptime</p>
+                    <p className={`text-sm ${isRestartedWarning ? 'text-red-500' : 'text-slate-400'}`}>Uptime</p>
                     <p className="text-lg font-bold mt-1">{formatDuration(state.uptime_seconds)}</p>
                 </div>
 

@@ -84,8 +84,8 @@ function ShowList() {
                 const warningLabels: string[] = [];
                 if (isCertWarning) warningLabels.push('Cert');
                 if (cpuUsage > 80) warningLabels.push('CPU');
-                if (lastSeenMinutes > 1) warningLabels.push('Lagging');
-                if (uptimeSeconds < 600) warningLabels.push('Uptime');
+                if (lastSeenSeconds > 65) warningLabels.push('Lagging');
+                if (uptimeSeconds < 300) warningLabels.push('Restarted');
                 if (swapPercent > 20) warningLabels.push('Swap');
                 if (memoryPercent > 80) warningLabels.push('Mem');
                 if (diskUsageWarning) warningLabels.push('Disk');
@@ -96,13 +96,13 @@ function ShowList() {
                 if (item.supprime) {
                     status = 'DELETING';
                     statusColor = 'bg-red-900 text-red-200';
-                } else if (lastSeenSeconds > 10 * 60) {
+                } else if (lastSeenMinutes > 5) {
                     status = 'FAILED';
                     statusColor = 'bg-red-900 text-red-200';
                 } else if (
                     cpuUsage > 80 ||
-                    lastSeenMinutes > 1 ||
-                    uptimeSeconds < 600 ||
+                    lastSeenSeconds > 65 ||
+                    uptimeSeconds < 300 ||
                     swapPercent > 20 ||
                     memoryPercent > 80 ||
                     diskUsageWarning ||
