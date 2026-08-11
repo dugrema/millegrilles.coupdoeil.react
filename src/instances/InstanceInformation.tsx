@@ -111,8 +111,8 @@ function ShowInstanceInformation() {
                 </div>
 
                 <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
-                    <p className={`text-sm ${isRestartedWarning ? 'text-red-500' : 'text-slate-400'}`}>Uptime</p>
-                    <p className="text-lg font-bold mt-1">{formatDuration(state.uptime_seconds)}</p>
+                    <p className="text-sm text-slate-400">Uptime</p>
+                    <p className={`text-lg font-bold mt-1 ${isRestartedWarning ? 'text-red-500' : ''}`}>{formatDuration(state.uptime_seconds)}</p>
                 </div>
 
                 <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
