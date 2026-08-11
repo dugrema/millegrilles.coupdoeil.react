@@ -8,7 +8,7 @@ import useInstanceStore from './instanceStore';
 import useConnectionStore from '../connectionStore';
 import useWorkers, { AppWorkers } from '../workers/workers';
 import { useEffect, useMemo } from 'react';
-import { ManagerStatusV2 } from '../workers/typesInstance';
+import { ManagerStatusV2, SystemState } from '../workers/typesInstance';
 
 
 function Instances() {
@@ -83,12 +83,18 @@ async function processEvent(workers: AppWorkers | null, event: SubscriptionMessa
     if(action === 'presenceInstanceV2') {
         if(!timestamp) throw new Error("Missing timestamp from message");
         // console.debug("Presence instance ", event);
+        const system_state = event.message.system_state as SystemState;
+
+        // Securite matches the exchange except for 4.secure (that manager has a level 3.protege certificate)
+        let securite = event.exchange;
+        if(securite === '3.protege' && event.message.securite) securite = event.message.securite;
+
         const instanceUpdate = {
             instance_id: instanceId,
             timestamp: new Date(timestamp*1000).toISOString(),
             supprime: false,
-            securite: event.exchange,
-            system_state: event.message.system_state,
+            securite,
+            system_state,
         } as ManagerStatusV2;
         updateInstance(instanceUpdate);
     }
