@@ -8,6 +8,7 @@ import { DomainListSection } from './DomainList';
 import useConnectionStore from '../connectionStore';
 import { decryptNonDecryptableKeys, KeyProgress, MaitreDesClesProgress } from '../utilities/DecryptKeys';
 import { BackupDomainVersion } from '../workers/connection.worker';
+import { X509Certificate } from '@peculiar/x509';
 
 function DomainRestore() {
 
@@ -199,17 +200,31 @@ async function restoreInitialDomain(workers: AppWorkers, domain: string, masterK
         // console.debug("Ping response ", response);
         // @ts-ignore
         let certificate: certificates.CertificateWrapper = response.content['__certificate'];
-        Object.setPrototypeOf(certificate, certificates.CertificateWrapper.prototype);
+
+        // Rebuild certificate, extract key
+        const pemCertificate = certificate.pemChain[0];
+        const certificateX509 = new X509Certificate(pemCertificate);
+        const publicKeyFromCert = certificateX509.publicKey.rawData;
+        const publicKeySlice = publicKeyFromCert.slice(
+            publicKeyFromCert.byteLength - 32,
+        );
+        console.debug("Public key: ", publicKeySlice);
+        const corePkiFingerprint = multiencoding.encodeHex(publicKeySlice);
+        const publicKeyWrapper = multiencoding.decodeHex(corePkiFingerprint);
+
+        // Old method, was not always working
+        // Object.setPrototypeOf(certificate, certificates.CertificateWrapper.prototype);
         // console.debug("Domain certificate ", certificate);
-        let corePkiFingerprint = certificate.getPublicKey();
+        // let corePkiFingerprint = certificate.getPublicKey();
         // console.debug("Fingerprint: ", corePkiFingerprint);
-        let publicKey = multiencoding.decodeHex(corePkiFingerprint);
+        // const publicKey = multiencoding.decodeHex(corePkiFingerprint);
+
         encryptedKeys = await workers.encryption.encryptMessageMgs4ToBase64(contentToEncrypt, [domain]);
         // Re-encrypt the key for the CorePki certificate
         let secretKey = encryptedKeys.cleSecrete;
         let cles = encryptedKeys.cle?.cles;
         if(!cles || !secretKey) throw new Error("Secret key not provided by cipher");
-        let keyForCorePki = await x25519.encryptEd25519(secretKey, publicKey);
+        let keyForCorePki = await x25519.encryptEd25519(secretKey, publicKeyWrapper);
         cles[corePkiFingerprint] = keyForCorePki;
     }
 
