@@ -256,6 +256,17 @@ export type GenerateCertificateInstanceCommand = {
 
 export type GenerateCertificateInstanceResponse = MessageResponse & { certificat?: string[] };
 
+export type RequestConfigurationGetFilesResponse = MessageResponse & {list: {
+    file_id: string,
+    filename: string,
+    roles?: string[],
+    domains?: string[],
+    last_modified: number,
+    key_id: string,
+}[]};
+
+export type RequestConfigurationGetPropertiesResponse = MessageResponse & {  };
+
 export type GetNonDecryptableKeyCount = MessageResponse & { compte?: number };
 
 export type FileHostCount = {count?: number, size?: number};
@@ -380,6 +391,41 @@ export class AppsConnectionWorker extends ConnectionWorker {
     async setFileManagerForInstance(instanceId: string, fileManagerId: string | null) {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendCommand({instance_id: instanceId, consignation_id: fileManagerId}, DOMAINE_CORETOPOLOGIE, 'setConsignationInstance') as Promise<GenerateCertificateInstanceResponse>;
+    }
+
+    async requestConfigurationGetFiles() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'requestConfigurationGetFiles') as Promise<RequestConfigurationGetFilesResponse>;
+    }
+
+    async requestConfigurationGetProperties() {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'requestConfigurationGetProperties') as Promise<RequestConfigurationGetPropertiesResponse>;
+    }
+
+    async configurationCreateFile(filename: string, roles: string[] | null, domains: string[] | null) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({filename, roles, domains}, DOMAINE_CORETOPOLOGIE, 'configurationCreateFile') as Promise<MessageResponse & {file_id?: string}>;
+    }
+
+    async configurationUpdateFile(file_id: string, filename?: string, roles?: string[], domains?: string[]) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({file_id, filename, roles, domains}, DOMAINE_CORETOPOLOGIE, 'configurationUpdateFile') as Promise<MessageResponse>;
+    }
+
+    async configurationDeleteFile(file_id: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({file_id}, DOMAINE_CORETOPOLOGIE, 'configurationDeleteFile') as Promise<MessageResponse>;
+    }
+
+    async configurationSetProperty(command: any) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand(command, DOMAINE_CORETOPOLOGIE, 'configurationSetProperty') as Promise<MessageResponse>;
+    }
+
+    async configurationDeleteProperty(file_id: string, key: string) {
+        if(!this.connection) throw new Error("Connection is not initialized");
+        return this.connection.sendCommand({file_id, key}, DOMAINE_CORETOPOLOGIE, 'configurationDeleteProperty') as Promise<MessageResponse>;
     }
 
     async requestKeymasterRecovery() {

@@ -40,6 +40,7 @@ const FileHostingEdit = React.lazy(()=>import('./filehosting/FileHostingEdit'));
 const ConfigurationManagement = React.lazy(()=>import('./utilities/ConfigurationManagement'));
 const ConfigurationFileList = React.lazy(()=>import('./utilities/ConfigurationFileList'));
 const ConfigurationFile = React.lazy(()=>import('./utilities/ConfigurationFile'));
+const ConfigurationFileNew = React.lazy(()=>import('./utilities/ConfigurationFileNew'));
 
 const router = createBrowserRouter([
 	{ path: "/coupdoeil2", element: <LandingPage />, errorElement: <ErrorPage /> },
@@ -86,6 +87,7 @@ const router = createBrowserRouter([
         errorElement: <ErrorPage />,
         children: [
             { path: "/coupdoeil2/configuration", element: <ConfigurationFileList /> },
+            { path: "/coupdoeil2/configuration/newFile", element: <ConfigurationFileNew /> },
             { path: "/coupdoeil2/configuration/:fileId", element: <ConfigurationFile /> },
         ]
   	},
