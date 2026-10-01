@@ -256,14 +256,16 @@ export type GenerateCertificateInstanceCommand = {
 
 export type GenerateCertificateInstanceResponse = MessageResponse & { certificat?: string[] };
 
-export type RequestConfigurationGetFilesResponse = MessageResponse & {list: {
+export type ConfigurationFileItem = {
     file_id: string,
     filename: string,
     roles?: string[],
     domains?: string[],
     last_modified: number,
     key_id: string,
-}[]};
+};
+
+export type RequestConfigurationGetFilesResponse = MessageResponse & {list: ConfigurationFileItem[]};
 
 export type RequestConfigurationGetPropertiesResponse = MessageResponse & {  };
 
