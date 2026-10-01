@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ConfigurationFileItem } from "../workers/connection.worker";
 import { formatDate } from '../utilities/dateUtils';
 
@@ -65,7 +65,7 @@ function ConfigurationItemRender(props: {value: ConfigurationFileItem}) {
     const item = props.value;
     return (
         <>
-            <div>{item.filename}</div>
+            <Link to={item.file_id}>{item.filename}</Link>
             <div>{item.roles?item.roles.join(','):''}</div>
             <div>{item.domains?item.domains.join(','):''}</div>
             <div>{formatDate(item.last_modified as any, false)}</div>
