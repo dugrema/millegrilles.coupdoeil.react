@@ -65,13 +65,32 @@ function ConfigurationFile() {
 export default ConfigurationFile;
 
 function PropertyList(props: {value: ConfigurationPropertyItem[] | null}) {
-    if(!props.value) return <></>;
+    const itemList = props.value;
+    if(!itemList) return <></>;
 
     return (
         <div className='grid grid-cols-2'>
             <div className="col-span-2 lg:col-span-1">Key</div>
             <div className='col-span-2 lg:col-span-1'>Value</div>
+
+            {itemList.map(item=><PropertyItem value={item}/>)}
         </div>
+    )
+}
+
+function PropertyItem(props: {value: ConfigurationPropertyItem}) {
+    const value = props.value.value;
+    if(!value) return <></>;
+    const numberValueString = [value.inumber].filter(item=>item!=null).join(',');
+
+    return (
+        <>
+            <p>{props.value.key}</p>
+            <div>
+                {numberValueString?<p>{numberValueString}</p>:<></>}
+                {value?.text?<p className='whitespace-nowrap'>{value?.text}</p>:<></>}
+            </div>
+        </>
     )
 }
 
