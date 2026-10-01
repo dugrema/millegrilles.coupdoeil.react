@@ -267,7 +267,18 @@ export type ConfigurationFileItem = {
 
 export type RequestConfigurationGetFilesResponse = MessageResponse & {list: ConfigurationFileItem[]};
 
-export type RequestConfigurationGetPropertiesResponse = MessageResponse & {  };
+export type ConfigurationPropertyItemValue = { text?: string | null, inumber?: number | null, fnumber?: number | null };
+export type ConfigurationPropertyItem = { file_id: string, key: string, value: ConfigurationPropertyItemValue };
+
+export type RequestConfigurationGetPropertiesResponse = MessageResponse & { 
+    file_id: string, 
+    filename: string, 
+    key_id: string, 
+    list: ConfigurationPropertyItem[],
+    last_modified: number,
+    secret_key?: string,
+    done: boolean,
+};
 
 export type GetNonDecryptableKeyCount = MessageResponse & { compte?: number };
 
@@ -400,9 +411,9 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'requestConfigurationGetFiles') as Promise<RequestConfigurationGetFilesResponse>;
     }
 
-    async requestConfigurationGetProperties() {
+    async requestConfigurationGetProperties(fileId: string) {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendRequest({}, DOMAINE_CORETOPOLOGIE, 'requestConfigurationGetProperties') as Promise<RequestConfigurationGetPropertiesResponse>;
+        return this.connection.sendRequest({file_id: fileId, send_key: true}, DOMAINE_CORETOPOLOGIE, 'requestConfigurationGetProperties') as Promise<RequestConfigurationGetPropertiesResponse>;
     }
 
     async configurationCreateFile(filename: string, roles: string[] | null, domains: string[] | null) {
@@ -420,9 +431,9 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendCommand({file_id}, DOMAINE_CORETOPOLOGIE, 'configurationDeleteFile') as Promise<MessageResponse>;
     }
 
-    async configurationSetProperty(command: any) {
+    async configurationSetProperty(file_id: string, key: string, value: any) {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendCommand(command, DOMAINE_CORETOPOLOGIE, 'configurationSetProperty') as Promise<MessageResponse>;
+        return this.connection.sendCommand({file_id, key, value}, DOMAINE_CORETOPOLOGIE, 'configurationSetProperty') as Promise<MessageResponse>;
     }
 
     async configurationDeleteProperty(file_id: string, key: string) {
