@@ -34,8 +34,12 @@ const FileHostingList = React.lazy(()=>import('./filehosting/FileHostingList'));
 const FileHostingAdd = React.lazy(()=>import('./filehosting/FileHostingAdd'));
 const FileHostingEdit = React.lazy(()=>import('./filehosting/FileHostingEdit'));
 
-const KeyManagement = React.lazy(()=>import('./utilities/KeyManagement'));
-const KeyManagementOptions = React.lazy(()=>import('./utilities/KeyManagementOptions'));
+// const KeyManagement = React.lazy(()=>import('./utilities/KeyManagement'));
+// const KeyManagementOptions = React.lazy(()=>import('./utilities/KeyManagementOptions'));
+
+const ConfigurationManagement = React.lazy(()=>import('./utilities/ConfigurationManagement'));
+const ConfigurationFileList = React.lazy(()=>import('./utilities/ConfigurationFileList'));
+const ConfigurationFile = React.lazy(()=>import('./utilities/ConfigurationFile'));
 
 const router = createBrowserRouter([
 	{ path: "/coupdoeil2", element: <LandingPage />, errorElement: <ErrorPage /> },
@@ -77,11 +81,12 @@ const router = createBrowserRouter([
         ]
   	},
     {
-		path: "/coupdoeil2/keys",
-		element: <KeyManagement />,
+		path: "/coupdoeil2/configuration",
+		element: <ConfigurationManagement />,
         errorElement: <ErrorPage />,
         children: [
-            { path: "/coupdoeil2/keys", element: <KeyManagementOptions /> },
+            { path: "/coupdoeil2/configuration", element: <ConfigurationFileList /> },
+            { path: "/coupdoeil2/configuration/:fileId", element: <ConfigurationFile /> },
         ]
   	},
     {

@@ -28,7 +28,7 @@ function SystemManagement() {
         { to: '/coupdoeil2/instances', label: 'Instances', icon: 'fa-server', color: 'text-indigo-400' },
         { to: '/coupdoeil2/domains', label: 'Domains', icon: 'fa-globe', color: 'text-blue-400' },
         { to: '/coupdoeil2/users', label: 'Users', icon: 'fa-users', color: 'text-emerald-400' },
-        { to: '/coupdoeil2/keys', label: 'Key management', icon: 'fa-key', color: 'text-amber-400' },
+        { to: '/coupdoeil2/configuration', label: 'Configuration', icon: 'fa-cog', color: 'text-amber-400' },
         { to: '/coupdoeil2/fileHosting', label: 'File hosting', icon: 'fa-folder', color: 'text-rose-400' },
     ];
 
