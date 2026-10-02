@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import useWorkers from "../workers/workers";
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import useConnectionStore from "../connectionStore";
@@ -6,7 +6,7 @@ import { ConfigurationPropertyItem, ConfigurationPropertyItemValue, RequestConfi
 import ActionButton from "../components/ActionButton";
 
 function ConfigurationFile() {
-
+    const navigate = useNavigate();
     const workers = useWorkers();
     const ready = useConnectionStore(state=>state.connectionAuthenticated);
     const {fileId} = useParams();
@@ -33,6 +33,7 @@ function ConfigurationFile() {
     }, [properties, setEditingProperty]);
 
     const refreshHandler = useCallback(async () => {
+        if(!ready) return;
         if(!fileId) throw new Error("FileId not provided");
         if(!workers) throw new Error("Connection not ready");
         const response = await workers.connection.requestConfigurationGetProperties(fileId);
@@ -41,13 +42,22 @@ function ConfigurationFile() {
         properties.sort((a, b)=>{return a.key.localeCompare(b.key)});
         setProperties(properties);
         setFile(response);
-    }, [fileId]);
+    }, [workers, ready, fileId]);
 
     const returnHandler = useCallback((refresh: boolean | any)=>{
         setEditingProperty(null);
         setEditingFile(false);
         if(refresh === true) refreshHandler().catch(err=>console.error("Error refreshing list: ", err));
     }, [setEditingProperty, refreshHandler]);
+
+    const deleteHandler = useCallback(async () => {
+        if(!ready) throw new Error("Connection not ready");
+        if(!workers) throw new Error("Connection not ready");
+        if(!fileId) throw new Error("File_id not provided");
+        const response = await workers.connection.configurationDeleteFile(fileId);
+        if(!response.ok) throw new Error(`Error deleting file: ${response.err}`);
+        navigate('..');
+    }, [navigate, workers, ready, fileId]);
 
     useEffect(()=>{
         if(!ready || !fileId) return;
@@ -90,7 +100,7 @@ function ConfigurationFile() {
                     <PropertyList value={properties} handleEdit={handleEditProperty} />
 
                     <p className='pt-20 pb-2'>Danger zone</p>
-                    <ActionButton onClick={refreshHandler} resetDelay={2000}>
+                    <ActionButton onClick={deleteHandler} resetDelay={2000}>
                         Delete File
                     </ActionButton>
                 </>
