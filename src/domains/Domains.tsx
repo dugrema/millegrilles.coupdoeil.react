@@ -31,7 +31,7 @@ function Domains() {
 
         // Register listener
         workers.connection.subscribeDomainEvents(domainEventsCb)
-            .catch(err=>console.error("Error subscribing to chat conversation events", err));
+            .catch(err=>console.error("Error subscribing to domain events", err));
 
         // Load domains
         workers.connection.getDomainList()
@@ -46,7 +46,7 @@ function Domains() {
             // Unsubscribe listener
             if(workers && domainEventsCb) {
                 workers.connection.unsubscribeDomainEvents(domainEventsCb)
-                    .catch(err=>console.error("Error unsubscribing from chat conversation events", err));
+                    .catch(err=>console.error("Error unsubscribing from domain events", err));
             }
     
             clearStore(); 

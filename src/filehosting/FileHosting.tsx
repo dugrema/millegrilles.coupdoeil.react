@@ -32,7 +32,7 @@ function FileHosting() {
 
         // Register listener
         workers.connection.subscribeFilehostingEvents(domainEventsCb)
-            .catch(err=>console.error("Error subscribing to chat conversation events", err));
+            .catch(err=>console.error("Error subscribing to filehosting events", err));
 
         // Load hosts and controlers
         Promise.resolve().then(async ()=>{
@@ -65,7 +65,7 @@ function FileHosting() {
             // Unsubscribe listener
             if(workers && domainEventsCb) {
                 workers.connection.unsubscribeFilehostingEvents(domainEventsCb)
-                    .catch(err=>console.error("Error unsubscribing from chat conversation events", err));
+                    .catch(err=>console.error("Error unsubscribing from filehosting events", err));
             }
         }
     }, [ready, workers, domainEventsCb, setFilehosts, setFilecontrolers]);

@@ -43,7 +43,7 @@ export function InstanceEventHandler() {
 
         // Register listener
         workers.connection.subscribeInstanceEvents(instanceEventsCb)
-            .catch(err=>console.error("Error subscribing to chat conversation events", err));
+            .catch(err=>console.error("Error subscribing to instance manager events", err));
 
         // Load domains
         workers.connection.getInstanceList()
@@ -62,7 +62,7 @@ export function InstanceEventHandler() {
             // Unsubscribe listener
             if(workers && instanceEventsCb) {
                 workers.connection.unsubscribeInstanceEvents(instanceEventsCb)
-                    .catch(err=>console.error("Error unsubscribing from chat conversation events", err));
+                    .catch(err=>console.error("Error unsubscribing from instance manager events", err));
             }
         }
     }, [ready, workers, instanceEventsCb, setInstances, setApplicationCurrentPackages]);
