@@ -16,23 +16,30 @@ function ConfigurationFile() {
     const [editing, setEditing] = useState(null as ConfigurationPropertyItem | null);
 
     const handleNew = useCallback(()=>{
-        console.warn("New property TODO");
         // Create blank item
         setEditing({file_id: fileId, key: '', value: {text: null, inumber: null, fnumber: null}} as ConfigurationPropertyItem);
     }, [setEditing, fileId]);
+
+    const handleEdit = useCallback((key: any)=>{
+        // console.debug("Edit ", key);
+        const propertyToEdit = properties?.filter(item=>item.key === key).pop();
+        if(propertyToEdit) {
+            // console.debug("Property to edit", propertyToEdit);
+            setEditing(propertyToEdit);
+        }
+    }, [properties, setEditing])
 
     useEffect(()=>{
         if(!ready || !fileId) return;
         if(!workers) throw new Error('workers not initialized');
         workers.connection.requestConfigurationGetProperties(fileId).then(async response => {
-            console.debug("Response", response);
+            // console.debug("Response", response);
             const properties = response.list;
             properties.sort((a, b)=>{return a.key.localeCompare(b.key)});
             setProperties(properties);
             setFile(response);
         });
     }, [workers, ready, setProperties, setFile, fileId]);
-
 
     return (
         <>
@@ -55,7 +62,7 @@ function ConfigurationFile() {
                         New Property
                     </button>
 
-                    <PropertyList value={properties} />
+                    <PropertyList value={properties} handleEdit={handleEdit} />
                 </>
             }
         </>
@@ -64,7 +71,7 @@ function ConfigurationFile() {
 
 export default ConfigurationFile;
 
-function PropertyList(props: {value: ConfigurationPropertyItem[] | null}) {
+function PropertyList(props: {value: ConfigurationPropertyItem[] | null, handleEdit: any}) {
     const itemList = props.value;
     if(!itemList) return <></>;
 
@@ -73,19 +80,26 @@ function PropertyList(props: {value: ConfigurationPropertyItem[] | null}) {
             <div className="col-span-2 lg:col-span-1">Key</div>
             <div className='col-span-2 lg:col-span-1'>Value</div>
 
-            {itemList.map(item=><PropertyItem value={item}/>)}
+            {itemList.map(item=><PropertyItem value={item} handleEdit={props.handleEdit} />)}
         </div>
     )
 }
 
-function PropertyItem(props: {value: ConfigurationPropertyItem}) {
+function PropertyItem(props: {value: ConfigurationPropertyItem, handleEdit: any}) {
+    const key = props.value.key;
     const value = props.value.value;
+    const handleEdit = props.handleEdit;
+
+    const editCallback = useCallback(()=>handleEdit(key), [handleEdit, key]);
+
     if(!value) return <></>;
-    const numberValueString = [value.inumber].filter(item=>item!=null).join(',');
+    const numberValueString = [value.inumber, value.fnumber].filter(item=>item!=null).join(',');
 
     return (
         <>
-            <p>{props.value.key}</p>
+            <p onClick={editCallback}>
+                {props.value.key}
+            </p>
             <div>
                 {numberValueString?<p>{numberValueString}</p>:<></>}
                 {value?.text?<p className='whitespace-nowrap'>{value?.text}</p>:<></>}
@@ -109,6 +123,8 @@ function Editing(props: {file: RequestConfigurationGetPropertiesResponse | null,
     const [fNumber, setFNumber] = useState('');
     const fNumberOnchange = useCallback((e: ChangeEvent<HTMLInputElement>) => setFNumber(e.currentTarget.value), [setFNumber]);
     
+    const cancelHandler = props.cancelHandler;
+
     const savePropertyHandler = useCallback(async ()=>{
         if(!ready) throw new Error("Connection not ready");
         if(!workers) throw new Error("Workers not defined");
@@ -116,11 +132,11 @@ function Editing(props: {file: RequestConfigurationGetPropertiesResponse | null,
         let textValue = text !== ''?text:null;
         let intNumber = null as number | null;
         let floatNumber = null as number | null;
-        if(iNumber !== '') {
+        if(iNumber != '') {
             intNumber = parseInt(iNumber);
             if(isNaN(intNumber)) throw Error("Integer value incorrect");
         }
-        if(fNumber !== '') {
+        if(fNumber != '') {
             floatNumber = parseFloat(fNumber);
             if(isNaN(floatNumber)) throw Error("Float value incorrect");
         }
@@ -136,7 +152,7 @@ function Editing(props: {file: RequestConfigurationGetPropertiesResponse | null,
         const encryptedValue = await workers.encryption.encryptMessageMgs4ToBase64(newValues, ['CoreTopologie'], secretKeyNopad);
         delete encryptedValue?.digest;  // Remove unneeded values
         encryptedValue.cle_id = file.key_id;  // Assign the key_id for future reference
-        console.debug("Encrypted property value: ", encryptedValue);
+        // console.debug("Encrypted property value: ", encryptedValue);
 
         // Save the property
         const response = await workers.connection.configurationSetProperty(file.file_id, key, encryptedValue);
@@ -144,7 +160,9 @@ function Editing(props: {file: RequestConfigurationGetPropertiesResponse | null,
             throw new Error(`Error saving property: ${response.err}`);
         }
 
-    }, [workers, ready, file, key, text, iNumber, fNumber]);
+        // Close edit screen
+        cancelHandler();
+    }, [workers, ready, cancelHandler, file, key, text, iNumber, fNumber]);
 
     const property = props.value;
     useEffect(()=>{
@@ -152,8 +170,8 @@ function Editing(props: {file: RequestConfigurationGetPropertiesResponse | null,
         const value = property?.value;
         if(value) {
             setText(value.text || '');
-            setINumber((value.inumber!==null)?value.inumber+'':'');
-            setINumber((value.fnumber!==null)?value.fnumber+'':'');
+            setINumber((value.inumber!=null)?value.inumber+'':'');
+            setFNumber((value.fnumber!=null)?value.fnumber+'':'');
         }
     }, [property, setKey, setText, setINumber, setFNumber])
     
