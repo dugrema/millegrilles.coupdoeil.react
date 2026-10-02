@@ -9,15 +9,17 @@ type ActionButtonProps = {
     children: string,
     name?: string | undefined,
     value?: string | undefined,
+    resetDelay?: number | null,
 };
 
 function ActionButton(props: ActionButtonProps) {
 
-    const { onClick, disabled, mainButton, forceErrorStatus, name, value } = props;
+    const { onClick, disabled, mainButton, forceErrorStatus, name, value, resetDelay } = props;
 
     const [success, setSuccess] = useState(false);
     const [waiting, setWaiting] = useState(false);
     const [error, setError] = useState('');
+    const [resetTimeout, setResetTimeout]  = useState(null as number | null);
 
     const [buttonClassName, Icon] = useMemo(()=>{
         if(error || forceErrorStatus) return [
@@ -38,11 +40,20 @@ function ActionButton(props: ActionButtonProps) {
         ];
     }, [error, forceErrorStatus, success, mainButton, waiting]);
 
+    const resetButton = useCallback(()=>{
+        if(resetTimeout) clearTimeout(resetTimeout);
+        setResetTimeout(null);
+        setSuccess(false);
+        setError('');
+        setWaiting(false);
+    }, [resetTimeout, setResetTimeout, setSuccess, setError, setWaiting]);
+
     const clickHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
         // Reset
-        setSuccess(false);
+        resetButton()
+        // setSuccess(false);
+        // setError('');
         setWaiting(true);
-        setError('');
 
         onClick(e)
             .then(()=>{
@@ -54,9 +65,12 @@ function ActionButton(props: ActionButtonProps) {
                 setError(''+err);
                 setSuccess(false);
             })
-            .finally(()=>setWaiting(false));
+            .finally(()=>{
+                setWaiting(false);
+                if(resetDelay) setResetTimeout(setTimeout(resetButton, resetDelay))
+            });
 
-    }, [setSuccess, setWaiting, setError, onClick]);
+    }, [setSuccess, setWaiting, setError, setResetTimeout, resetButton, onClick]);
 
     return (
         <button onClick={clickHandler} disabled={!!disabled || waiting} name={name} value={value}

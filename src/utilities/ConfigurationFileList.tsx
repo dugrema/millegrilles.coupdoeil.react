@@ -4,6 +4,7 @@ import useWorkers from "../workers/workers";
 import { Link, useNavigate } from "react-router-dom";
 import { ConfigurationFileItem } from "../workers/connection.worker";
 import { formatDate } from '../utilities/dateUtils';
+import ActionButton from "../components/ActionButton";
 
 function ConfigurationFileList() {
     const workers = useWorkers();
@@ -16,7 +17,7 @@ function ConfigurationFileList() {
         navigate('newFile')
     }, [navigate]);
 
-    useEffect(()=>{
+    const refreshList = useCallback(async () =>{
         if(!ready) return;
         if(!workers) throw new Error('workers not initialized');
         workers.connection.requestConfigurationGetFiles().then(async response => {
@@ -27,8 +28,14 @@ function ConfigurationFileList() {
 
             setList(list);
         });
-    }, [workers, ready, setList]);
+    }, [workers, ready, setList])
 
+    useEffect(()=>{
+        if(!ready) return;
+        if(!workers) throw new Error('workers not initialized');
+        refreshList()
+            .catch(err=>console.error("Error refreshing list", err));
+    }, [workers, ready, refreshList]);
 
     return (
         <>
@@ -40,6 +47,9 @@ function ConfigurationFileList() {
                     className='inline-flex items-center justify-center px-4 py-2 bg-indigo-800 border border-indigo-700 text-white hover:bg-indigo-700 hover:scale-105 active:bg-indigo-700 shadow-lg rounded-xl transition-all duration-200'>
                 New File
             </button>
+            <ActionButton onClick={refreshList} resetDelay={2000}>
+                Refresh
+            </ActionButton>
         </>
     );
 }
