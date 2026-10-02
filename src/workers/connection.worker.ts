@@ -726,7 +726,7 @@ export class AppsConnectionWorker extends ConnectionWorker {
 
     async addFileHost(instance_id: string, url: string, tls_external: string) {
         if(!this.connection) throw new Error("Connection is not initialized");
-        return this.connection.sendCommand({instance_id, url_external: url, tls_external}, DOMAINE_CORETOPOLOGIE, 'filehostAdd');
+        return this.connection.sendCommand({instance_id, url_external: url, tls_external}, DOMAINE_CORETOPOLOGIE, 'filehostAddV2');
     }
 
     async updateFileHost(filehost: FileHost) {
