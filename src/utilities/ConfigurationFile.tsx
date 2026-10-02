@@ -221,6 +221,17 @@ function EditingProperty(props: {file: RequestConfigurationGetPropertiesResponse
     }, [workers, ready, returnHandler, file, key, text, iNumber, fNumber]);
 
     const property = props.value;
+
+    const deletePropertyHandler = useCallback(async () =>{
+        if(!ready) throw new Error("Connection not ready");
+        if(!workers) throw new Error("Connection not ready");
+        if(!property) throw new Error("Property not provided");
+        const {file_id, key} = property;
+        const response = await workers.connection.configurationDeleteProperty(file_id, key);
+        if(!response.ok) throw new Error(`Error deleting property: ${response.err}`);
+        returnHandler(true);
+    }, [workers, ready, property, returnHandler]);
+
     useEffect(()=>{
         setKey(property?.key || '');
         const value = property?.value;
@@ -261,6 +272,11 @@ function EditingProperty(props: {file: RequestConfigurationGetPropertiesResponse
             </div>
 
             <p>Note on roles on domains: you can leave either empty. To use multiple roles/domains, separate them with a comma (,).</p>
+
+            <p className="pt-20 pb-4">Danger zone</p>
+            <ActionButton onClick={deletePropertyHandler} resetDelay={2000}>
+                Delete Property
+            </ActionButton>
         </>
     )
 }
