@@ -23,9 +23,9 @@ function ConfigurationFileNew() {
         if(!roles && !domains) throw new Error("Either roles or domains is required");
 
         let roleList = null as string[] | null;
-        if(roles) roleList = roles.split(',');
+        if(roles) roleList = roles.split(',').map(item=>item.trim());
         let domainList = null as string[] | null;
-        if(domains) domainList = domains.split(',');
+        if(domains) domainList = domains.split(',').map(item=>item.trim());
 
         const response = await workers.connection.configurationCreateFile(filename, roleList, domainList);
         console.debug("Create file response", response);
