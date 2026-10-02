@@ -51,8 +51,6 @@ function ActionButton(props: ActionButtonProps) {
     const clickHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
         // Reset
         resetButton()
-        // setSuccess(false);
-        // setError('');
         setWaiting(true);
 
         onClick(e)

@@ -274,6 +274,8 @@ export type RequestConfigurationGetPropertiesResponse = MessageResponse & {
     file_id: string, 
     filename: string, 
     key_id: string, 
+    roles?: string[],
+    domains?: string[],
     list: ConfigurationPropertyItem[],
     last_modified: number,
     secret_key?: string,
@@ -421,7 +423,7 @@ export class AppsConnectionWorker extends ConnectionWorker {
         return this.connection.sendCommand({filename, roles, domains}, DOMAINE_CORETOPOLOGIE, 'configurationCreateFile') as Promise<MessageResponse & {file_id?: string}>;
     }
 
-    async configurationUpdateFile(file_id: string, filename?: string, roles?: string[], domains?: string[]) {
+    async configurationUpdateFile(file_id: string, filename?: string, roles?: string[] | null, domains?: string[] | null) {
         if(!this.connection) throw new Error("Connection is not initialized");
         return this.connection.sendCommand({file_id, filename, roles, domains}, DOMAINE_CORETOPOLOGIE, 'configurationUpdateFile') as Promise<MessageResponse>;
     }
