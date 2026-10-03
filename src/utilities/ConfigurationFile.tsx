@@ -155,7 +155,7 @@ function PropertyItem(props: {value: ConfigurationPropertyItem, handleEdit: any}
 
     return (
         <>
-            <p onClick={editCallback}>
+            <p onClick={editCallback} className='cursor-pointer w-auto'>
                 {props.value.key}
             </p>
             <div>
