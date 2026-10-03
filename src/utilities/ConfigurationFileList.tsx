@@ -39,17 +39,19 @@ function ConfigurationFileList() {
 
     return (
         <>
-            <p>Configuration file list</p>
+            <p className='pb-6'>Configuration file list</p>
 
             <ConfigurationFileListTable value={list} />
 
-            <button onClick={newFileHandler}
-                    className='inline-flex items-center justify-center px-4 py-2 bg-indigo-800 border border-indigo-700 text-white hover:bg-indigo-700 hover:scale-105 active:bg-indigo-700 shadow-lg rounded-xl transition-all duration-200'>
-                New File
-            </button>
-            <ActionButton onClick={refreshList} resetDelay={2000}>
-                Refresh
-            </ActionButton>
+            <div className='pt-6 space-x-4'>
+                <button onClick={newFileHandler}
+                        className='inline-flex items-center justify-center px-4 py-2 bg-indigo-800 border border-indigo-700 text-white hover:bg-indigo-700 hover:scale-105 active:bg-indigo-700 shadow-lg rounded-xl transition-all duration-200'>
+                    New File
+                </button>
+                <ActionButton onClick={refreshList} resetDelay={2000}>
+                    Refresh
+                </ActionButton>
+            </div>
         </>
     );
 }
@@ -61,10 +63,10 @@ function ConfigurationFileListTable(props: {value: ConfigurationFileItem[] | nul
 
     return (
         <div className='grid grid-cols-4'>
-            <div>Filename</div>
-            <div>Roles</div>
-            <div>Domains</div>
-            <div>Last modified</div>
+            <div className='font-bold pb-2'>Filename</div>
+            <div className='font-bold pb-2'>Roles</div>
+            <div className='font-bold pb-2'>Domains</div>
+            <div className='font-bold pb-2'>Last modified</div>
 
             {props.value.map(item=><ConfigurationItemRender value={item} />)}
         </div>

@@ -81,7 +81,7 @@ function ConfigurationFile() {
             {editingFile&&<EditingFile value={file} returnHandler={returnHandler} />}
             {(!editingProperty && !editingFile) && 
                 <>
-                    <section>
+                    <section className='pl-4 space-x-4'>
                         <button onClick={handleEditFile}
                             className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
                             Edit File
@@ -99,10 +99,12 @@ function ConfigurationFile() {
 
                     <PropertyList value={properties} handleEdit={handleEditProperty} />
 
-                    <p className='pt-20 pb-2'>Danger zone</p>
-                    <ActionButton onClick={deleteHandler} resetDelay={2000}>
-                        Delete File
-                    </ActionButton>
+                    <div className='pl-4'>
+                        <p className='pt-20 pb-2'>Danger zone</p>
+                        <ActionButton onClick={deleteHandler} resetDelay={2000}>
+                            Delete File
+                        </ActionButton>
+                    </div>
                 </>
             }
         </>
@@ -116,14 +118,14 @@ function FileInformation(props: {value: RequestConfigurationGetPropertiesRespons
     if(!file) return <p>Loading</p>;
 
     return (
-        <div className='grid grid-cols-2 py-4'>
+        <section className='grid grid-cols-2 pl-4 py-4'>
             <p className='font-bold'>Filename</p>
             <p>{file.filename}</p>
             <p className='font-bold'>Roles</p>
             <p>{file.roles && file.roles.join(', ')}</p>
             <p className='font-bold'>Domains</p>
             <p>{file.domains && file.domains.join(', ')}</p>
-        </div>
+        </section>
     )
 }
 
@@ -132,12 +134,12 @@ function PropertyList(props: {value: ConfigurationPropertyItem[] | null, handleE
     if(!itemList) return <></>;
 
     return (
-        <div className='grid grid-cols-2'>
-            <div className="col-span-2 lg:col-span-1 font-bold">Key</div>
-            <div className='col-span-2 lg:col-span-1 font-bold'>Value</div>
+        <section className='grid grid-cols-2 pl-4'>
+            <div className="col-span-2 lg:col-span-1 font-bold pb-2">Key</div>
+            <div className='col-span-2 lg:col-span-1 font-bold pb-2'>Value</div>
 
             {itemList.map(item=><PropertyItem value={item} handleEdit={props.handleEdit} />)}
-        </div>
+        </section>
     )
 }
 
@@ -200,8 +202,8 @@ function EditingProperty(props: {file: RequestConfigurationGetPropertiesResponse
         // Prepare the property values
         const newValues = {} as ConfigurationPropertyItemValue;
         if(textValue) newValues.text = textValue;
-        if(intNumber) newValues.inumber = intNumber;
-        if(floatNumber) newValues.fnumber = floatNumber;
+        if(intNumber!=null) newValues.inumber = intNumber;
+        if(floatNumber!=null) newValues.fnumber = floatNumber;
 
         // Encrypt the values
         const secretKeyNopad = file?.secret_key?.replaceAll('=', '');
@@ -337,7 +339,7 @@ function EditingFile(props: {value: RequestConfigurationGetPropertiesResponse | 
     if(!value) return <p>No file provided</p>;
 
     return (
-        <>
+        <section className='pl-4'>
             <p>Editing file</p>
             <div className="grid grid-cols-3">
                 <label htmlFor="filename">File name</label>
@@ -350,7 +352,7 @@ function EditingFile(props: {value: RequestConfigurationGetPropertiesResponse | 
                 <input id="domains" type="text" value={domains} onChange={domainsOnChange}
                     className='col-span-3 lg:col-span-2 bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all' />
 
-                <div className="col-span-2">
+                <div className="col-span-2 space-x-4 pb-2">
                     <ActionButton onClick={createFileHandler} mainButton={true} disabled={!ready}>
                         Save
                     </ActionButton>
@@ -363,6 +365,6 @@ function EditingFile(props: {value: RequestConfigurationGetPropertiesResponse | 
 
             <p>Note on roles on domains: you can leave either empty. To use multiple roles/domains, separate them with a comma (,).</p>
 
-        </>
+        </section>
     )
 }
