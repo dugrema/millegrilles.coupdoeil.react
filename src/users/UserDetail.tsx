@@ -229,8 +229,8 @@ function PasskeyList(props: {value: UserDetail | null}) {
             return (
                 <tr key={item.cred_id}>
                     <td className="px-4 py-3">{item.hostname}</td>
-                    <td className="px-4 py-3"><td className="px-4 py-3">{formatDate(item.date_creation as any, true)}</td></td>
-                    <td className="px-4 py-3"><td className="px-4 py-3">{formatDate(item.dernier_auth as any, true)}</td></td>
+                    <td className="px-4 py-3">{formatDate(item.date_creation as any, true)}</td>
+                    <td className="px-4 py-3">{formatDate(item.dernier_auth as any, true)}</td>
                 </tr>
             )
         });
