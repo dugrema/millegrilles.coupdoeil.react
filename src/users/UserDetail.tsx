@@ -314,12 +314,14 @@ function EvictActions() {
     return (
         <>
             <div className='pt-2 pl-6'>
-                <input id='deletePasskeys' type='checkbox' checked={deletePasskeys} onChange={deletePasskeysChangeHandler} />
+                <input id='deletePasskeys' type='checkbox' checked={deletePasskeys} onChange={deletePasskeysChangeHandler} 
+                    className='w-4 h-4 border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft text-red-700'/>
                 <label htmlFor='deletePasskeys' className='pl-2'>Delete all passkeys and browser activations for the user account.</label>
             </div>
 
-            <div className='pt-2 pl-6'>
-                <input id='deleteSessions' type='checkbox' checked={deleteSessions} onChange={deleteSessionsChangeHandler} />
+            <div className='pt-2 pb-4 pl-6'>
+                <input id='deleteSessions' type='checkbox' checked={deleteSessions} onChange={deleteSessionsChangeHandler} 
+                    className='w-4 h-4 border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft text-red-700'/>
                 <label htmlFor='deleteSessions' className='pl-2'>Evict all current sessions for the user account.</label>
             </div>
 
