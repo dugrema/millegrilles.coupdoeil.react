@@ -3,10 +3,10 @@ pipeline {
 
     parameters {
         string(defaultValue: 'master', name: 'BRANCH')
-        string(defaultValue: '2026.3', name: 'VERSION')
+        string(defaultValue: '2026.7', name: 'VERSION')
         string(defaultValue: 'jenkins-maple', name: 'CREDENTIALS_ID')
         string(defaultValue: 'ssh://git.maple.maceroc.com/git/millegrilles.coupdoeil.react', name: 'GIT_URL')
-        string(defaultValue: 'millegrilles_coupdoeil_react', name: 'ARCHIVE_NAME')
+        string(defaultValue: 'coupdoeil', name: 'ARCHIVE_NAME')
     }
 
     environment {
@@ -21,15 +21,19 @@ pipeline {
             }
         }
 
-        stage('Build & Package') {
+        stage('Build & Package & Deploy') {
             steps {
-                sh "make deploy VERSION_FULL=${VBUILD} ARCHIVE_NAME=${ARCHIVE_NAME}"
+                sh '''
+                export npm_config_registry=${NPM_REGISTRY}
+                make deploy VERSION_FULL=${VBUILD} ARCHIVE_NAME=${ARCHIVE_NAME}
+                '''
             }
         }
 
         stage('Deploy') {
             steps {
                 sh "rsync artifacts/* ${DEPLOY_RSYNC_WEBAPP_DEST}/coupdoeil"
+                sh "ssh fs1.maple.maceroc.com bin/catalogue.py update archives/dev.json --baseurl ${DEPLOY_ARCHIVE_URL}/coupdoeil --archive archives/coupdoeil/${ARCHIVE_NAME}.${VBUILD}.tar.gz"
             }
         }
     }
