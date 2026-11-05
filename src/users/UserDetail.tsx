@@ -1,10 +1,9 @@
 import { Link, useParams } from "react-router-dom";
 import useUserStore, { UserDetailStore } from "./userStore";
-import React, { ChangeEvent, MouseEvent, MouseEventHandler, useCallback, useEffect, useMemo, useState } from "react";
+import React, { ChangeEvent, MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import useConnectionStore from "../connectionStore";
 import useWorkers from "../workers/workers";
 import { CertificateRequest, ChangeUserSecurityCommand, Passkey, UserActivation, UserCookie, UserDetail } from "../workers/connection.worker";
-import { Formatters } from "millegrilles.reactdeps.typescript";
 import { formatDate } from '../utilities/dateUtils';
 import ActionButton from "../components/ActionButton";
 
@@ -40,19 +39,19 @@ function UserDetailPage() {
                     className='inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200'>
                         Back
                 </Link>
-                <h1 className='text-3xl font-bold text-white'>User: {user?.nomUsager}</h1>
+                <h1 className='text-3xl font-bold text-white'>{user?.nomUsager}</h1>
             </div>
 
             <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
                 <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2'>User Profile</h2>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8'>
+                <div className='grid grid-cols-1 md:grid-cols-4 gap-y-4 gap-x-8'>
                     <div>
                         <p className='text-sm text-slate-400 uppercase tracking-wider'>Username</p>
                         <p className='text-lg font-semibold text-slate-100'>{user?.nomUsager}</p>
                     </div>
-                    <div>
+                    <div className='col-span-3'>
                         <p className='text-sm text-slate-400 uppercase tracking-wider'>User ID</p>
-                        <p className='text-lg font-semibold text-slate-300 font-mono'>{user?.userId}</p>
+                        <p className='text-md font-semibold text-slate-300 font-mono break-all'>{user?.userId}</p>
                     </div>
                 </div>
             </section>
@@ -60,7 +59,7 @@ function UserDetailPage() {
             <section className='bg-slate-800/50 border border-slate-700 p-6 rounded-2xl shadow-xl'>
                 <h2 className='text-lg font-bold text-slate-300 mb-4 border-b border-slate-700 pb-2'>Account Management</h2>
                 
-                <div className='space-y-6'>
+                <div className='grid grid-cols-1 lg:grid-cols-2 space-x-10 space-y-6'>
                     <div className='flex flex-col space-y-2'>
                         <p className='text-sm text-slate-400'>Activate with code provided by the user.</p>
                         <ActivateCode username={user?.nomUsager} />
@@ -417,7 +416,7 @@ function UserSecurity(props: {value: UserDetailStore | null}) {
 
     return (
         <>
-            <ul className="items-center w-full text-sm font-medium text-slate-900 bg-slate-400 border border-slate-800 rounded-lg md:flex dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <ul className="items-center w-full text-sm font-medium text-slate-900 bg-slate-400 border border-slate-800 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                 <li className="w-full border-b border-slate-800 sm:border-b-0 sm:border-r dark:border-gray-600">
                     <div className="flex items-center ps-3">
                         <input id="horizontal-list-1" type="radio" value="1.public" checked={security==='1.public'} onChange={securityOnChangeHandler} name="list-radio" 
