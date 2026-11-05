@@ -169,37 +169,36 @@ function ActivateCode(props: {username?: string | null}) {
         return 'inline-flex items-center justify-center px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 hover:scale-105 active:bg-slate-700 shadow-lg rounded-xl transition-all duration-200 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none';
     }, [codeError, success]);
 
-    let activateHandler = useCallback((e: MouseEvent<HTMLButtonElement>)=>{
+    let activateHandler = useCallback(async (e: MouseEvent<HTMLButtonElement>)=>{
         if(!workers || !ready) throw new Error("workers not initialized");
-        Promise.resolve().then(async () => {
-            if(!workers) throw new Error("workers not initialized");
-            if(!userId) throw new Error("userId not provided");
-            if(!username) throw new Error("username not provided");
+        if(!workers) throw new Error("workers not initialized");
+        if(!userId) throw new Error("userId not provided");
+        if(!username) throw new Error("username not provided");
 
-            let formattedCode = formatActivationCode(code);
-            let codeResponse = await workers.connection.verifyActivationCode(username, formattedCode);
-            console.debug("Code response: ", codeResponse);
-            let csr = codeResponse.csr;
-            if(!csr) {
-                throw new Error(`activateHandler Error verifying activation code: ${codeResponse.err}`);
-            }
-            let currentDate = Math.floor(new Date().getTime() / 1000);  // Epoch seconds
-            let request = {nomUsager: username, csr, date: currentDate, activationTierce: true} as CertificateRequest;
-            let activationResponse = await workers.connection.activateAccountByAdmin(userId, request);
-            console.debug("Activation response", activationResponse);
-            if(activationResponse.ok) {
-                setSuccess(true);
-                setCodeError('');
-                setCode(''); // Reset code
-            } else {
-                setCodeError(activationResponse.err || 'Error');
-            }
-        })
-        .catch(err=>{
-            console.error("activateHandler Error ", err)
-            setSuccess(false);
-            setCodeError(''+err);
-        });
+        let formattedCode = formatActivationCode(code);
+        let codeResponse = await workers.connection.verifyActivationCode(username, formattedCode);
+        console.debug("Code response: ", codeResponse);
+        let csr = codeResponse.csr;
+        if(!csr) {
+            throw new Error(`activateHandler Error verifying activation code: ${codeResponse.err}`);
+        }
+        let currentDate = Math.floor(new Date().getTime() / 1000);  // Epoch seconds
+        let request = {nomUsager: username, csr, date: currentDate, activationTierce: true} as CertificateRequest;
+        let activationResponse = await workers.connection.activateAccountByAdmin(userId, request);
+        console.debug("Activation response", activationResponse);
+        if(activationResponse.ok) {
+            setSuccess(true);
+            setCodeError('');
+            setCode(''); // Reset code
+        } else {
+            setCodeError(activationResponse.err || 'Error');
+        }
+        // })
+        // .catch(err=>{
+        //     console.error("activateHandler Error ", err)
+        //     setSuccess(false);
+        //     setCodeError(''+err);
+        // });
     }, [workers, ready, code, userId, username, setCode, setCodeError, setSuccess]);
 
     return (
